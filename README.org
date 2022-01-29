@@ -1,0 +1,30 @@
+#+TITLE: Little Bits of Buddha
+
+To get started developing Python with Nix, I:
+1. installed Nix
+  #+begin_src sh
+  curl -L https://nixos.org/nix/install | sh
+  #+end_src
+2. upgraded to Nix unstable
+  #+begin_src sh
+  nix-env -f '<nixpkgs>' -iA nixUnstable
+  #+end_src
+3. enabled support for flakes
+  #+begin_src sh
+  mkdir -p ~/.config/nix
+  echo 'experimental-features = nix-command flakes' >> ~/.config/nix/nix.conf
+  #+end_src
+
+  The following two steps may be skipped if a ~flake.nix~ file already exists:
+
+   a. grabbed a flake template to get started with Poetry
+      #+begin_src sh
+      nix flake init --template github:nix-community/poetry2nix
+      #+end_src
+   b. declared a ~devShell~ at the end of the flake
+      #+begin_src sh
+      sed  -i '/defaultApp = pkgs.myapp;/a devShell = pkgs.mkShell { buildInputs = [ pkgs.python3
+     pkgs.poetry ]; };' flake.nix
+      #+end_src
+4. ran ~nix develop~
+5. ran ~poetry new~
