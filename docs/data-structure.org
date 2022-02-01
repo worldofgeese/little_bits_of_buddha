@@ -1,0 +1,148 @@
+#+TITLE: Data Structure
+#+PROPERTY:
+
+All text is taken from the Sutta Pitaka also known as "Buddhavacana" or words of the Buddha, as translated by Thanissaro Bhikku. I use his convention for identifying texts from the five collections ("nikayas"). See [[https://www.accesstoinsight.org/abbrev.html#suttaref][Abbreviations, Symbols, and Sutta Reference Numbers]] for an exhaustive overview.
+
+#+begin_quote
+Sutta references are either to sutta number (in the case of DN, MN, and Iti), samyutta and sutta number (SN), nipata and sutta number (AN), verse number (Dhp), vagga and sutta number (Ud, Sn), or vagga and poem number (Thag, Thig). The translator's name appears in the square brackets [].
+#+end_quote
+
+I've chosen to store my data as a JSON object:
+#+begin_src json :results output :file ../data.json
+{
+  "collection": {
+    "MN": {
+      "27": {
+        "link": "https://www.dhammatalks.org/suttas/MN/MN27.html",
+        "quote": "Abandoning divisive speech he abstains from divisive speech. What he has heard here he does not tell there to break those people apart from these people here. What he has heard there he does not tell here to break these people apart from those people there. Thus reconciling those who have broken apart or cementing those who are united, he loves concord, delights in concord, enjoys concord, speaks things that create concord."
+      },
+      "10": {
+        "link": "https://www.dhammatalks.org/suttas/MN/MN10.html",
+        "quote": "Or again, as if he were to see a corpse cast away in a charnel ground, being chewed by crows, being chewed by vultures, being chewed by hawks, being chewed by dogs, being chewed by hyenas, being chewed by various other creatures… a skeleton smeared with flesh & blood, connected with tendons… a fleshless skeleton smeared with blood, connected with tendons… a skeleton without flesh or blood, connected with tendons… bones detached from their tendons, scattered in all directions—here a hand bone, there a foot bone, here a shin bone, there a thigh bone, here a hip bone, there a back bone, here a rib, there a chest bone, here a shoulder bone, there a neck bone, here a jaw bone, there a tooth, here a skull… the bones whitened, somewhat like the color of shells… the bones piled up, more than a year old… the bones decomposed into a powder: He applies it to this very body, ‘This body, too: Such is its nature, such is its future, such its unavoidable fate.’"
+      },
+      "22": {
+        "link": "https://www.dhammatalks.org/suttas/MN/MN22.html",
+        "quote": "Suppose there were a man needing a water-snake, seeking a water-snake, wandering in search of a water-snake. He would see a large water-snake and grasp it by the coils or by the tail. The water-snake, turning around, would bite him on the hand, on the arm, or on one of his limbs, and from that cause he would suffer death or death-like suffering. Why is that? Because of the wrong-graspedness of the water-snake. In the same way, there is the case where some worthless men study the Dhamma.… Having studied the Dhamma, they don’t ascertain the meaning of those Dhammas with their discernment. Not having ascertained the meaning of those Dhammas with their discernment, they don’t come to an agreement through pondering. They study the Dhamma both for attacking others and for defending themselves in debate. They don’t reach the goal for which (people) study the Dhamma. Their wrong grasp of those Dhammas will lead to their long-term harm & suffering. Why is that? Because of the wrong-graspedness of the Dhammas."
+      },
+      "60": {
+        "link": "https://www.dhammatalks.org/suttas/MN/MN60.html",
+        "quote": "Now, householders, of those contemplatives & brahmans who hold this doctrine, hold this view—’In acting or getting others to act, in mutilating or getting others to mutilate, in torturing or getting others to torture… one does no evil … Through generosity, self-control, restraint, and truthful speech there is no merit from that cause, no coming of merit’—it can be expected that, shunning these three skillful activities—good bodily conduct, good verbal conduct, good mental conduct—they will adopt & practice these three unskillful activities: bad bodily conduct, bad verbal conduct, bad mental conduct. Why is that? Because those venerable contemplatives & brahmans do not see, in unskillful activities, the drawbacks, the degradation, and the defilement; nor in skillful activities the rewards of renunciation, resembling cleansing."
+      },
+      "70": {
+        "link": "https://www.dhammatalks.org/suttas/MN/MN70.html",
+        "quote": "Monks, I do not say that the attainment of gnosis is all at once. Rather, the attainment of gnosis is after gradual training, gradual action, gradual practice. And how is there the attainment of gnosis after gradual training, gradual action, gradual practice? There is the case where, when conviction has arisen, one visits (a teacher). Having visited, one grows close. Having grown close, one lends ear. Having lent ear, one hears the Dhamma. Having heard the Dhamma, one remembers it. Remembering, one penetrates the meaning of the teachings. Penetrating the meaning, one comes to an agreement through pondering the teachings. There being an agreement through pondering the teachings, desire arises. When desire has arisen, one is willing. When one is willing, one contemplates. Having contemplated, one makes an exertion. Having made an exertion, one realizes with the body the ultimate truth and, having penetrated it with discernment, sees it."
+      }
+    },
+    "AN": {
+      "2.19": {
+        "link": "https://www.dhammatalks.org/suttas/AN/AN2_19.html",
+        "quote": "Abandon what is unskillful, monks. It is possible to abandon what is unskillful. If it were not possible to abandon what is unskillful, I would not say to you, ‘Abandon what is unskillful.’ But because it is possible to abandon what is unskillful, I say to you, ‘Abandon what is unskillful.’ If this abandoning of what is unskillful were conducive to harm and pain, I would not say to you, ‘Abandon what is unskillful.’ But because this abandoning of what is unskillful is conducive to benefit and pleasure, I say to you, ‘Abandon what is unskillful."
+      },
+      "1:21": {
+        "link": "https://www.dhammatalks.org/suttas/AN/AN1_21.html",
+        "quote": "I don’t envision a single thing that, when undeveloped, is as unpliant as the mind. The mind, when undeveloped, is unpliant."
+      },
+      "3:74": {
+        "link": "https://www.dhammatalks.org/suttas/AN/AN3_74.html",
+        "quote": "There is the case where a monk—quite secluded from sensuality, secluded from unskillful qualities2—enters & remains in the first jhāna: rapture & pleasure born of seclusion, accompanied by directed thought & evaluation. With the stilling of directed thoughts & evaluations, he enters & remains in the second jhāna: rapture & pleasure born of concentration, unification of awareness free from directed thought & evaluation—internal assurance. With the fading of rapture he remains equanimous, mindful, & alert, and senses pleasure with the body. He enters & remains in the third jhāna, of which the noble ones declare, ‘Equanimous & mindful, he has a pleasant abiding.’ With the abandoning of pleasure & pain—as with the earlier disappearance of elation & distress—he enters & remains in the fourth jhāna: purity of equanimity & mindfulness, neither pleasure nor pain. This is called the concentration of one who is in training."
+      },
+      "3:83": {
+        "link": "https://www.dhammatalks.org/suttas/AN/AN3_83.html",
+        "quote": "So you should train yourselves: ‘Strong will be our desire for undertaking the training in heightened virtue; strong will be our desire for undertaking the training in heightened mind; strong will be our desire for undertaking the training in heightened discernment.’ That is how you should train yourselves."
+      },
+      "3:102": {
+        "link": "https://www.dhammatalks.org/suttas/AN/AN3_102.html",
+        "quote": "...there are these gross impurities in a monk intent on heightened mind: misconduct in body, speech, & mind. These the monk—aware & able by nature—abandons, destroys, dispels, wipes out of existence. When he is rid of them, there remain in him the moderate impurities: thoughts of sensuality, ill will, & harmfulness. These he abandons, destroys, dispels, wipes out of existence. When he is rid of them there remain in him the fine impurities: thoughts of his caste, thoughts of his home district, thoughts related to not wanting to be despised. These he abandons, destroys, dispels, wipes out of existence.\\nWhen he is rid of them, there remain only thoughts of the Dhamma. His concentration is neither peaceful nor refined, has not yet attained calm or unification, and is kept in place by the fabrication of forceful restraint. But there comes a time when his mind grows steady inwardly, settles down, grows unified & concentrated. His concentration is peaceful & refined, has attained calm & unification, and is no longer kept in place by the fabrication of forceful restraint."
+      }
+    }
+  }
+}
+#+end_src
+
+
+#+begin_quote
+In Python, a dictionary is a map implementation, so we'll naturally be able to represent JSON faithfully through a dict.
+
+A dictionary can contain other nested dictionaries, arrays, booleans, or other primitive types like integers and strings. ---[[https://stackabuse.com/reading-and-writing-json-to-a-file-in-python/][Scott Robinson]]
+#+end_quote
+
+The ~json~ module can both dump from Python dictionaries into JSON contents and /de-serialize/ (JSON-to-dictionary) data. Below is an example by Scott Robinson of the former.
+#+begin_src python :results output
+import json
+
+data = {
+    'employees' : [
+        {
+            'name' : 'John Doe',
+            'department' : 'Marketing',
+            'place' : 'Remote'
+        },
+        {
+            'name' : 'Jane Doe',
+            'department' : 'Software Engineering',
+            'place' : 'Remote'
+        },
+        {
+            'name' : 'Don Joe',
+            'department' : 'Software Engineering',
+            'place' : 'Office'
+        }
+    ]
+}
+
+
+json_string = json.dumps(data)
+print(json_string)
+#+end_src
+
+#+RESULTS:
+: {"employees": [{"name": "John Doe", "department": "Marketing", "place": "Remote"}, {"name": "Jane Doe", "department": "Software Engineering", "place": "Remote"}, {"name": "Don Joe", "department": "Software Engineering", "place": "Office"}]}
+
+To de-serialize from our original JSON data structure, we can use ~json.load~
+#+begin_src python :results output
+import json
+
+with open('../data.json') as json_file:
+    data = json.load(json_file)
+
+    print(data)
+#+end_src
+
+#+RESULTS:
+: {'collection': {'MN': {'27': {'link': 'https://www.dhammatalks.org/suttas/MN/MN27.html', 'quote': 'Abandoning divisive speech he abstains from divisive speech. What he has heard here he does not tell there to break those people apart from these people here. What he has heard there he does not tell here to break these people apart from those people there. Thus reconciling those who have broken apart or cementing those who are united, he loves concord, delights in concord, enjoys concord, speaks things that create concord.'}, '10': {'link': 'https://www.dhammatalks.org/suttas/MN/MN10.html', 'quote': 'Or again, as if he were to see a corpse cast away in a charnel ground, being chewed by crows, being chewed by vultures, being chewed by hawks, being chewed by dogs, being chewed by hyenas, being chewed by various other creatures… a skeleton smeared with flesh & blood, connected with tendons… a fleshless skeleton smeared with blood, connected with tendons… a skeleton without flesh or blood, connected with tendons… bones detached from their tendons, scattered in all directions—here a hand bone, there a foot bone, here a shin bone, there a thigh bone, here a hip bone, there a back bone, here a rib, there a chest bone, here a shoulder bone, there a neck bone, here a jaw bone, there a tooth, here a skull… the bones whitened, somewhat like the color of shells… the bones piled up, more than a year old… the bones decomposed into a powder: He applies it to this very body, ‘This body, too: Such is its nature, such is its future, such its unavoidable fate.’'}, '22': {'link': 'https://www.dhammatalks.org/suttas/MN/MN22.html', 'quote': 'Suppose there were a man needing a water-snake, seeking a water-snake, wandering in search of a water-snake. He would see a large water-snake and grasp it by the coils or by the tail. The water-snake, turning around, would bite him on the hand, on the arm, or on one of his limbs, and from that cause he would suffer death or death-like suffering. Why is that? Because of the wrong-graspedness of the water-snake. In the same way, there is the case where some worthless men study the Dhamma.… Having studied the Dhamma, they don’t ascertain the meaning of those Dhammas with their discernment. Not having ascertained the meaning of those Dhammas with their discernment, they don’t come to an agreement through pondering. They study the Dhamma both for attacking others and for defending themselves in debate. They don’t reach the goal for which (people) study the Dhamma. Their wrong grasp of those Dhammas will lead to their long-term harm & suffering. Why is that? Because of the wrong-graspedness of the Dhammas.'}, '60': {'link': 'https://www.dhammatalks.org/suttas/MN/MN60.html', 'quote': 'Now, householders, of those contemplatives & brahmans who hold this doctrine, hold this view—’In acting or getting others to act, in mutilating or getting others to mutilate, in torturing or getting others to torture… one does no evil … Through generosity, self-control, restraint, and truthful speech there is no merit from that cause, no coming of merit’—it can be expected that, shunning these three skillful activities—good bodily conduct, good verbal conduct, good mental conduct—they will adopt & practice these three unskillful activities: bad bodily conduct, bad verbal conduct, bad mental conduct. Why is that? Because those venerable contemplatives & brahmans do not see, in unskillful activities, the drawbacks, the degradation, and the defilement; nor in skillful activities the rewards of renunciation, resembling cleansing.'}, '70': {'link': 'https://www.dhammatalks.org/suttas/MN/MN70.html', 'quote': 'Monks, I do not say that the attainment of gnosis is all at once. Rather, the attainment of gnosis is after gradual training, gradual action, gradual practice. And how is there the attainment of gnosis after gradual training, gradual action, gradual practice? There is the case where, when conviction has arisen, one visits (a teacher). Having visited, one grows close. Having grown close, one lends ear. Having lent ear, one hears the Dhamma. Having heard the Dhamma, one remembers it. Remembering, one penetrates the meaning of the teachings. Penetrating the meaning, one comes to an agreement through pondering the teachings. There being an agreement through pondering the teachings, desire arises. When desire has arisen, one is willing. When one is willing, one contemplates. Having contemplated, one makes an exertion. Having made an exertion, one realizes with the body the ultimate truth and, having penetrated it with discernment, sees it.'}}, 'AN': {'2.19': {'link': 'https://www.dhammatalks.org/suttas/AN/AN2_19.html', 'quote': 'Abandon what is unskillful, monks. It is possible to abandon what is unskillful. If it were not possible to abandon what is unskillful, I would not say to you, ‘Abandon what is unskillful.’ But because it is possible to abandon what is unskillful, I say to you, ‘Abandon what is unskillful.’ If this abandoning of what is unskillful were conducive to harm and pain, I would not say to you, ‘Abandon what is unskillful.’ But because this abandoning of what is unskillful is conducive to benefit and pleasure, I say to you, ‘Abandon what is unskillful.'}, '1:21': {'link': 'https://www.dhammatalks.org/suttas/AN/AN1_21.html', 'quote': 'I don’t envision a single thing that, when undeveloped, is as unpliant as the mind. The mind, when undeveloped, is unpliant.'}, '3:74': {'link': 'https://www.dhammatalks.org/suttas/AN/AN3_74.html', 'quote': 'There is the case where a monk—quite secluded from sensuality, secluded from unskillful qualities2—enters & remains in the first jhāna: rapture & pleasure born of seclusion, accompanied by directed thought & evaluation. With the stilling of directed thoughts & evaluations, he enters & remains in the second jhāna: rapture & pleasure born of concentration, unification of awareness free from directed thought & evaluation—internal assurance. With the fading of rapture he remains equanimous, mindful, & alert, and senses pleasure with the body. He enters & remains in the third jhāna, of which the noble ones declare, ‘Equanimous & mindful, he has a pleasant abiding.’ With the abandoning of pleasure & pain—as with the earlier disappearance of elation & distress—he enters & remains in the fourth jhāna: purity of equanimity & mindfulness, neither pleasure nor pain. This is called the concentration of one who is in training.'}, '3:83': {'link': 'https://www.dhammatalks.org/suttas/AN/AN3_83.html', 'quote': 'So you should train yourselves: ‘Strong will be our desire for undertaking the training in heightened virtue; strong will be our desire for undertaking the training in heightened mind; strong will be our desire for undertaking the training in heightened discernment.’ That is how you should train yourselves.'}, '3:102': {'link': 'https://www.dhammatalks.org/suttas/AN/AN3_102.html', 'quote': '...there are these gross impurities in a monk intent on heightened mind: misconduct in body, speech, & mind. These the monk—aware & able by nature—abandons, destroys, dispels, wipes out of existence. When he is rid of them, there remain in him the moderate impurities: thoughts of sensuality, ill will, & harmfulness. These he abandons, destroys, dispels, wipes out of existence. When he is rid of them there remain in him the fine impurities: thoughts of his caste, thoughts of his home district, thoughts related to not wanting to be despised. These he abandons, destroys, dispels, wipes out of existence.\\nWhen he is rid of them, there remain only thoughts of the Dhamma. His concentration is neither peaceful nor refined, has not yet attained calm or unification, and is kept in place by the fabrication of forceful restraint. But there comes a time when his mind grows steady inwardly, settles down, grows unified & concentrated. His concentration is peaceful & refined, has attained calm & unification, and is no longer kept in place by the fabrication of forceful restraint.'}}}}
+
+Now I'll try to pick a random selection from this dictionary and version our app
+#+begin_src python :results output
+__version__ = "0.1.0"
+
+import json
+import random
+
+with open("../data.json") as json_file:
+    data = json.load(json_file)
+
+print(random.choice(data))
+#+end_src
+
+#+RESULTS:
+
+But this doesn't work!
+#+begin_src python
+Traceback (most recent call last):
+  File "<stdin>", line 9, in <module>
+  File "/nix/store/i6vabb4div9iy6lsl642d86k1q8riasn-python3-3.9.9/lib/python3.9/random.py", line 346, in choice
+    return seq[self._randbelow(len(seq))]
+KeyError: 0
+#+end_src
+
+#+begin_quote
+The issue is that the data you’re passing in is a dictionary, and the “random.choice” function expects an iterable sequence like an array
+So if you want to use this function, you first have to convert your dictionary into an array first
+Dicts are key/value pairs and arrays are a collection of items in a flat list
+E.g.
+{ cat: “mamacita” }
+Vs
+[“mamacita”] ---Jack Jennings
+#+end_quote
+
+* TODO Can I develop Python in a REPL as indicated is the favorite approach of Lisp programmers by [[https://news.ycombinator.com/item?id=30175100][this]] Hacker News commenter?
