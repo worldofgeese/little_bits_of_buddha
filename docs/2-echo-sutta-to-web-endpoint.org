@@ -1,0 +1,11 @@
+#+TITLE: 2 - Echo Sutta To Web Endpoint
+
+This week's challenge: how to get app and webserver to use the ~random_sutta~ function
+
+* Homework due <2022-02-10 Thu>
+** TODO Add run.py that imports __init__.py
+The first thing I needed to understand was how to source other python files when running python
+** TODO Pull in flask as a dependency to flake
+** TODO Compose ~server.py~ that is responsible for the flask webserver
+***  TODO Define a consumable web endpoint
+ I'm looking for the GET verb and can ignore others
