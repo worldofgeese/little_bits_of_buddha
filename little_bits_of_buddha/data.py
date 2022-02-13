@@ -1,10 +1,10 @@
-__version__ = "0.1.0"
+#!/usr/bin/env python3
 
 import json
 import random
 
 
-def random_sutta():
+def _random_sutta():
     with open("../data.json") as json_file:
         data = json.load(json_file)
 
@@ -13,5 +13,3 @@ def random_sutta():
             for quote in collection.values():
                 attributed_quotes.append(quote)
         return random.choice(attributed_quotes)
-
-
