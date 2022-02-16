@@ -15,3 +15,8 @@ pytest = "^5.2"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+# For Nix to know which scripts to install in the bin/ output directory, we also need to add a scripts section:
+[tool.poetry.scripts]
+lbob = 'little_bits_of_buddha.app:main'
+
