@@ -4,8 +4,8 @@ import json
 import random
 
 
-def _random_sutta():
-    with open("../data.json") as json_file:
+def random_sutta():
+    with open("little_bits_of_buddha/data.json") as json_file:
         data = json.load(json_file)
 
         attributed_quotes = []
