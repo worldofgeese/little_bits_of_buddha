@@ -6,25 +6,30 @@
   inputs.poetry2nix.url = "github:nix-community/poetry2nix";
 
   outputs = { self, nixpkgs, flake-utils, poetry2nix }:
-    {
-      # Nixpkgs overlay providing the application
-      overlay = nixpkgs.lib.composeManyExtensions [
-        poetry2nix.overlay
-        (final: prev: {
-          # The application
-          myapp = prev.poetry2nix.mkPoetryApplication { projectDir = ./.; };
-        })
-      ];
-    } // (flake-utils.lib.eachDefaultSystem (system:
+    flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = import nixpkgs {
-          inherit system;
-          overlays = [ self.overlay ];
-        };
-      in {
-        apps = { myapp = pkgs.myapp; };
+        pkgs = nixpkgs.legacyPackages.${system};
 
-        defaultApp = pkgs.myapp;
+        app = pkgs.poetry2nix.mkPoetryApplication { projectDir = ./.; };
+
+        # DON'T FORGET TO PUT YOUR PACKAGE NAME HERE, REMOVING `throw`
+        packageName = "lbob";
+
+      in {
+        packages.${packageName} = app;
+
+        defaultPackage = self.packages.${system}.${packageName};
+
+        packages.container = pkgs.dockerTools.streamLayeredImage {
+          name = "lbob";
+          contents = [
+            self.packages.${system}.${packageName}
+            pkgs.bash
+            pkgs.coreutils
+            pkgs.which
+          ];
+          config.Cmd = [ "lbob" ];
+        };
 
         devShell = with pkgs;
           pkgs.mkShell {
@@ -36,5 +41,5 @@
               nodePackages.pyright # Type checker for the Python language
             ];
           };
-      }));
+      });
 }
