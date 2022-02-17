@@ -39,6 +39,7 @@
               (python3.withPackages
                 (ps: with ps; [ flask isort pyflakes nose pytest black ]))
               nodePackages.pyright # Type checker for the Python language
+              openshift
             ];
           };
       });
