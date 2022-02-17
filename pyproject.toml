@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "A Telegram bot that regularly delivers Buddhist aphorisms to its users"
 authors = ["worldofgeese <59834693+worldofgeese@users.noreply.github.com>"]
 license = "AGPLv3"
+include = ["data.json"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
