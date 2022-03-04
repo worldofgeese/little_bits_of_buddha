@@ -12,7 +12,6 @@
 
         app = pkgs.poetry2nix.mkPoetryApplication { projectDir = ./.; };
 
-        # DON'T FORGET TO PUT YOUR PACKAGE NAME HERE, REMOVING `throw`
         packageName = "lbob";
 
       in {
@@ -22,13 +21,13 @@
 
         packages.container = pkgs.dockerTools.streamLayeredImage {
           name = "lbob";
-          contents = [
-            self.packages.${system}.${packageName}
-            pkgs.bash
-            pkgs.coreutils
-            pkgs.which
-          ];
-          config.Cmd = [ "lbob" ];
+          tag = self.packages.${system}.${packageName}.version;
+          contents = [ self.packages.${system}.${packageName} ];
+          created = "now";
+          config = {
+            ExposedPorts."5000/tcp" = { };
+            Cmd = [ "lbob" ];
+          };
         };
 
         devShell = with pkgs;
