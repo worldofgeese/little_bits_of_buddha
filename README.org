@@ -15,7 +15,7 @@ To get started developing Python with Nix, I:
   echo 'experimental-features = nix-command flakes' >> ~/.config/nix/nix.conf
   #+end_src
 
-  The following two steps may be skipped if a ~flake.nix~ file already exists:
+  NOTE: The following two substeps may be skipped if a ~flake.nix~ file already exists:
 
    a. grabbed a flake template to get started with Poetry
       #+begin_src sh
@@ -28,3 +28,22 @@ To get started developing Python with Nix, I:
       #+end_src
 4. ran ~nix develop~
 5. ran ~poetry new~
+6. build your container image with ~nix build .#container~
+7. load your container image into your local image registry with ~./result | docker load~
+8. ~docker run -p 5000:5000 --rm -it localhost/lbob:cg9c9q8gisk48vkjr7z3n4y6a1qzg3ws~ replacing the example image tag with the tag contained in step 7's output
+9. enter localhost:5000 into your browser's address bar to test
+
+   From the [[https://nixos.org/manual/nixpkgs/stable/#ssec-pkgs-dockerTools-streamLayeredImage][Nixpkgs Manual]]:
+   #+begin_quote
+   14.2.3. streamLayeredImage
+
+   Builds a script which, when run, will stream an uncompressed tarball of a Docker image to stdout. The arguments to this function are as for buildLayeredImage. This method of constructing an image does not realize the image into the Nix store, so it saves on IO and disk/cache space, particularly with large images.
+
+   The image produced by running the output script can be piped directly into docker load, to load it into the local docker daemon:
+
+   $(nix-build) | docker load
+
+   Alternatively, the image be piped via gzip into skopeo, e.g. to copy it into a registry:
+
+   $(nix-build) | gzip --fast | skopeo copy docker-archive:/dev/stdin docker://some_docker_registry/myimage:tag
+   #+end_quote
