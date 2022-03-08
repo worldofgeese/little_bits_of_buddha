@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "A Telegram bot that regularly delivers Buddhist aphorisms to its users"
 authors = ["worldofgeese <59834693+worldofgeese@users.noreply.github.com>"]
 license = "AGPLv3"
+include = ["data.json"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
@@ -15,3 +16,8 @@ pytest = "^5.2"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+# For Nix to know which scripts to install in the bin/ output directory, we also need to add a scripts section:
+[tool.poetry.scripts]
+lbob = 'little_bits_of_buddha.app:main'
+
