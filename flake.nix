@@ -35,8 +35,17 @@
             buildInputs = [
               python3
               poetry
-              (python3.withPackages
-                (ps: with ps; [ flask isort pyflakes nose pytest black ]))
+              (python3.withPackages (ps:
+                with ps; [
+                  flask
+                  isort
+                  pyflakes
+                  pytest
+                  pytest-mock
+                  black
+                  debugpy
+                  ipython
+                ]))
               nodePackages.pyright # Type checker for the Python language
               openshift
             ];
