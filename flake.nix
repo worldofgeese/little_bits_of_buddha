@@ -14,6 +14,7 @@
 
         packageName = "lbob";
 
+        env = pkgs.poetry2nix.mkPoetryEnv { projectDir = ./.; };
       in {
         packages.${packageName} = app;
 
@@ -33,6 +34,7 @@
         devShell = with pkgs;
           pkgs.mkShell {
             buildInputs = [
+              env
               python3
               poetry
               (python3.withPackages (ps:
