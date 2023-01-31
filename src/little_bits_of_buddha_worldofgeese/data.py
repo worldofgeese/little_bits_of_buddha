@@ -1,10 +1,8 @@
-#!/usr/bin/env python3
-
 import json
 import random
 from importlib import resources
 
-with resources.open_text("little_bits_of_buddha", "data.json") as json_file:
+with resources.open_text("little_bits_of_buddha_worldofgeese", "data.json") as json_file:
     data = json.load(json_file)
 
 
