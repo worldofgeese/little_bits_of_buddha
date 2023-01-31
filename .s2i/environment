@@ -1,3 +1,0 @@
-ENABLE_MICROPIPENV=true
-DISABLE_SETUP_PY_PROCESSING=true
-APP_FILE=./little_bits_of_buddha/app.py
