@@ -1,23 +1,45 @@
-[tool.poetry]
-name = "little-bits-of-buddha"
+[tool.pdm]
+[tool.pdm.dev-dependencies]
+dev = [
+    "pytest<6.0,>=5.2",
+    "isort>=5.11.4",
+    "pyflakes>=3.0.1",
+    "pytest-mock>=3.10.0",
+    "black>=22.12.0",
+    "debugpy>=1.6.6",
+    "ipython>=8.8.0",
+    "pyright>=1.1.291",
+]
+
+[tool.pdm.build]
+includes = ["data.json"]
+[build-system]
+requires = ["pdm-pep517>=1.0.0"]
+build-backend = "pdm.pep517.api"
+
+[project]
+name = "little_bits_of_buddha_worldofgeese"
 version = "0.1.0"
 description = "A Telegram bot that regularly delivers Buddhist aphorisms to its users"
-authors = ["worldofgeese <59834693+worldofgeese@users.noreply.github.com>"]
-license = "AGPLv3"
-include = ["data.json"]
+authors = [
+    {name = "Tao Hansen", email = "5-worldofgeese@users.noreply.gitlab.hansen.agency"},
+]
+dependencies = [
+    "flask>=2.2.2",
+]
+readme = "README.org"
+requires-python = ">=3.9,<4.0"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
+    "Operating System :: OS Independent",
+]
 
-[tool.poetry.dependencies]
-python = "^3.9"
-Flask = "^2.0.2"
 
-[tool.poetry.dev-dependencies]
-pytest = "^5.2"
+[project.urls]
+"Homepage" = "https://gitlab.hansen.agency/worldofgeese/little_bits_of_buddha"
+"Bug Tracker" = "https://gitlab.hansen.agency/worldofgeese/little_bits_of_buddha/-/issues"
 
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+[project.scripts]
 
-# For Nix to know which scripts to install in the bin/ output directory, we also need to add a scripts section:
-[tool.poetry.scripts]
-lbob = 'little_bits_of_buddha.app:main'
-
+[project.optional-dependencies]
