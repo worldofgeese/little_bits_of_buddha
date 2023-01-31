@@ -1,0 +1,9 @@
+{
+  "packages": ["python311", "pdm"],
+  "shell": {
+    "init_hook": null
+  },
+  "nixpkgs": {
+    "commit": "04b8f65f47d02c8a245e2a3b071236bd17d095e4"
+  }
+}
