@@ -1,0 +1,19 @@
+kind: Workflow
+name: my-workflow
+envVars:
+  SCW_VERSION: "2.10.0"
+  SCW_DEFAULT_REGION: "nl-ams"
+  SCW_DEFAULT_ZONE: "nl-ams-2"
+  SCW_DEFAULT_ORGANIZATION_ID: "eeb9ffc1-696c-40b6-8c91-973a956a2d67"
+  SCW_ACCESS_KEY: "SCW8V7BPG0FCGJ93JCSS"
+  NIXPACKS_VERSION: "1.1.1"
+  NIXPACKS_PYTHON_VERSION: "3.11"
+  PATH: "$HOME/bin:${local.env.PATH}"
+steps:
+  - script: |-
+      mkdir -p ${local.env.HOME}/bin
+      command -v scw || curl -o ${local.env.HOME}/bin/scw -L "https://github.com/scaleway/scaleway-cli/releases/download/v${local.env.SCW_VERSION}/scaleway-cli_${local.env.SCW_VERSION}_linux_amd64"
+      chmod +x ${local.env.HOME}/bin/scw 
+      ${local.env.HOME}/bin/scw k8s kubeconfig install c50d7b47-1d34-40b5-b7c8-1709a6839609
+      command -v nixpacks || curl -sSL https://nixpacks.com/install.sh | bash
+  - command: [deploy]

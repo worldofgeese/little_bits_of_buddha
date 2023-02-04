@@ -27,7 +27,6 @@ authors = [
 dependencies = [
     "flask>=2.2.2",
 ]
-readme = "README.org"
 requires-python = ">=3.9,<4.0"
 classifiers = [
     "Programming Language :: Python :: 3",
