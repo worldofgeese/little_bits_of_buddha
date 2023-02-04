@@ -1,0 +1,16 @@
+kind: Project
+name: little-bits-of-buddha
+defaultEnvironment: dev
+
+environments:
+  - name: ci
+  - name: dev
+  - name: prod
+    production: true
+
+providers:
+  - name: kubernetes
+    context: admin@scw-kapsule-ams-2-devrel-1-c50d7b47-1d34-40b5-b7c8-1709a6839609
+    buildMode: cluster-buildkit
+    clusterBuildkit:
+      rootless: true
