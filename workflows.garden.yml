@@ -9,6 +9,8 @@ envVars:
   NIXPACKS_VERSION: "1.1.1"
   NIXPACKS_PYTHON_VERSION: "3.11"
   PATH: "$HOME/bin:${local.env.PATH}"
+  DOCKERHUB_USERNAME: "worldofgeese"
+  REGISTRY: docker.io
 steps:
   - script: |-
       mkdir -p ${local.env.HOME}/bin
