@@ -1,5 +1,9 @@
 {
-  "packages": ["python311", "pdm"],
+  "packages": [
+    "python311",
+    "pdm",
+    "nixpacks"
+  ],
   "shell": {
     "init_hook": null
   },
