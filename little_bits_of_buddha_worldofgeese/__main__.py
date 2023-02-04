@@ -1,6 +1,6 @@
 from flask import Flask
 
-from data import random_sutta as _random_sutta
+from little_bits_of_buddha_worldofgeese.data import random_sutta as _random_sutta
 
 app = Flask(__name__)
 
