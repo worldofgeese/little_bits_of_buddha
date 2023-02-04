@@ -1,0 +1,7 @@
+image: gardendev/garden
+
+run-garden:
+  stage: build
+  script:
+    - git config --global --add safe.directory $CI_PROJECT_DIR
+    - garden run workflow my-workflow --env=ci

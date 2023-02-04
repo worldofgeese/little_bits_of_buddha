@@ -1,0 +1,25 @@
+kind: Module
+type: exec
+name: nixpacks
+include: ["*"]
+local: true
+build:
+  command:
+    - nixpacks build . --name lbob -o .
+
+---
+kind: Module
+type: container
+name: lbob
+include: ["*"]
+build:
+  dependencies:
+    - name: nixpacks
+      copy:
+        - source: .nixpacks
+dockerfile: .nixpacks/Dockerfile
+services:
+  - name: lbob
+tests:
+  - name: unit
+    args: [pytest]
