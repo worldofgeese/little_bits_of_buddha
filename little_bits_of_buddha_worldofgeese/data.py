@@ -1,10 +1,10 @@
 import json
+import pathlib
 import random
-from importlib import resources
 
-with resources.open_text("little_bits_of_buddha_worldofgeese", "data.json") as json_file:
+DATA_PATH = pathlib.Path(__file__).parent / "data.json"
+with open(DATA_PATH) as json_file:
     data = json.load(json_file)
-
 
 def random_sutta(suttas=data):
     # With no arguments called, `suttas` will default to data.

@@ -1,7 +1,8 @@
 kind: Module
 type: exec
 name: nixpacks
-include: ["*"]
+# TODO if this file and folder aren't specifically included, Garden won't source them. No wildcards.
+include: ["pyproject.toml", "little_bits_of_buddha_worldofgeese"]
 local: true
 build:
   command:
@@ -10,12 +11,13 @@ build:
 ---
 kind: Module
 type: container
+exclude: ["little_bits_of_buddha_worldofgeese"]
 name: lbob
-include: ["*"]
 build:
   dependencies:
     - name: nixpacks
       copy:
+        # TODO if "."-prefix file isn't explicitly included, Garden won't source it. No wildcards.
         - source: .nixpacks
 dockerfile: .nixpacks/Dockerfile
 services:
