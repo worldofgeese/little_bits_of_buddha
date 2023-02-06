@@ -2,15 +2,29 @@ kind: Project
 name: little-bits-of-buddha
 defaultEnvironment: dev
 
+variables:
+  ci-env-name: ${project.name}-${local.env.CI_PIPELINE_IID || 0}
+  dev-env-name: ${project.name}-worldofgeese
+
 environments:
   - name: ci
+    defaultNamespace: ${var.ci-env-name}
   - name: dev
+    defaultNamespace: ${var.dev-env-name}
   - name: prod
+    defaultNamespace: ${project.name}
     production: true
 
 providers:
   - name: kubernetes
     context: admin@scw-kapsule-ams-2-devrel-1-c50d7b47-1d34-40b5-b7c8-1709a6839609
+    namespace: ${environment.namespace}
     buildMode: cluster-buildkit
     clusterBuildkit:
       rootless: true
+    deploymentRegistry:
+      hostname: rg.nl-ams.scw.cloud
+      namespace: namespace-magical-austin
+    imagePullSecrets:
+      - name: registry-secret
+        namespace: ${var.dev-env-name}

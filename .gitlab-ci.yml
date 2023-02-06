@@ -1,4 +1,4 @@
-image: gardendev/garden
+image: gardendev/garden:0.12.51
 
 run-garden:
   stage: build

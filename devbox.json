@@ -2,7 +2,7 @@
   "packages": [
     "python311",
     "pdm",
-    "nixpacks"
+    "nixpacks",
   ],
   "shell": {
     "init_hook": "source conf/set-environment.sh"
