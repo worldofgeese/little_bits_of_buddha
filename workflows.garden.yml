@@ -1,7 +1,8 @@
 kind: Workflow
 name: my-workflow
 steps:
-  - script: |-
+  - description: Source Terraform Cloud credentials and install Nixpacks
+    script: |-
       cat >~/.terraformrc <<EOL
       credentials "app.terraform.io" {
         token = "${local.env.TF_CLOUD_TOKEN}"
@@ -12,4 +13,11 @@ steps:
       else
         command -v nixpacks || curl -sSL https://nixpacks.com/install.sh | bash
       fi
-  - command: [deploy]
+  - description: Deploy app to Kubernetes cluster
+    command: [deploy]
+  - description: Run tests on app
+    command: [test]
+  - description: Delete namespace to clean up only in CI
+    name: cleanup
+    command: [delete, environment]
+    skip: "${environment.name != 'ci'}"
