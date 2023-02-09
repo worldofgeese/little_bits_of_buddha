@@ -4,7 +4,7 @@ defaultEnvironment: dev
 
 variables:
   ci-env-name: ${project.name}-${local.env.CI_PIPELINE_IID || 0}
-  dev-env-name: ${project.name}-worldofgeese
+  dev-env-name: ${project.name}-${local.username}
   terraform-init-root: "./terraform"
 
 environments:
