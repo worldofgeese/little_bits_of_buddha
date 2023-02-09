@@ -10,3 +10,10 @@ __pypackages__
 build
 htmlcov
 .pdm.toml
+
+.terraform*
+terraform.tfstate*
+garden.tfvars.json
+.garden
+.nixpacks
+kubeconfig.yaml
