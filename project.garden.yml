@@ -5,6 +5,7 @@ defaultEnvironment: dev
 variables:
   ci-env-name: ${project.name}-${local.env.CI_PIPELINE_IID || 0}
   dev-env-name: ${project.name}-worldofgeese
+  terraform-init-root: "./terraform"
 
 environments:
   - name: ci
@@ -17,7 +18,8 @@ environments:
 
 providers:
   - name: kubernetes
-    context: admin@scw-kapsule-ams-2-devrel-1-c50d7b47-1d34-40b5-b7c8-1709a6839609
+    context: scw-kapsule-ams-2-devrel-1
+    kubeconfig: ${var.terraform-init-root}/${providers.terraform.outputs.kubeconfig_path}
     namespace: ${environment.namespace}
     buildMode: cluster-buildkit
     clusterBuildkit:
@@ -27,4 +29,13 @@ providers:
       namespace: namespace-magical-austin
     imagePullSecrets:
       - name: registry-secret
-        namespace: ${var.dev-env-name}
+        namespace: default
+    setupIngressController: "nginx"
+
+  - name: terraform
+    initRoot: ${var.terraform-init-root}
+    allowDestroy: true
+    autoApply: true
+    variables:
+      cluster_name: "scw-kapsule-ams-2-devrel-1"
+      endpoint: "loft.c50d7b47-1d34-40b5-b7c8-1709a6839609.nodes.k8s.nl-ams.scw.cloud/kubernetes/cluster/loft-cluster"
