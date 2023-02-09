@@ -12,4 +12,5 @@ steps:
       else
         command -v nixpacks || curl -sSL https://nixpacks.com/install.sh | bash
       fi
+  - command: [test]
   - command: [deploy]

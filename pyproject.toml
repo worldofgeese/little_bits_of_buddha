@@ -1,14 +1,3 @@
-[tool.pdm]
-[tool.pdm.dev-dependencies]
-dev = [
-    "isort>=5.11.4",
-    "pyflakes>=3.0.1",
-    "black>=22.12.0",
-    "debugpy>=1.6.6",
-    "ipython>=8.8.0",
-    "pyright>=1.1.291",
-]
-
 [tool.pdm.build]
 includes = ["data.json"]
 [build-system]
@@ -37,8 +26,4 @@ classifiers = [
 [project.urls]
 "Homepage" = "https://gitlab.hansen.agency/worldofgeese/little_bits_of_buddha"
 "Bug Tracker" = "https://gitlab.hansen.agency/worldofgeese/little_bits_of_buddha/-/issues"
-
-[project.scripts]
-
-[project.optional-dependencies]
 

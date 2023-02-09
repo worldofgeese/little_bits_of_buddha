@@ -1,13 +1,17 @@
 {
   "packages": [
     "python311",
-    "pdm",
     "nixpacks",
+    "pdm",
+    "nodePackages.pyright",
+    "black",
+    "isort",
+    "python310Packages.debugpy",
   ],
   "shell": {
     "init_hook": "source conf/set-environment.sh"
   },
   "nixpkgs": {
-    "commit": "04b8f65f47d02c8a245e2a3b071236bd17d095e4"
+    "commit": "0c9c1b8fa76fa783c1c52157bab97601f52132eb"
   }
 }

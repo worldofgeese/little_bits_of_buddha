@@ -30,3 +30,4 @@ services:
   - name: lbob
 tests:
   - name: unit
+    args: [pytest, tests]
