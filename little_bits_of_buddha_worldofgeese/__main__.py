@@ -1,18 +1,15 @@
-from flask import Flask
+import uvicorn
+from fastapi import FastAPI
 
 from little_bits_of_buddha_worldofgeese.data import random_sutta as _random_sutta
 
-app = Flask(__name__)
+app = FastAPI()
 
 
-@app.route("/")
+@app.get("/")
 def random_sutta():
     return _random_sutta()
 
 
-def main():
-    app.run(host="0.0.0.0")
-
-
 if __name__ == "__main__":
-    main()
+    uvicorn.run(app, host="0.0.0.0", port=8000)

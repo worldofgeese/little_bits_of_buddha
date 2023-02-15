@@ -12,8 +12,12 @@ authors = [
     {name = "Tao Hansen", email = "5-worldofgeese@users.noreply.gitlab.hansen.agency"},
 ]
 dependencies = [
-    "flask>=2.2.2",
     "pytest>=7.2.1",
+    "uvicorn>=0.20.0",
+    "fastapi>=0.91.0",
+    "python-telegram-bot>=20.1",
+    "dapr==1.9.0rc2",
+    "dapr-ext-grpc==1.9.0rc2",
 ]
 requires-python = ">=3.9,<4.0"
 classifiers = [
