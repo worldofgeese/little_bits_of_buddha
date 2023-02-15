@@ -1,5 +1,5 @@
 kind: Project
-name: little-bits-of-buddha
+name: lbob
 defaultEnvironment: dev
 
 variables:
@@ -10,11 +10,16 @@ variables:
 environments:
   - name: ci
     defaultNamespace: ${var.ci-env-name}
+    variables:
+      hostname: ${var.ci-env-name}.ci.geese.party
   - name: dev
     defaultNamespace: ${var.dev-env-name}
+    variables:
+      hostname: ${var.dev-env-name}.dev.geese.party
   - name: prod
     defaultNamespace: ${project.name}
-    production: true
+    variables:
+      hostname: app.geese.party
 
 providers:
   - name: kubernetes
@@ -31,6 +36,10 @@ providers:
       - name: registry-secret
         namespace: default
     setupIngressController: "nginx"
+    tlsCertificates:
+      - name: geese-party-tls
+        secretRef:
+          name: geese-party-prod-tls
 
   - name: terraform
     initRoot: ${var.terraform-init-root}
