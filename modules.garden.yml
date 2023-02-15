@@ -28,6 +28,33 @@ build:
 dockerfile: .nixpacks/Dockerfile
 services:
   - name: lbob
+    devMode:
+      # Within the `app` module, you'll find the ASGI app, app = FastAPI(), in the `__main__.py` file.
+      command:
+        [
+          python,
+          -m,
+          little_bits_of_buddha_worldofgeese,
+          --reload,
+          --host,
+          0.0.0.0,
+        ]
+      sync:
+        - source: little_bits_of_buddha_worldofgeese
+          target: /app/little_bits_of_buddha_worldofgeese
+          # Target is always an exact mirror of source; any conflicts overridden by source
+          mode: one-way-replica
+    ports:
+      - name: http
+        containerPort: 8000
+        servicePort: 80
+    ingresses:
+      - annotations:
+          external-dns.alpha.kubernetes.io/hostname: ${var.hostname}
+        port: http
+        hostname: ${var.hostname}
 tests:
   - name: unit
-    args: [pytest, tests]
+    command:
+      - pytest
+      - tests
