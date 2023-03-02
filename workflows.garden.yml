@@ -1,18 +1,9 @@
 kind: Workflow
 name: my-workflow
 steps:
-  - description: Source Terraform Cloud credentials and install Nixpacks
+  - description: Test dubious ownership
     script: |-
-      cat >~/.terraformrc <<EOL
-      credentials "app.terraform.io" {
-        token = "${local.env.TF_CLOUD_TOKEN}"
-      }
-      EOL
-      if [[ "$OSTYPE" == "darwin"* ]]; then
-        command -v nixpacks || brew install railwayapp/tap/nixpacks
-      else
-        command -v nixpacks || curl -sSL https://nixpacks.com/install.sh | bash
-      fi
+      ls -lah /builds/worldofgeese/little_bits_of_buddha
   - description: Deploy app to Kubernetes cluster
     command: [deploy]
   - description: Run tests on app
