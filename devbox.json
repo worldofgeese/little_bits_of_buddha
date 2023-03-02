@@ -1,17 +1,19 @@
 {
   "packages": [
     "python311",
-    "nixpacks",
     "pdm",
-    "nodePackages.pyright",
-    "black",
-    "isort",
-    "python310Packages.debugpy",
+    "nodePackages.pyright"
+    "glab"
   ],
   "shell": {
-    "init_hook": "source conf/set-environment.sh"
+    "init_hook": [
+      "export PYTHONPATH=$PYTHONPATH:$PWD/__pypackages__/3.11/lib",
+      "export PATH=$PATH:$PWD/__pypackages__/3.11/bin",
+      "export PDM_CHECK_UPDATE=0",
+      "pdm install"
+    ]
   },
   "nixpkgs": {
-    "commit": "0c9c1b8fa76fa783c1c52157bab97601f52132eb"
+    "commit": "1ec66a2e10bf857d3559611a05897d20453e1d3b"
   }
 }
