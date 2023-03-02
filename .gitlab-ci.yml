@@ -3,5 +3,5 @@ image: gardendev/garden:0.12.51
 run-garden:
   stage: build
   script:
-    - echo $USER
+    - whoami
     - garden run workflow my-workflow --env=ci
