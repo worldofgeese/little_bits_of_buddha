@@ -1,49 +1,35 @@
 kind: Module
-type: exec
-name: nixpacks
-include:
-  [
-    "pyproject.toml",
-    "little_bits_of_buddha_worldofgeese",
-    ".python-version",
-    "tests",
-  ]
-build:
-  command:
-    - >
-      nixpacks build . --name lbob -o .
-
-      cp -r .nixpacks ../../..
-
----
-kind: Module
 type: container
 name: lbob
-exclude: ["little_bits_of_buddha_worldofgeese"]
-build:
-  dependencies:
-    - name: nixpacks
-      copy:
-        - source: .nixpacks
-dockerfile: .nixpacks/Dockerfile
+exclude: ["*.yml", "terraform/**", ".gardenignore"]
+dockerfile: Dockerfile
 services:
   - name: lbob
     devMode:
-      # Within the `app` module, you'll find the ASGI app, app = FastAPI(), in the `__main__.py` file.
+      # Within the `app` module, you'll find the ASGI app, app = FastAPI(), in the `main.py` file.
       command:
         [
-          python,
-          -m,
-          little_bits_of_buddha_worldofgeese,
-          --reload,
-          --host,
-          0.0.0.0,
+          "python",
+          "-m",
+          "little_bits_of_buddha_worldofgeese",
+          "--host",
+          "0.0.0.0",
+          "--port",
+          "8000",
+          "--reload",
         ]
       sync:
-        - source: little_bits_of_buddha_worldofgeese
-          target: /app/little_bits_of_buddha_worldofgeese
+        - source: src/little_bits_of_buddha_worldofgeese
+          target: /home/appuser/little_bits_of_buddha_worldofgeese
           # Target is always an exact mirror of source; any conflicts overridden by source
           mode: one-way-replica
+          exclude: [__pycache__]
+          defaultOwner: root # <- set an integer user ID or a string name
+        - source: tests
+          target: /home/appuser/tests
+          mode: one-way-replica
+          exclude: [__pycache__]
+          defaultOwner: root # <- set an integer user ID or a string name
     ports:
       - name: http
         containerPort: 8000
