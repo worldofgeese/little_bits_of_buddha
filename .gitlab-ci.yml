@@ -3,5 +3,5 @@ image: gardendev/garden:0.12.51
 run-garden:
   stage: build
   script:
-    - whoami
+    - git config --global --add safe.directory '*'
     - garden run workflow my-workflow --env=ci
