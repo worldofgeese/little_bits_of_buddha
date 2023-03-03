@@ -1,6 +1,10 @@
+import trio
+import triogram
 from fastapi import FastAPI
-import uvicorn
-from little_bits_of_buddha_worldofgeese.data import get_data
+from hypercorn.config import Config as HyperConfig
+from hypercorn.trio import serve
+
+from little_bits_of_buddha_worldofgeese.chatbot import the_buddha
 
 app = FastAPI()
 
@@ -8,12 +12,19 @@ app = FastAPI()
 @app.get("/")
 async def main():
     """
-    This function retrieves the merged data and makes it available to the rest of the program.
+    Starts the bot and event handlers.
     """
-    # Call the retrieve_data function to get the merged data
-    message = get_data()
-    return message
+    print("Starting bot...")
+    bot = triogram.make_bot()
+    async with bot, trio.open_nursery() as nursery:
+        nursery.start_soon(bot)
+        nursery.start_soon(the_buddha, bot)
+    print("Bot started.")
+    return {"message": "Bot started."}
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    print("Starting server...")
+    config = HyperConfig()
+    config.bind = [f"0.0.0.0:8000"]
+    trio.run(serve, app, config)
