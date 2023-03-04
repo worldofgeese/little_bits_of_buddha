@@ -1,12 +1,20 @@
 import openai
 
+MAX_TOKENS = (
+    4096  # Set maximum number of messages to process before resetting chat history
+)
 
-def text_message(update):
+SYSTEM_MSG = "You are the Buddha. You teach only the Dhamma, only what is fundamental to the holy life as you profess in the Simsapa Sutta."
+USER_MSG_PROMPT = "You speak in the style of the Tathagata, the Buddha, the Awakened One of the Early Buddhist Canon. "
+
+
+def check_message(update):
     """
     A helper function that checks if an update contains a text message.
 
     Args:
         update (dict): A dictionary containing information about the update.
+
 
     Returns:
         bool: True if the update contains a text message, False otherwise.
@@ -19,13 +27,13 @@ async def the_buddha(bot):
     Waits for new messages and responds with the output from the ChatGPT API.
     """
     messages = []
-    system_msg = "You are the Buddha."
-    messages.append({"role": "system", "content": system_msg})
-    # Use the bot.sub() method to subscribe to updates filtered by text_message
-    async with bot.sub(text_message) as updates:
+    messages.append({"role": "system", "content": SYSTEM_MSG})
+    counter = 0  # Keep track of total tokens processed
+    # Use the bot.sub() method to subscribe to updates filtered by check_message
+    async with bot.sub(check_message) as updates:
         # Use async for to iterate through incoming updates
         async for update in updates:
-            message = update["message"]["text"]
+            message = USER_MSG_PROMPT + update["message"]["text"]
             messages.append({"role": "user", "content": message})
             response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo", messages=messages
@@ -38,3 +46,19 @@ async def the_buddha(bot):
                     "text": reply,
                 }
             )
+            token_count = response["usage"][
+                "total_tokens"
+            ]  # Get total number of tokens used by API call
+            counter += token_count  # Add token count to counter variable
+            if counter >= MAX_TOKENS:
+                messages.clear()  # Clear messages list
+                await bot.api.send_message(
+                    params={
+                        "chat_id": update["message"]["chat"]["id"],
+                        "text": "This Buddha's time on this earth has ended. The arrival of the next Tathagata is imminent.",
+                    }
+                )
+                messages.append(
+                    {"role": "system", "content": SYSTEM_MSG}
+                )  # Reset chat history
+                counter = 0  # Reset counter variable
