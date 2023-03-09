@@ -25,4 +25,4 @@ COPY tests tests
 COPY src/little_bits_of_buddha_worldofgeese little_bits_of_buddha_worldofgeese/
 
 
-CMD ["python", "-m", "little_bits_of_buddha_worldofgeese", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python", "-m", "little_bits_of_buddha_worldofgeese"]
