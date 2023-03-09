@@ -1,5 +1,4 @@
 import openai
-import os
 
 import little_bits_of_buddha_worldofgeese.config as secrets
 

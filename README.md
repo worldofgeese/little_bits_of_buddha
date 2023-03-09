@@ -13,7 +13,7 @@ Little Bits of Buddha is a Telegram bot that offers daily bits of Buddhist scrip
 
 ## Quickstart
 
-You can access Little Bits of Buddha at https://t.me/LittleBitsOfBuddha.
+You can access Little Bits of Buddha at https://t.me/LittleBitsOfBuddhaBot.
 
 ## Developing
 
