@@ -47,4 +47,4 @@ providers:
     autoApply: true
     variables:
       cluster_name: "scw-kapsule-ams-2-devrel-1"
-      endpoint: "loft.c50d7b47-1d34-40b5-b7c8-1709a6839609.nodes.k8s.nl-ams.scw.cloud/kubernetes/cluster/loft-cluster"
+      endpoint: "c50d7b47-1d34-40b5-b7c8-1709a6839609.api.k8s.nl-ams.scw.cloud:6443"
