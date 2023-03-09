@@ -11,8 +11,7 @@ services:
       dapr.io/app-port: "80"
     devMode:
       # Within the `app` module, you'll find the ASGI app, app = FastAPI(), in the `main.py` file.
-      command:
-        ["python", "-m", "little_bits_of_buddha_worldofgeese", "--reload"]
+      command: ["python", "-m", "little_bits_of_buddha_worldofgeese"]
       sync:
         - source: src/little_bits_of_buddha_worldofgeese
           target: /home/appuser/little_bits_of_buddha_worldofgeese
