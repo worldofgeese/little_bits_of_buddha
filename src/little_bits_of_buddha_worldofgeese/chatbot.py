@@ -1,4 +1,7 @@
 import openai
+import os
+
+import little_bits_of_buddha_worldofgeese.config as secrets
 
 MAX_TOKENS = (
     4096  # Set maximum number of messages to process before resetting chat history
@@ -6,6 +9,8 @@ MAX_TOKENS = (
 
 SYSTEM_MSG = "You are the Buddha. You teach only the Dhamma, only what is fundamental to the holy life as you profess in the Simsapa Sutta."
 USER_MSG_PROMPT = "You speak in the style of the Tathagata, the Buddha, the Awakened One of the Early Buddhist Canon. "
+
+openai.api_key = secrets.OPENAI_API_KEY
 
 
 def check_message(update):

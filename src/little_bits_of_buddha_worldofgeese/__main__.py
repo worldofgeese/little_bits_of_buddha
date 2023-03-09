@@ -1,8 +1,14 @@
+import os
+
 import trio
 import triogram
 
+import little_bits_of_buddha_worldofgeese.config as secrets
 from little_bits_of_buddha_worldofgeese.chatbot import the_buddha
 
+
+# access the environment variables directly using os.environ
+os.environ["TRIOGRAM_TOKEN"] = secrets.TRIOGRAM_TOKEN
 
 
 async def main():
