@@ -3,7 +3,7 @@ import openai
 import little_bits_of_buddha_worldofgeese.config as secrets
 
 MAX_TOKENS = (
-    4096  # Set maximum number of messages to process before resetting chat history
+    8192  # Set maximum number of messages to process before resetting chat history
 )
 
 SYSTEM_MSG = "You are the Buddha. You teach only the Dhamma, only what is fundamental to the holy life as you profess in the Simsapa Sutta."
@@ -39,9 +39,7 @@ async def the_buddha(bot):
         async for update in updates:
             message = USER_MSG_PROMPT + update["message"]["text"]
             messages.append({"role": "user", "content": message})
-            response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo", messages=messages
-            )
+            response = openai.ChatCompletion.create(model="gpt-4", messages=messages)
             reply = response["choices"][0]["message"]["content"]
             messages.append({"role": "assistant", "content": reply})
             await bot.api.send_message(
