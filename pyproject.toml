@@ -1,12 +1,18 @@
 [tool.pdm.dev-dependencies]
 dev = [
+    "-e file:///${PROJECT_ROOT}/src/openai_service_worldofgeese",
+    "-e file:///${PROJECT_ROOT}/src/telegram_bot_service_worldofgeese",
     "debugpy>=1.6.6",
     "isort>=5.12.0",
     "black>=23.1.0",
+    "pytest>=7.2.1",
+    "pre-commit>=3.3.3",
 ]
 # triogram depends on a very old version of h11 that doesn't work with the latest hypercorn
 [tool.pdm.resolution.overrides]
-h11 = "=0.14.0"
+h11 = ">=0.14.0"
+httpx = ">=0.24.1"
+trio = ">=0.22.0"
 
 [project]
 name = "little_bits_of_buddha"
@@ -17,7 +23,7 @@ authors = [
 ]
 requires-python = ">=3.11"
 readme = "README.md"
-license = {file = "LICENSE"}
+license = {text = "AGPL-3.0+"}
 keywords = [
     "ai",
     "openai",
@@ -37,13 +43,6 @@ classifiers = [
     "Topic :: Text Processing :: Linguistic",
 ]
 dependencies = [
-    "pytest>=7.2.1",
-    "dapr==1.9.0rc2",
-    "dapr-ext-grpc==1.9.0rc2",
-    "openai>=0.27.0",
-    "triogram>=0.5.0",
-    "tiktoken>=0.3.0",
-    "typing-extensions>=4.5.0",
 ]
 
 [project.urls]
@@ -56,8 +55,9 @@ extraPaths = ["__pypackages__/3.11/lib/", "src"]
 python.analysis.extraPaths = ["__pypackages__/3.11/lib/"]
 
 [build-system]
-requires = ["pdm-pep517>=1.0.0"]
-build-backend = "pdm.pep517.api"
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
 
 # "The path entries are calculated relative to the rootdir, thus the src entry adds path/to/project/src directory to sys.path in this case."
 # https://stackoverflow.com/a/50156706

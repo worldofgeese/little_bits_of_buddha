@@ -1,0 +1,36 @@
+{
+  "lockfile_version": "1",
+  "packages": {
+    "azure-cli@latest": {
+      "last_modified": "2023-05-25T03:54:59Z",
+      "resolved": "github:NixOS/nixpkgs/8d4d822bc0efa9de6eddc79cb0d82897a9baa750#azure-cli",
+      "version": "2.44.1"
+    },
+    "nodePackages.pyright@latest": {
+      "last_modified": "2023-05-25T03:54:59Z",
+      "resolved": "github:NixOS/nixpkgs/8d4d822bc0efa9de6eddc79cb0d82897a9baa750#nodePackages.pyright",
+      "version": "1.1.310"
+    },
+    "pdm@latest": {
+      "last_modified": "2023-05-25T03:54:59Z",
+      "resolved": "github:NixOS/nixpkgs/8d4d822bc0efa9de6eddc79cb0d82897a9baa750#pdm",
+      "version": "2.6.1"
+    },
+    "pulumi-bin@latest": {
+      "last_modified": "2023-05-25T03:54:59Z",
+      "resolved": "github:NixOS/nixpkgs/8d4d822bc0efa9de6eddc79cb0d82897a9baa750#pulumi-bin",
+      "version": "3.68.0"
+    },
+    "python@3": {
+      "last_modified": "2023-05-25T03:54:59Z",
+      "plugin_version": "0.0.1",
+      "resolved": "github:NixOS/nixpkgs/8d4d822bc0efa9de6eddc79cb0d82897a9baa750#python311",
+      "version": "3.11.3"
+    },
+    "scaleway-cli@latest": {
+      "last_modified": "2023-05-25T03:54:59Z",
+      "resolved": "github:NixOS/nixpkgs/8d4d822bc0efa9de6eddc79cb0d82897a9baa750#scaleway-cli",
+      "version": "2.14.0"
+    }
+  }
+}

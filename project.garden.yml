@@ -1,6 +1,7 @@
+apiVersion: garden.io/v1
 kind: Project
 name: lbob
-defaultEnvironment: dev
+defaultEnvironment: prod
 
 variables:
   ci-env-name: ${project.name}-${local.env.CI_PIPELINE_IID || 0}
@@ -22,9 +23,11 @@ environments:
       hostname: app.geese.party
 
 providers:
+  - name: pulumi
   - name: kubernetes
-    context: scw-kapsule-ams-2-devrel-1
-    kubeconfig: ${var.terraform-init-root}/${providers.terraform.outputs.kubeconfig_path}
+    # context: scw-kapsule-ams-2-devrel-1
+    # kubeconfig: ${var.terraform-init-root}/${providers.terraform.outputs.kubeconfig_path}
+    context: admin@scw-kapsule-ams-2-devrel-1-c50d7b47-1d34-40b5-b7c8-1709a6839609
     namespace: ${environment.namespace}
     buildMode: cluster-buildkit
     clusterBuildkit:
@@ -35,11 +38,7 @@ providers:
     imagePullSecrets:
       - name: registry-secret
         namespace: default
-    setupIngressController: "nginx"
-    tlsCertificates:
-      - name: geese-party-tls
-        secretRef:
-          name: geese-party-prod-tls
+    setupIngressController: null
 
   - name: terraform
     initRoot: ${var.terraform-init-root}

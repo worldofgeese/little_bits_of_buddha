@@ -1,0 +1,96 @@
+name: azure-yaml
+runtime: yaml
+
+providers:
+    type: pulumi:providers:azure-native
+    options:
+      version: v2.0.0-beta.1
+
+config:
+  azure-native:location: West Europe
+  kubernetesNamespace:
+    default: default
+    type: string
+
+variables:
+  subscriptionId:
+    fn::invoke:
+      function: azure-native:authorization:getClientConfig
+      return: subscriptionId
+  tenantId:
+    fn::invoke:
+      function: azure-native:authorization:getClientConfig
+      return: tenantId
+
+resources:
+  resourceGroup:
+    type: azure-native:resources:ResourceGroup
+
+
+  adApplication:
+    type: azuread:Application
+    properties:
+      displayName: MyApplication
+
+  applicationPassword:
+    type: azuread:index:ApplicationPassword
+    properties:
+      applicationObjectId: ${adApplication.id}
+      displayName: MyApplicationPassword
+      endDateRelative: 8760h
+
+  servicePrincipal:
+    type: azuread:ServicePrincipal
+    properties:
+      applicationId: ${adApplication.applicationId}
+
+  roleAssignment:
+    type: azure-native:authorization:RoleAssignment
+    properties:
+      principalId: ${servicePrincipal.id}
+      principalType: ServicePrincipal
+      roleDefinitionId: /subscriptions/${subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/4633458b-17de-408a-b874-0445c86b69e6
+      scope: ${resourceGroup.id}/providers/Microsoft.KeyVault/vaults/${keyVault.name}
+
+  keyVault:
+    type: azure-native:keyvault:Vault
+    properties:
+      resourceGroupName: ${resourceGroup.name}
+      properties:
+        tenantId: ${tenantId}
+        enableRbacAuthorization: true
+        sku:
+          family: A
+          name: standard
+
+  civoFirewall:
+    type: civo:Firewall
+    properties:
+      region: FRA1
+  
+  civoCluster:
+    type: civo:KubernetesCluster
+    properties: 
+      firewallId: ${civoFirewall.id}
+      name: civo-fra1-worldofgeese
+      region: FRA1
+      applications: "-Traefik-v2-nodeport,Linkerd:Linkerd with Dashboard \u0026 Jaeger"
+      kubernetesVersion: "1.27.1-k3s1"
+      pools:
+        nodeCount: 1
+        size: "g4s.kube.medium"
+
+  kubernetesSecret:
+    type: kubernetes:core/v1:Secret
+    properties:
+      metadata:
+        name: azure-ad-keyvault-client-credentials
+        namespace: ${kubernetesNamespace}
+      stringData:
+        "client-secret": ${applicationPassword.value}
+
+outputs:
+  clientId: ${servicePrincipal.applicationId}
+  keyVaultName: ${keyVault.name}
+  secretName: ${kubernetesSecret.metadata.name}
+  tenantId: ${tenantId}

@@ -42,9 +42,10 @@ In order to get started developing run the following in your shell from inside t
 ⚠️ **If you are using 1Password**: consider [using 1Password CLI to securely authenticate GitLab](https://developer.1password.com/docs/cli/shell-plugins/gitlab/) and to [generate your SSH key](https://docs.gitlab.com/ee/user/ssh.html#generate-an-ssh-key-pair-with-1password).
 
 ```shell
-devbox shell
+devbox global add glab
 glab auth login -h gitlab.hansen.agency -t $GITLAB_TOKEN
-glab repo clone worldofgeese/little_bits_of_buddha
+GITLAB_HOST=gitlab.hansen.agency glab repo clone worldofgeese/little_bits_of_buddha
+devbox shell
 cd little_bits_of_buddha
 export TF_VAR_loft_access_key=$LOFT_ACCESS_KEY
 ```

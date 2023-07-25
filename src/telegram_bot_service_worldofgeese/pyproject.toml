@@ -1,0 +1,19 @@
+[tool.pdm]
+
+[project]
+name = "telegram_bot_service_worldofgeese"
+version = "0.1.0"
+requires-python = ">=3.11"
+license = {text = "AGPL-3.0+"}
+dependencies = [
+    "pytest>=7.2.1",
+    "dapr>=1.10.0",
+    "hypercorn>=0.14.3",
+    "fastapi>=0.97.0",
+    "dapr-ext-fastapi>=1.10.0",
+    "triogram @ git+https://github.com/worldofgeese/triogram@1b01daa",
+    "requests>=2.31.0",
+]
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
