@@ -25,9 +25,8 @@ environments:
 providers:
   - name: pulumi
   - name: kubernetes
-    # context: scw-kapsule-ams-2-devrel-1
-    # kubeconfig: ${var.terraform-init-root}/${providers.terraform.outputs.kubeconfig_path}
-    context: admin@scw-kapsule-ams-2-devrel-1-c50d7b47-1d34-40b5-b7c8-1709a6839609
+    context: scw-kapsule-ams-2-devrel-1
+    kubeconfig: ${var.terraform-init-root}/${providers.terraform.outputs.kubeconfig_path}
     namespace: ${environment.namespace}
     buildMode: cluster-buildkit
     clusterBuildkit:

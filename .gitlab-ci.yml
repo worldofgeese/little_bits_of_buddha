@@ -1,4 +1,4 @@
-image: gardendev/garden:0.13.2-alpine-rootless
+image: gardendev/garden:0.13.9-alpine-rootless
 
 run-garden:
   stage: build
