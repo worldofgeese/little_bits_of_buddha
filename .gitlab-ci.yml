@@ -1,6 +1,6 @@
-image: gardendev/garden:0.13.9-alpine-rootless
+image: gardendev/garden-azure:0.13.9-alpine-rootless
 
 run-garden:
   stage: build
   script:
-    - garden run workflow my-workflow --env=ci
+    - garden workflow my-workflow --env=ci
