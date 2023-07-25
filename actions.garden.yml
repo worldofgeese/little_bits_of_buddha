@@ -10,7 +10,6 @@ spec:
   targetStage: openai-service-production
 
 ---
-
 kind: Build
 type: container
 name: telegram-bot-service-image
@@ -23,13 +22,12 @@ spec:
   targetStage: telegram-bot-service-production
 
 ---
-
 kind: Deploy
 type: helm
 name: openai-service
 build: openai-service-image
 dependencies:
-  - deploy.my-pulumi-deploy
+  - ${deploy.my-pulumi-deploy}?
 spec:
   chart:
     path: my-chart
@@ -62,13 +60,12 @@ spec:
         exclude: [__pycache__]
 
 ---
-
 kind: Deploy
 type: helm
 name: telegram-bot-service
 build: telegram-bot-service-image
 dependencies:
-  - deploy.my-pulumi-deploy
+  - ${deploy.my-pulumi-deploy}?
 spec:
   chart:
     path: my-chart
@@ -101,45 +98,42 @@ spec:
         exclude: [__pycache__]
 
 ---
-
 kind: Test
 name: openai-service-unit
 type: helm-pod
 dependencies:
   - deploy.openai-service
 spec:
+  command:
+    - pytest
+    - tests
   chart:
     path: my-chart
   resource:
     kind: Deployment
     name: openai-service
-    command:
-      - pytest
-      - tests
 
 ---
-
-
 kind: Test
 name: telegram-bot-service-unit
 type: helm-pod
 dependencies:
   - deploy.telegram-bot-service
 spec:
+  command:
+    - pytest
+    - tests
   chart:
     path: my-chart
   resource:
     kind: Deployment
     name: openai-service
-    command:
-      - pytest
-      - tests
 
 ---
-
 kind: Deploy
 type: pulumi
 name: my-pulumi-deploy
+disabled: ${environment.name != "prod"}
 spec:
   # If the pulumi stack doesn't exist already when deploying, create it
   createStack: true
@@ -152,11 +146,11 @@ spec:
     scalewayProjectId: 81780efb-b39b-410a-b67f-4eb280515cde
 
 ---
-
 kind: Deploy
 type: kubernetes
 name: azure-key-vault-secret-store
 description: Dapr secret store to read Azure Key Vault secret
+disabled: ${environment.name != "prod"}
 spec:
   manifests:
     - apiVersion: dapr.io/v1alpha1
@@ -167,25 +161,24 @@ spec:
         type: secretstores.azure.keyvault
         version: v1
         metadata:
-        - name: vaultName
-          value: ${actions.deploy.my-pulumi-deploy.outputs.keyVaultName}
-        - name: azureTenantId
-          value: ${actions.deploy.my-pulumi-deploy.outputs.tenantId}
-        - name: azureClientId
-          value: ${actions.deploy.my-pulumi-deploy.outputs.clientId}
-        - name: azureClientSecret
-          secretKeyRef:
-            name: ${actions.deploy.my-pulumi-deploy.outputs.secretName}
-            # The stringData field is never output when reading from the API.
-            key: client-secret
+          - name: vaultName
+            value: ${actions.deploy.my-pulumi-deploy.outputs.keyVaultName}
+          - name: azureTenantId
+            value: ${actions.deploy.my-pulumi-deploy.outputs.tenantId}
+          - name: azureClientId
+            value: ${actions.deploy.my-pulumi-deploy.outputs.clientId}
+          - name: azureClientSecret
+            secretKeyRef:
+              name: ${actions.deploy.my-pulumi-deploy.outputs.secretName}
+              # The stringData field is never output when reading from the API.
+              key: client-secret
 
 ---
-
-
 kind: Deploy
 type: kubernetes
 name: scaleway-redis-cluster-pubsub
 description: Dapr pubsub to connect to Managed Redis on Scaleway
+disabled: ${environment.name != "prod"}
 spec:
   manifests:
     - apiVersion: dapr.io/v1alpha1
@@ -196,23 +189,22 @@ spec:
         type: pubsub.redis
         version: v1
         metadata:
-        - name: redisHost
-          value: 51.158.245.239:6379
-        - name: redisUsername
-          value: mNsbTcRNFTJfqVpKckYm
-        - name: enableTLS
-          value: "true"
-        - name: redeliverInterval
-          value: "0"
-        - name: redisPassword
-          secretKeyRef:
-            name: redis-secret
-            key:  redis-secret
+          - name: redisHost
+            value: 51.158.245.239:6379
+          - name: redisUsername
+            value: mNsbTcRNFTJfqVpKckYm
+          - name: enableTLS
+            value: "true"
+          - name: redeliverInterval
+            value: "0"
+          - name: redisPassword
+            secretKeyRef:
+              name: redis-secret
+              key: redis-secret
       auth:
         secretStore: azure-key-vault-secret-store
 
 ---
-
 kind: Deploy
 type: kubernetes
 name: secret-reader-rbac

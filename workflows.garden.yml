@@ -8,5 +8,4 @@ steps:
   - description: Delete namespace to clean up only in CI
     name: cleanup
     command: [delete, environment]
-    when: always
     skip: "${environment.name != 'ci'}"
