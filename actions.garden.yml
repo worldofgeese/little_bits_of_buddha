@@ -99,35 +99,31 @@ spec:
 
 ---
 kind: Test
-name: openai-service-unit
-type: helm-pod
+name: openai-unit-pod
+type: kubernetes-exec
 dependencies:
   - deploy.openai-service
 spec:
   command:
     - pytest
     - tests
-  chart:
-    path: my-chart
   resource:
     kind: Deployment
-    name: openai-service
+    name: openai-service-my-chart
 
 ---
 kind: Test
-name: telegram-bot-service-unit
-type: helm-pod
+name: telegram-unit-pod
+type: kubernetes-exec
 dependencies:
   - deploy.telegram-bot-service
 spec:
   command:
     - pytest
     - tests
-  chart:
-    path: my-chart
   resource:
     kind: Deployment
-    name: openai-service
+    name: telegram-bot-service-my-chart
 
 ---
 kind: Deploy
@@ -150,7 +146,6 @@ kind: Deploy
 type: kubernetes
 name: azure-key-vault-secret-store
 description: Dapr secret store to read Azure Key Vault secret
-disabled: ${environment.name != "prod"}
 spec:
   manifests:
     - apiVersion: dapr.io/v1alpha1
@@ -162,14 +157,14 @@ spec:
         version: v1
         metadata:
           - name: vaultName
-            value: ${actions.deploy.my-pulumi-deploy.outputs.keyVaultName}
+            value: keyVault49ccd885
           - name: azureTenantId
-            value: ${actions.deploy.my-pulumi-deploy.outputs.tenantId}
+            value: edb7fc97-4792-4dc2-a129-b0e84d0a44bd
           - name: azureClientId
-            value: ${actions.deploy.my-pulumi-deploy.outputs.clientId}
+            value: 181f8774-64f5-452f-8bb6-e4b7a8cf9ae3
           - name: azureClientSecret
             secretKeyRef:
-              name: ${actions.deploy.my-pulumi-deploy.outputs.secretName}
+              name: azure-ad-keyvault-client-credentials
               # The stringData field is never output when reading from the API.
               key: client-secret
 

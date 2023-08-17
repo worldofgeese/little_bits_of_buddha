@@ -2,9 +2,9 @@ name: azure-yaml
 runtime: yaml
 
 providers:
-    type: pulumi:providers:azure-native
-    options:
-      version: v2.0.0-beta.1
+  type: pulumi:providers:azure-native
+  options:
+    version: v2.0.0-beta.1
 
 config:
   azure-native:location: West Europe
@@ -25,7 +25,6 @@ variables:
 resources:
   resourceGroup:
     type: azure-native:resources:ResourceGroup
-
 
   adApplication:
     type: azuread:Application
@@ -67,10 +66,10 @@ resources:
     type: civo:Firewall
     properties:
       region: FRA1
-  
+
   civoCluster:
     type: civo:KubernetesCluster
-    properties: 
+    properties:
       firewallId: ${civoFirewall.id}
       name: civo-fra1-worldofgeese
       region: FRA1
@@ -86,6 +85,8 @@ resources:
       metadata:
         name: azure-ad-keyvault-client-credentials
         namespace: ${kubernetesNamespace}
+        annotations:
+          "kubed.appscode.com/sync": "app=kubed"
       stringData:
         "client-secret": ${applicationPassword.value}
 

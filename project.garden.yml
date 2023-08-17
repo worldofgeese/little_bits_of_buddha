@@ -27,7 +27,11 @@ providers:
   - name: kubernetes
     context: scw-kapsule-ams-2-devrel-1
     kubeconfig: ${var.terraform-init-root}/${providers.terraform.outputs.kubeconfig_path}
-    namespace: ${environment.namespace}
+    namespace:
+      name: ${environment.namespace}
+      labels:
+        app: kubed
+
     buildMode: cluster-buildkit
     clusterBuildkit:
       rootless: true

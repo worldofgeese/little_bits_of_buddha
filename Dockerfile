@@ -5,7 +5,7 @@
 # https://docs.docker.com/engine/reference/builder/
 
 ARG PYTHON_VERSION=3.11.3
-FROM cgr.dev/chainguard/python:${PYTHON_VERSION}-dev as telegram-bot-service-builder
+FROM cgr.dev/chainguard/python:latest-dev as telegram-bot-service-builder
 
 # Prevents Python from writing pyc files.
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -24,7 +24,7 @@ RUN --mount=type=cache,mode=0777,target=/root/.cache/pip \
     --mount=type=bind,source=src/telegram_bot_service_worldofgeese/requirements.txt,target=requirements.txt \
     pip install -r requirements.txt --user
 
-FROM cgr.dev/chainguard/python:${PYTHON_VERSION} as telegram-bot-service-production
+FROM cgr.dev/chainguard/python:latest as telegram-bot-service-production
 
 USER root
 
@@ -51,7 +51,7 @@ EXPOSE 8090
 # Run the application.
 ENTRYPOINT ["python", "-m", "telegram_bot_service_worldofgeese"]
 
-FROM cgr.dev/chainguard/python:${PYTHON_VERSION}-dev as openai-service-builder
+FROM cgr.dev/chainguard/python:latest-dev as openai-service-builder
 
 # Prevents Python from writing pyc files.
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -70,7 +70,7 @@ RUN --mount=type=cache,mode=0777,target=/root/.cache/pip \
     --mount=type=bind,source=src/openai_service_worldofgeese/requirements.txt,target=requirements.txt \
     pip install -r requirements.txt --user
 
-FROM cgr.dev/chainguard/python:${PYTHON_VERSION} as openai-service-production
+FROM cgr.dev/chainguard/python:latest as openai-service-production
 
 USER root
 
