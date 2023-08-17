@@ -1,0 +1,14 @@
+version: 1
+common: 
+  resourcesPath: ./.dapr/components # any dapr resources to be shared across apps
+apps:
+  - appID: telegram-bot-service
+    appDirPath: ./src/telegram_bot_service_worldofgeese
+    daprHTTPPort: 3510
+    appPort: 8090
+    command: ["python","-m", "telegram_bot_service_worldofgeese"]
+  - appID: openai-service
+    appDirPath: ./src/openai_service_worldofgeese
+    appPort: 8080
+    daprHTTPPort: 3500
+    command: ["python","-m", "openai_service_worldofgeese"]

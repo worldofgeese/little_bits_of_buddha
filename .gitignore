@@ -17,3 +17,16 @@ garden.tfvars.json
 .garden
 .nixpacks
 kubeconfig.yaml
+
+# Ignore all files inside .dapr/components
+.dapr/components/*
+
+# Whitelist files with "enc" in the filename
+!.dapr/components/*enc*
+
+# Ignore chart packages
+my-chart/charts/helmet-0.7.0.tgz
+
+# Ignore all YAML files in the terraform directory except Pulumi.yaml
+terraform/*.yaml 
+!terraform/Pulumi.yaml

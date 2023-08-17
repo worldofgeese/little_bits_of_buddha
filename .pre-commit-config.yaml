@@ -1,0 +1,17 @@
+repos:
+- repo: https://github.com/pdm-project/pdm
+  rev: 2.7.0 # a PDM release exposing the hook
+  hooks:
+    - id: pdm-export
+      # command arguments, e.g.:
+      args: ['-o', 'src/telegram_bot_service_worldofgeese/requirements.txt', '--without-hashes', '--prod', '--pyproject', '-p', 'src/telegram_bot_service_worldofgeese']
+      files: ^pdm.lock$
+    - id: pdm-export
+      # command arguments, e.g.:
+      args: ['-o', 'src/openai_service_worldofgeese/requirements.txt', '--without-hashes', '--prod', '--pyproject', '-p', 'src/openai_service_worldofgeese']
+      files: ^pdm.lock$
+
+- repo: https://github.com/pdm-project/pdm
+  rev: 2.7.0 # a PDM release exposing the hook
+  hooks:
+    - id: pdm-lock-check

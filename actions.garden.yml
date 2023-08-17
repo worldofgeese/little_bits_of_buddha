@@ -1,0 +1,202 @@
+kind: Build
+type: container
+name: openai-service-image
+include:
+  - src
+  - tests
+  - Dockerfile
+  - my-chart
+spec:
+  targetStage: openai-service-production
+
+---
+kind: Build
+type: container
+name: telegram-bot-service-image
+include:
+  - src
+  - tests
+  - Dockerfile
+  - my-chart
+spec:
+  targetStage: telegram-bot-service-production
+
+---
+kind: Deploy
+type: helm
+name: openai-service
+build: openai-service-image
+dependencies:
+  - ${deploy.my-pulumi-deploy}?
+spec:
+  chart:
+    path: my-chart
+  values:
+    image:
+      registry: ${providers.kubernetes.config.deploymentRegistry.hostname}
+      repository: ${providers.kubernetes.config.deploymentRegistry.namespace}/${actions.build.openai-service-image.outputs.localImageName}
+      tag: ${replace(actions.build.openai-service-image.outputs.localImageId, "openai-service-image:", "")}
+    podAnnotations:
+      dapr.io/enabled: "true"
+      dapr.io/app-id: "openai-service"
+      dapr.io/log-level: "debug"
+      dapr.io/disable-builtin-k8s-secret-store: "true"
+      dapr.io/app-port: "8080"
+    ports:
+      - name: http
+        containerPort: 8080
+  defaultTarget:
+    kind: Deployment
+    name: ${this.name}
+  sync:
+    paths:
+      - containerPath: /home/nonroot/openai_service_worldofgeese
+        sourcePath: ${actions.build.openai-service-image.sourcePath}/src/openai_service_worldofgeese
+        mode: one-way-replica
+        exclude: [__pycache__]
+      - containerPath: /home/nonroot/tests
+        sourcePath: ${actions.build.openai-service-image.sourcePath}/tests
+        mode: one-way-replica
+        exclude: [__pycache__]
+
+---
+kind: Deploy
+type: helm
+name: telegram-bot-service
+build: telegram-bot-service-image
+dependencies:
+  - ${deploy.my-pulumi-deploy}?
+spec:
+  chart:
+    path: my-chart
+  values:
+    image:
+      registry: ${providers.kubernetes.config.deploymentRegistry.hostname}
+      repository: ${providers.kubernetes.config.deploymentRegistry.namespace}/${actions.build.telegram-bot-service-image.outputs.localImageName}
+      tag: ${replace(actions.build.telegram-bot-service-image.outputs.localImageId, "telegram-bot-service-image:", "")}
+    podAnnotations:
+      dapr.io/enabled: "true"
+      dapr.io/app-id: "telegram-bot-service"
+      dapr.io/log-level: "debug"
+      dapr.io/disable-builtin-k8s-secret-store: "true"
+      dapr.io/app-port: "8090"
+    ports:
+      - name: http
+        containerPort: 8090
+  defaultTarget:
+    kind: Deployment
+    name: ${this.name}
+  sync:
+    paths:
+      - containerPath: /home/nonroot/telegram_bot_service_worldofgeese
+        sourcePath: ${actions.build.telegram-bot-service-image.sourcePath}/src/telegram_bot_service_worldofgeese
+        mode: one-way-replica
+        exclude: [__pycache__]
+      - containerPath: /home/nonroot/tests
+        sourcePath: ${actions.build.telegram-bot-service-image.sourcePath}/tests
+        mode: one-way-replica
+        exclude: [__pycache__]
+
+---
+kind: Deploy
+type: pulumi
+name: my-pulumi-deploy
+disabled: ${environment.name != "prod"}
+spec:
+  # If the pulumi stack doesn't exist already when deploying, create it
+  createStack: true
+  # Cache deploys based on the Garden service version (see the section below)
+  # Setting `cacheStatus = true` works only with Pulumi service managed state backends.
+  cacheStatus: true
+  root: ${var.terraform-init-root}
+  pulumiVariables:
+    kubernetesNamespace: ${environment.namespace}
+    scalewayProjectId: 81780efb-b39b-410a-b67f-4eb280515cde
+
+---
+kind: Deploy
+type: kubernetes
+name: azure-key-vault-secret-store
+description: Dapr secret store to read Azure Key Vault secret
+spec:
+  manifests:
+    - apiVersion: dapr.io/v1alpha1
+      kind: Component
+      metadata:
+        name: azure-key-vault-secret-store
+      spec:
+        type: secretstores.azure.keyvault
+        version: v1
+        metadata:
+          - name: vaultName
+            value: keyVault49ccd885
+          - name: azureTenantId
+            value: edb7fc97-4792-4dc2-a129-b0e84d0a44bd
+          - name: azureClientId
+            value: 181f8774-64f5-452f-8bb6-e4b7a8cf9ae3
+          - name: azureClientSecret
+            secretKeyRef:
+              name: azure-ad-keyvault-client-credentials
+              # The stringData field is never output when reading from the API.
+              key: client-secret
+
+---
+kind: Deploy
+type: kubernetes
+name: scaleway-redis-cluster-pubsub
+description: Dapr pubsub to connect to Managed Redis on Scaleway
+disabled: ${environment.name != "prod"}
+spec:
+  manifests:
+    - apiVersion: dapr.io/v1alpha1
+      kind: Component
+      metadata:
+        name: ${this.name}
+      spec:
+        type: pubsub.redis
+        version: v1
+        metadata:
+          - name: redisHost
+            value: 51.158.245.239:6379
+          - name: redisUsername
+            value: mNsbTcRNFTJfqVpKckYm
+          - name: enableTLS
+            value: "true"
+          - name: redeliverInterval
+            value: "0"
+          - name: redisPassword
+            secretKeyRef:
+              name: redis-secret
+              key: redis-secret
+      auth:
+        secretStore: azure-key-vault-secret-store
+
+---
+kind: Deploy
+type: kubernetes
+name: secret-reader-rbac
+description: RBAC rules required for Dapr to read secrets from namespace
+spec:
+  manifests:
+    - apiVersion: rbac.authorization.k8s.io/v1
+      kind: Role
+      metadata:
+        name: secret-reader
+      rules:
+        - apiGroups:
+            - ""
+          resources:
+            - secrets
+          verbs:
+            - get
+    - apiVersion: rbac.authorization.k8s.io/v1
+      kind: RoleBinding
+      metadata:
+        name: dapr-secret-reader
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: Role
+        name: secret-reader
+      subjects:
+        - kind: ServiceAccount
+          name: default

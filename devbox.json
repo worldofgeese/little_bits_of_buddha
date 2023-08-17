@@ -1,19 +1,22 @@
 {
   "packages": [
-    "python311",
-    "pdm",
-    "nodePackages.pyright"
-    "glab"
+    "python@3.11",
+    "pdm@latest",
+    "nodePackages.pyright@latest",
+    "azure-cli@latest",
+    "pulumi-bin@latest",
+    "scaleway-cli@latest"
   ],
+  "env": {
+    "PDM_CHECK_UPDATE": "0"
+  },
   "shell": {
     "init_hook": [
-      "export PYTHONPATH=$PYTHONPATH:$PWD/__pypackages__/3.11/lib",
-      "export PATH=$PATH:$PWD/__pypackages__/3.11/bin",
-      "export PDM_CHECK_UPDATE=0",
-      "pdm install"
+      "pdm install",
+      ". .venv/bin/activate"
     ]
   },
   "nixpkgs": {
-    "commit": "1ec66a2e10bf857d3559611a05897d20453e1d3b"
+    "commit": "a5ca6a0f2ee8b2c8aa2cca64a06bd5652ad28a4b"
   }
 }

@@ -1,7 +1,9 @@
-image: gardendev/garden:0.12.52
+image: gardendev/garden-azure:0.13.9-alpine-rootless
 
 run-garden:
   stage: build
+  id_tokens:
+    ARM_OIDC_TOKEN:
+      aud: https://gitlab.hansen.agency
   script:
-    - git config --global --add safe.directory $CI_PROJECT_DIR
-    - garden run workflow my-workflow --env=ci
+    - garden workflow my-workflow --env=ci
