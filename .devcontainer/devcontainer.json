@@ -1,6 +1,6 @@
 {
   "name": "Devbox Remote Container",
-  "image": "docker.io/worldofgeese/lbob-devcontainer:0.1.3",
+  "image": "docker.io/worldofgeese/lbob-devcontainer:0.1.4",
   "remoteEnv": {
     "PDM_CHECK_UPDATE": "0"
   },

@@ -13,7 +13,7 @@ Little Bits of Buddha is a Telegram bot that offers daily bits of Buddhist scrip
 
 ## Quickstart
 
-You can access Little Bits of Buddha at https://t.me/LittleBitsOfBuddha or visit https://app.geese.party for raw output.
+You can access Little Bits of Buddha at https://t.me/LittleBitsOfBuddhaBot.
 
 ## Developing
 
@@ -35,16 +35,17 @@ Contact @worldofgeese if you need help getting set up 😊
 
 ### Setting up Dev
 
-This project does _not_ use a Python virtual environment you may be accustomed to if you've worked on Python projects before. Instead, this project makes use of the draft Python Enhancement Proposal (PEP) 582, which installs Python dependencies to a local project `__pypackages__` folder. We use PDM, a modern, standards-compliant Python package and dependency manager that ships with support for this PEP. More information can be found at [PDM's docs](https://pdm.fming.dev/latest/usage/pep582/).
-
 In order to get started developing run the following in your shell from inside the project directory:
 
 ⚠️ **If you are using 1Password**: consider [using 1Password CLI to securely authenticate GitLab](https://developer.1password.com/docs/cli/shell-plugins/gitlab/) and to [generate your SSH key](https://docs.gitlab.com/ee/user/ssh.html#generate-an-ssh-key-pair-with-1password).
 
 ```shell
-devbox shell
+devbox global add glab
+eval "$(devbox global shellenv)"
 glab auth login -h gitlab.hansen.agency -t $GITLAB_TOKEN
-glab repo clone worldofgeese/little_bits_of_buddha
+glab config set -h gitlab.hansen.agency git_protocol http
+GITLAB_HOST=gitlab.hansen.agency glab repo clone worldofgeese/little_bits_of_buddha
+devbox shell
 cd little_bits_of_buddha
 export TF_VAR_loft_access_key=$LOFT_ACCESS_KEY
 ```

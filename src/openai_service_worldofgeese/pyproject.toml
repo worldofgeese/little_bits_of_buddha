@@ -1,0 +1,21 @@
+[tool.pdm]
+
+[project]
+name = "openai_service_worldofgeese"
+version = "0.1.0"
+requires-python = ">=3.11"
+license = {text = "AGPL-3.0+"}
+dependencies = [
+    "pytest>=7.2.1",
+    "hypercorn>=0.14.3",
+    "fastapi>=0.97.0",
+    "pytest>=7.2.1",
+    "dapr>=1.10.0",
+    "dapr-ext-fastapi>=1.10.0",
+    "simpleaichat>=0.1.1",
+    "requests>=2.31.0",
+    "trio>=0.22.1",
+]
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
