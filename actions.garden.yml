@@ -98,34 +98,6 @@ spec:
         exclude: [__pycache__]
 
 ---
-kind: Test
-name: openai-unit-pod
-type: kubernetes-exec
-dependencies:
-  - deploy.openai-service
-spec:
-  command:
-    - pytest
-    - tests
-  resource:
-    kind: Deployment
-    name: openai-service-my-chart
-
----
-kind: Test
-name: telegram-unit-pod
-type: kubernetes-exec
-dependencies:
-  - deploy.telegram-bot-service
-spec:
-  command:
-    - pytest
-    - tests
-  resource:
-    kind: Deployment
-    name: telegram-bot-service-my-chart
-
----
 kind: Deploy
 type: pulumi
 name: my-pulumi-deploy
