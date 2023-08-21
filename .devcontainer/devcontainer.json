@@ -1,6 +1,7 @@
 {
   "name": "Devbox Remote Container",
-  "image": "docker.io/worldofgeese/lbob-devcontainer:0.1.5",
+  "image": "docker.io/worldofgeese/buddhabot-devcontainer:latest",
+  "postStartCommand": "direnv allow; sudo chown --recursive ${id -u}:33333 /nix/var/nix",
   "customizations": {
     "vscode": {
       "settings": {
@@ -10,10 +11,7 @@
         "jetpack-io.devbox",
         "ms-python.python"
       ]
-    },
+    }
   },
-  "remoteEnv": {
-    "PATH": "${containerEnv:PATH}:/home/vscode/.garden/bin"
-  },
-  "remoteUser": "vscode"
+  "remoteUser": "gitpod"
 }

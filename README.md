@@ -54,7 +54,7 @@ Devbox will offer to install Nix if not already installed. `devbox shell` will i
 
 Now run `garden deploy` when you're ready to deploy your app to your own private user namespace 🚀
 
-Alternatively, open a cloud development environment in your browser with [Devbox Cloud](https://www.jetpack.io/devbox/docs/devbox_cloud/), Gitpod, or open in [GitHub Codespaces](https://docs.github.com/en/codespaces/overview) by clicking their buttons below 👇.
+Alternatively, open a cloud development environment in your browser with [Devbox Cloud](https://www.jetpack.io/devbox/docs/devbox_cloud/), [Gitpod](https://www.gitpod.io/), or open in [GitHub Codespaces](https://docs.github.com/en/codespaces/overview) by clicking their buttons below 👇.
 
 [![Open In Devbox.sh](https://jetpack.io/img/devbox/open-in-devbox.svg)](https://devbox.sh/github.com/worldofgeese/little_bits_of_buddha)
 
