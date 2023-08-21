@@ -1,20 +1,22 @@
 {
-    "name": "Devbox Remote Container",
-    "build": {
-        "dockerfile": "./Dockerfile",
-        "context": "..",
-        "cacheFrom": "docker.io/worldofgeese/lbob-devcontainer:0.1.0"
+  "name": "Devbox Remote Container",
+  "build": {
+    "dockerfile": "./Dockerfile",
+    "context": ".."
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "python.defaultInterpreterPath": "/code/.devbox/nix/profile/default/bin/python3"
+      },
+      "extensions": [
+        "jetpack-io.devbox",
+        "ms-python.python"
+      ]
     },
-    "customizations": {
-        "vscode": {
-            "settings": {
-                "python.defaultInterpreterPath": "/code/.devbox/nix/profile/default/bin/python3.11"
-            },
-            "extensions": [
-                "jetpack-io.devbox",
-                "ms-python.python"
-            ]
-        }
-    },
-    "remoteUser": "devbox"
+  },
+  "remoteEnv": {
+    "PATH": "${containerEnv:PATH}:/home/vscode/.garden/bin"
+  },
+  "remoteUser": "vscode"
 }

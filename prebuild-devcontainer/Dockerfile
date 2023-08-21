@@ -1,33 +1,29 @@
-FROM alpine:3
+FROM mcr.microsoft.com/devcontainers/base:buster
 
-# setting up devbox user
-ENV DEVBOX_USER=devbox
-RUN adduser -h /home/$DEVBOX_USER -D -s /bin/bash $DEVBOX_USER
-RUN addgroup sudo
-RUN addgroup $DEVBOX_USER sudo
-RUN echo " $DEVBOX_USER      ALL=(ALL:ALL) NOPASSWD: ALL" >> /etc/sudoers
+# Step 1: Installing dependencies
+RUN apt-get update \
+ && apt-get -y install bash binutils git gnupg2 xz-utils wget sudo rsync
 
-# copy Garden to the image from Garden's Alpine image as the devbox user
-COPY --from=gardendev/garden:0.12.52-0 --chown=$DEVBOX_USER /garden /garden
-RUN ln -s /garden/garden /usr/local/bin/garden
+USER vscode
 
-# installing dependencies
-RUN apk add --no-cache bash binutils git libstdc++ xz sudo rsync
-
-USER $DEVBOX_USER
-
-# installing devbox
-RUN wget --quiet --output-document=/dev/stdout https://get.jetpack.io/devbox | bash -s -- -f
-RUN chown -R "${DEVBOX_USER}:${DEVBOX_USER}" /usr/local/bin/devbox
-
-# nix installer script
+# Step 2: Installing Nix
 RUN wget --quiet --output-document=/dev/stdout https://nixos.org/nix/install | sh -s -- --no-daemon
 RUN . ~/.nix-profile/etc/profile.d/nix.sh
-# updating PATH
-ENV PATH="/home/${DEVBOX_USER}/.nix-profile/bin:/home/${DEVBOX_USER}/.devbox/nix/profile/default/bin:${PATH}"
+ENV PATH="/home/vscode/.nix-profile/bin:$PATH"
+
+# Step 3: Installing devbox
+RUN wget --quiet --output-document=/dev/stdout https://get.jetpack.io/devbox | bash -s -- -f
 
 WORKDIR /code
-RUN sudo chown $DEVBOX_USER:root /code
-COPY devbox.json devbox.json
-RUN devbox shell -- echo "Installing packages"
-CMD ["devbox", "shell"]
+RUN sudo chown vscode:root /code
+COPY --chown=vscode devbox.json devbox.json
+COPY --chown=vscode devbox.lock devbox.lock
+
+# Step 4: Installing your devbox project
+
+RUN devbox run -- echo "Installed Packages."
+
+RUN devbox shellenv --init-hook >> ~/.profile
+
+# Step 5: Install garden
+RUN curl -sL https://get.garden.io/install.sh | bash

@@ -1,24 +1,19 @@
 {
   "name": "Devbox Remote Container",
-  "image": "docker.io/worldofgeese/lbob-devcontainer:0.1.4",
-  "remoteEnv": {
-    "PDM_CHECK_UPDATE": "0"
-  },
+  "image": "docker.io/worldofgeese/lbob-devcontainer:0.1.5",
   "customizations": {
     "vscode": {
       "settings": {
-        "python.defaultInterpreterPath": "/code/.devbox/nix/profile/default/bin/python3.11",
-        "python.testing.pytestArgs": [
-          "tests"
-        ],
-        "python.testing.unittestEnabled": false,
-        "python.testing.pytestEnabled": true
+        "python.defaultInterpreterPath": "/code/.devbox/nix/profile/default/bin/python3"
       },
       "extensions": [
         "jetpack-io.devbox",
         "ms-python.python"
       ]
-    }
+    },
   },
-  "remoteUser": "devbox"
+  "remoteEnv": {
+    "PATH": "${containerEnv:PATH}:/home/vscode/.garden/bin"
+  },
+  "remoteUser": "vscode"
 }

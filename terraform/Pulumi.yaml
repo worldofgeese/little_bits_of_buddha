@@ -62,23 +62,6 @@ resources:
           family: A
           name: standard
 
-  civoFirewall:
-    type: civo:Firewall
-    properties:
-      region: FRA1
-
-  civoCluster:
-    type: civo:KubernetesCluster
-    properties:
-      firewallId: ${civoFirewall.id}
-      name: civo-fra1-worldofgeese
-      region: FRA1
-      applications: "-Traefik-v2-nodeport,Linkerd:Linkerd with Dashboard \u0026 Jaeger"
-      kubernetesVersion: "1.27.1-k3s1"
-      pools:
-        nodeCount: 1
-        size: "g4s.kube.medium"
-
   kubernetesSecret:
     type: kubernetes:core/v1:Secret
     properties:

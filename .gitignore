@@ -30,3 +30,4 @@ my-chart/charts/helmet-0.7.0.tgz
 # Ignore all YAML files in the terraform directory except Pulumi.yaml
 terraform/*.yaml 
 !terraform/Pulumi.yaml
+.pdm-python

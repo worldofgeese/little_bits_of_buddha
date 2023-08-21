@@ -17,10 +17,6 @@ output "kubeconfig_path" {
   value = local_sensitive_file.kubeconfig.filename
 }
 
-variable "loft_access_key" {
-  description = "API access key to cluster issued by your admin"
-}
-
 variable "endpoint" {
   description = "Name of K8s cluster endpoint"
 }
