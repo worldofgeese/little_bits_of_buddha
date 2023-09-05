@@ -56,6 +56,8 @@ Now run `garden deploy` when you're ready to deploy your app to your own private
 
 Alternatively, open a cloud development environment in your browser with [Devbox Cloud](https://www.jetpack.io/devbox/docs/devbox_cloud/), [Gitpod](https://www.gitpod.io/), or open in [GitHub Codespaces](https://docs.github.com/en/codespaces/overview) by clicking their buttons below 👇.
 
+Be sure to [configure Gitpod and GitHub Codespaces](#gitpod-and-github-codespaces) before first start.
+
 [![Open In Devbox.sh](https://jetpack.io/img/devbox/open-in-devbox.svg)](https://devbox.sh/github.com/worldofgeese/little_bits_of_buddha)
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://gitlab.hansen.agency/worldofgeese/little_bits_of_buddha)
@@ -71,3 +73,10 @@ If you use VS Code as your editor, please run `devbox shell` _before_ launching 
 #### Emacs
 
 For Emacs, this project ships with a `.envrc` file that can be used by the `envrc` package to auto-load a Devbox shell on navigating to the project. Instructions for use by Doom Emacs users can be found at the [docs page](https://docs.doomemacs.org/latest/modules/tools/direnv/). Other Emacs users can visit the [`envrc` GitHub repository](https://github.com/purcell/envrc).
+
+#### Gitpod and GitHub Codespaces
+
+Set `GITLAB_HOST`, `GITLAB_WORKFLOW_INSTANCE_URL`, `GITLAB_TOKEN` and `GITLAB_WORKFLOW_TOKEN` as variables *before* launching your Gitpod workspace or Codespace to automatically authenticate with the GitLab Workflows and GitLab `glab` CLI tool on start-up. The first two variables share the same value (https://gitlab.hansen.agency). The remaining two values are the API token you generated in [Prerequisites](#prerequisites).
+
+- For Gitpod, set your variables [here](https://gitpod.io/user/variables).
+- For GitHub Codespaces, set your variables [here](https://github.com/settings/codespaces).

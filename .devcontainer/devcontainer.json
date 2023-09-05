@@ -1,7 +1,7 @@
 {
   "name": "Devbox Remote Container",
   "image": "docker.io/worldofgeese/buddhabot-devcontainer:latest",
-  "postStartCommand": "direnv allow; sudo chown --recursive ${id -u}:33333 /nix/var/nix",
+  "postStartCommand": "direnv allow; sudo chown --recursive ${id -u}:33333 /nix/var/nix; if [ \"$CODESPACES\" != \"true\" ]; then glab config set check_update false; glab auth login --token $GITLAB_TOKEN; fi",
   "customizations": {
     "vscode": {
       "settings": {
@@ -13,11 +13,10 @@
         "GitLab.gitlab-workflow",
         "ms-python.mypy-type-checker",
         "charliermarsh.ruff",
-        "vscodevim.vim",
-        "redhat.vscode-yaml",
         "almenon.arepl",
         "njpwerner.autodocstring",
-        "ms-python.debugpy"
+        "ms-python.debugpy",
+        "sourcegraph.cody-ai"
       ]
     }
   },
