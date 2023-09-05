@@ -5,7 +5,8 @@
     "nodePackages.pyright@latest",
     "azure-cli@latest",
     "pulumi-bin@latest",
-    "scaleway-cli@latest"
+    "scaleway-cli@latest",
+    "glab@latest"
   ],
   "env": {
     "PDM_CHECK_UPDATE": "0"

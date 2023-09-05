@@ -1,9 +1,17 @@
-image:
-    file: prebuild-devcontainer/Dockerfile
+image: docker.io/worldofgeese/buddhabot-devcontainer:latest
 tasks:
-  - init: |
+  - command: |
       direnv allow
+      glab auth login --token $GITLAB_TOKEN
 vscode:
   extensions:
     - jetpack-io.devbox
     - ms-python.python
+    - ms-python.black-formatter
+    - GitLab.gitlab-workflow
+    - ms-python.mypy-type-checker
+    - charliermarsh.ruff
+    - vscodevim.vim
+    - redhat.vscode-yaml
+    - almenon.arepl
+    - njpwerner.autodocstring

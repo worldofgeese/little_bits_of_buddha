@@ -9,7 +9,15 @@
       },
       "extensions": [
         "jetpack-io.devbox",
-        "ms-python.python"
+        "ms-python.python",
+        "GitLab.gitlab-workflow",
+        "ms-python.mypy-type-checker",
+        "charliermarsh.ruff",
+        "vscodevim.vim",
+        "redhat.vscode-yaml",
+        "almenon.arepl",
+        "njpwerner.autodocstring",
+        "ms-python.debugpy"
       ]
     }
   },

@@ -1,6 +1,39 @@
 {
     "[python]": {
-        "editor.defaultFormatter": "ms-python.black-formatter"
+        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": true,
+            "source.fixAll.ruff": true,
+        }
     },
-    "python.formatting.provider": "none"
+    "vim.handleKeys": {
+        "<C-b>": false,
+        "<C-f>": false
+    },
+    "vim.useCtrlKeys": true,
+    "vim.hlsearch": true,
+    "vim.leader": "<space>",
+    "vim.incsearch": true,
+    "vim.useSystemClipboard": true,
+    "vim.easymotion": true,
+    "git.useEditorAsCommitInput": true,
+    "git.terminalGitEditor": false,
+    "git.autofetch": true,
+    "git.allowForcePush": true,
+    "git.enableSmartCommit": true,
+    "git.confirmForcePush": false,
+    "git.openRepositoryInParentFolders": "never",
+    "python.analysis.inlayHints.functionReturnTypes": true,
+    "python.analysis.inlayHints.variableTypes": true,
+    "python.analysis.typeCheckingMode": "strict",
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportMissingTypeStubs": "none",
+    },
+    "python.analysis.autoImportCompletions": true,
+    "python.analysis.completeFunctionParens": true,
+    "python.analysis.enableSyncServer": true,
+    "redhat.telemetry.enabled": false,
+    "devbox.autoShellOnTerminal": false,
+    "extensions.ignoreRecommendations": true,
 }

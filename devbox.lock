@@ -2,39 +2,45 @@
   "lockfile_version": "1",
   "packages": {
     "azure-cli@latest": {
-      "last_modified": "2023-07-30T12:29:02Z",
-      "resolved": "github:NixOS/nixpkgs/3acb5c4264c490e7714d503c7166a3fde0c51324#azure-cli",
+      "last_modified": "2023-08-30T00:25:28Z",
+      "resolved": "github:NixOS/nixpkgs/a63a64b593dcf2fe05f7c5d666eb395950f36bc9#azure-cli",
       "source": "devbox-search",
-      "version": "2.50.0"
+      "version": "2.51.0"
+    },
+    "glab@latest": {
+      "last_modified": "2023-09-04T16:24:30Z",
+      "resolved": "github:NixOS/nixpkgs/3c15feef7770eb5500a4b8792623e2d6f598c9c1#glab",
+      "source": "devbox-search",
+      "version": "1.31.0"
     },
     "nodePackages.pyright@latest": {
-      "last_modified": "2023-08-08T03:07:33Z",
-      "resolved": "github:NixOS/nixpkgs/844ffa82bbe2a2779c86ab3a72ff1b4176cec467#nodePackages.pyright",
+      "last_modified": "2023-08-30T00:25:28Z",
+      "resolved": "github:NixOS/nixpkgs/a63a64b593dcf2fe05f7c5d666eb395950f36bc9#nodePackages.pyright",
       "source": "devbox-search",
-      "version": "1.1.319"
+      "version": "1.1.324"
     },
     "pdm@latest": {
-      "last_modified": "2023-07-30T12:29:02Z",
-      "resolved": "github:NixOS/nixpkgs/3acb5c4264c490e7714d503c7166a3fde0c51324#pdm",
+      "last_modified": "2023-08-30T00:25:28Z",
+      "resolved": "github:NixOS/nixpkgs/a63a64b593dcf2fe05f7c5d666eb395950f36bc9#pdm",
       "source": "devbox-search",
-      "version": "2.8.0"
+      "version": "2.8.2"
     },
     "pulumi-bin@latest": {
-      "last_modified": "2023-07-30T12:29:02Z",
-      "resolved": "github:NixOS/nixpkgs/3acb5c4264c490e7714d503c7166a3fde0c51324#pulumi-bin",
+      "last_modified": "2023-08-30T00:25:28Z",
+      "resolved": "github:NixOS/nixpkgs/a63a64b593dcf2fe05f7c5d666eb395950f36bc9#pulumi-bin",
       "source": "devbox-search",
-      "version": "3.76.0"
+      "version": "3.78.1"
     },
     "python@3.11.4": {
-      "last_modified": "2023-08-08T03:07:33Z",
+      "last_modified": "2023-08-30T00:25:28Z",
       "plugin_version": "0.0.1",
-      "resolved": "github:NixOS/nixpkgs/844ffa82bbe2a2779c86ab3a72ff1b4176cec467#python311",
+      "resolved": "github:NixOS/nixpkgs/a63a64b593dcf2fe05f7c5d666eb395950f36bc9#python311",
       "source": "devbox-search",
       "version": "3.11.4"
     },
     "scaleway-cli@latest": {
-      "last_modified": "2023-08-08T03:07:33Z",
-      "resolved": "github:NixOS/nixpkgs/844ffa82bbe2a2779c86ab3a72ff1b4176cec467#scaleway-cli",
+      "last_modified": "2023-08-30T00:25:28Z",
+      "resolved": "github:NixOS/nixpkgs/a63a64b593dcf2fe05f7c5d666eb395950f36bc9#scaleway-cli",
       "source": "devbox-search",
       "version": "2.19.0"
     }
