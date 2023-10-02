@@ -1,6 +1,7 @@
 import json
 import logging
 import time
+import warnings
 
 import requests
 import trio
@@ -11,9 +12,12 @@ from hypercorn.config import Config
 from hypercorn.trio import serve
 from pydantic import BaseModel
 from simpleaichat import AIChat
-from trio import to_thread
+from trio import TrioDeprecationWarning, to_thread
 
 from openai_service_worldofgeese import init_secrets
+
+# Filter out any deprecation warnings
+warnings.filterwarnings(action="ignore", category=TrioDeprecationWarning)
 
 app = FastAPI()
 dapr_app = DaprApp(app)
