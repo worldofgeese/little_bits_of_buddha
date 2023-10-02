@@ -60,6 +60,43 @@ spec:
         exclude: [__pycache__]
 
 ---
+kind: Test
+name: openai-service-test
+type: container
+description: Unit tests for the openai-service
+build: openai-service-image
+spec:
+  command: [python, "-m", "pytest"]
+
+---
+kind: Test
+name: openai-unit-pod
+type: helm-pod
+dependencies:
+  - deploy.openai-service
+timeout: 60
+spec:
+  chart:
+    path: my-chart
+  resource:
+    kind: Deployment
+  command: [python, "-m", "pytest"]
+  values:
+    image:
+      registry: ${providers.kubernetes.config.deploymentRegistry.hostname}
+      repository: ${providers.kubernetes.config.deploymentRegistry.namespace}/${actions.build.openai-service-image.outputs.localImageName}
+      tag: ${replace(actions.build.openai-service-image.outputs.localImageId, "openai-service-image:", "")}
+    podAnnotations:
+      dapr.io/enabled: "true"
+      dapr.io/app-id: "openai-service"
+      dapr.io/log-level: "debug"
+      dapr.io/disable-builtin-k8s-secret-store: "true"
+      dapr.io/app-port: "8080"
+    ports:
+      - name: http
+        containerPort: 8080
+
+---
 kind: Deploy
 type: helm
 name: telegram-bot-service
