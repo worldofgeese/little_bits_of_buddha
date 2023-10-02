@@ -15,9 +15,12 @@
     "init_hook": [
       "pdm install",
       ". .venv/bin/activate"
-    ]
-  },
-  "nixpkgs": {
-    "commit": "a5ca6a0f2ee8b2c8aa2cca64a06bd5652ad28a4b"
+    ],
+    "scripts": {
+      "install": "pdm install"
+    },
+    "nixpkgs": {
+      "commit": "a5ca6a0f2ee8b2c8aa2cca64a06bd5652ad28a4b"
+    }
   }
 }

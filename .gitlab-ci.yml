@@ -1,9 +1,6 @@
-image: gardendev/garden-azure:0.13.9-alpine-rootless
+image: gardendev/garden-azure:0.13.16-alpine-rootless
 
 run-garden:
   stage: build
-  id_tokens:
-    ARM_OIDC_TOKEN:
-      aud: https://gitlab.hansen.agency
   script:
     - garden workflow my-workflow --env=ci

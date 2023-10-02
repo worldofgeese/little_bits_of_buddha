@@ -6,5 +6,6 @@ dapr-ext-fastapi>=1.10.0
 fastapi>=0.97.0
 hypercorn>=0.14.3
 pytest>=7.2.1
+pytest-mock>=3.11.1
 requests>=2.31.0
 triogram @ git+https://github.com/worldofgeese/triogram@1b01daa

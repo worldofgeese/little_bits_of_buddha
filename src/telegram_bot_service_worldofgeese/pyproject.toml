@@ -4,9 +4,10 @@
 name = "telegram_bot_service_worldofgeese"
 version = "0.1.0"
 requires-python = ">=3.11"
-license = {text = "AGPL-3.0+"}
+license = { text = "AGPL-3.0+" }
 dependencies = [
     "pytest>=7.2.1",
+    "pytest-mock>=3.11.1",
     "dapr>=1.10.0",
     "hypercorn>=0.14.3",
     "fastapi>=0.97.0",
