@@ -27,11 +27,24 @@ classifiers = [
     "Topic :: Text Processing :: Linguistic",
 ]
 dependencies = [
+    "pytest>=7.4.0",
+    "pytest-mock>=3.11.1",
+    "hypercorn>=0.14.3",
+    "fastapi>=0.97.0",
+    "dapr>=1.10.0",
+    "dapr-ext-fastapi>=1.10.0",
+    "simpleaichat>=0.1.1",
+    "requests>=2.31.0",
+    "trio>=0.22.1",
 ]
 
+[project.optional-dependencies]
+test = ["pytest>=7.4.0", "pytest-mock>=3.11.1"]
+dev = ["pyright", "black>=23.7.0", "isort>=5.12.0"]
+
 [project.urls]
-"Homepage" = "https://gitlab.hansen.agency/worldofgeese/little_bits_of_buddha"
-"Bug Tracker" = "https://gitlab.hansen.agency/worldofgeese/little_bits_of_buddha/-/issues"
+"Homepage" = "https://paphos.hound-celsius.ts.net/kypris/little_bits_of_buddha"
+"Bug Tracker" = "https://paphos.hound-celsius.ts.net/kypris/little_bits_of_buddha/issues"
 
 # Add src to search paths for successful test linting
 [tool.pyright]

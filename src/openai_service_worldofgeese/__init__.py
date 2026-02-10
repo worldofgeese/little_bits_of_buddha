@@ -1,8 +1,6 @@
 import logging
 import os
 
-from dapr.clients import DaprClient
-
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
@@ -11,6 +9,8 @@ DAPR_STORE_NAME = "local-secret-store"
 
 
 def init_secrets():
+    from dapr.clients import DaprClient
+
     with DaprClient() as d:
         # Get the OpenAI API key from the Dapr state store
         openai_key = "openai-secret"
