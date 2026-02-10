@@ -1,24 +1,29 @@
 {
-  "name": "Devbox Remote Container",
-  "image": "docker.io/worldofgeese/buddhabot-devcontainer:latest",
-  "postStartCommand": "direnv allow; sudo chown --recursive ${id -u}:33333 /nix/var/nix; if [ \"$CODESPACES\" != \"true\" ]; then glab config set check_update false; glab auth login --token $GITLAB_TOKEN; fi",
+  "name": "Little Bits of Buddha",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "features": {
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.11"
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  "postCreateCommand": "curl -fsSL https://get.jetpack.io/devbox | bash -s -- -f && curl -fsSL https://raw.githubusercontent.com/dapr/cli/master/install/install.sh | bash && devbox install",
+  "postStartCommand": "dapr init --slim || true",
   "customizations": {
     "vscode": {
       "settings": {
-        "python.defaultInterpreterPath": "/code/.devbox/nix/profile/default/bin/python3"
+        "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python"
       },
       "extensions": [
         "jetpack-io.devbox",
         "ms-python.python",
-        "GitLab.gitlab-workflow",
         "ms-python.mypy-type-checker",
         "charliermarsh.ruff",
-        "almenon.arepl",
         "njpwerner.autodocstring",
-        "ms-python.debugpy",
-        "sourcegraph.cody-ai"
+        "ms-python.debugpy"
       ]
     }
   },
-  "remoteUser": "gitpod"
+  "forwardPorts": [6379, 8080, 8090],
+  "remoteUser": "vscode"
 }
