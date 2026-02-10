@@ -4,6 +4,7 @@
   "service": "devcontainer",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "postStartCommand": ". /home/gitpod/.nix-profile/etc/profile.d/nix.sh && dapr init --slim || true",
+  "updateRemoteUserUID": false,
   "customizations": {
     "vscode": {
       "settings": {
