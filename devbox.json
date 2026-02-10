@@ -3,7 +3,8 @@
     "python@3.11.4",
     "pdm@latest",
     "nodePackages.pyright@latest",
-    "dapr-cli@latest"
+    "dapr-cli@latest",
+    "devcontainer@latest"
   ],
   "env": {
     "PDM_CHECK_UPDATE": "0"
