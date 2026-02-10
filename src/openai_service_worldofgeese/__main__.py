@@ -64,9 +64,7 @@ async def messages_subscriber(event: CloudEvent):
     return {"success": True}
 
 
-def wait_for_dapr_ready(
-    dapr_port=3500, retries=20, delay=2, task_status=trio.TASK_STATUS_IGNORED
-):
+def wait_for_dapr_ready(dapr_port=3500, retries=20, delay=2):
     """Wait for the Dapr sidecar to be ready.
 
     Arguments:
@@ -80,7 +78,6 @@ def wait_for_dapr_ready(
             response = requests.get(dapr_url)
             if response.status_code == 204:
                 print("Dapr is ready.")
-                task_status.started()
                 return
         except Exception as e:
             print(f"Dapr is not ready yet: {e}")
@@ -91,16 +88,14 @@ def wait_for_dapr_ready(
 
 # Define an async wrapper for wait_for_dapr_ready that reports when it's done
 async def async_wait_for_dapr_ready(task_status=trio.TASK_STATUS_IGNORED):
-    result = await to_thread.run_sync(wait_for_dapr_ready)
-    task_status.started()  # signal that this task is ready
-    return result
+    await to_thread.run_sync(wait_for_dapr_ready)
+    task_status.started()
 
 
 # Define an async wrapper for init_secrets that reports when it's done
 async def async_init_secrets(task_status=trio.TASK_STATUS_IGNORED):
-    result = await to_thread.run_sync(init_secrets)
-    task_status.started()  # signal that this task is ready
-    return result
+    await to_thread.run_sync(init_secrets)
+    task_status.started()
 
 
 async def main():
