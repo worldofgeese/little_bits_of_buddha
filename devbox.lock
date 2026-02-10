@@ -1,17 +1,105 @@
 {
   "lockfile_version": "1",
   "packages": {
-    "azure-cli@latest": {
-      "last_modified": "2023-08-30T00:25:28Z",
-      "resolved": "github:NixOS/nixpkgs/a63a64b593dcf2fe05f7c5d666eb395950f36bc9#azure-cli",
+    "dapr-cli@latest": {
+      "last_modified": "2026-01-23T17:20:52Z",
+      "resolved": "github:NixOS/nixpkgs/a1bab9e494f5f4939442a57a58d0449a109593fe#dapr-cli",
       "source": "devbox-search",
-      "version": "2.51.0"
+      "version": "1.16.4",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/npygnd9bhmn4ay7427b0najb4d29vk84-dapr-cli-1.16.4",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/npygnd9bhmn4ay7427b0najb4d29vk84-dapr-cli-1.16.4"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/0671a0l3mplmkvrijxm0jlkcrghjc62i-dapr-cli-1.16.4",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/0671a0l3mplmkvrijxm0jlkcrghjc62i-dapr-cli-1.16.4"
+        },
+        "x86_64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/v0nd7nz4a40ilxbp2drnawnia7ijqrn9-dapr-cli-1.16.4",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/v0nd7nz4a40ilxbp2drnawnia7ijqrn9-dapr-cli-1.16.4"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/m6w5knlfr5hxs5xwxmnm29v0fjy90c3q-dapr-cli-1.16.4",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/m6w5knlfr5hxs5xwxmnm29v0fjy90c3q-dapr-cli-1.16.4"
+        }
+      }
     },
-    "glab@latest": {
-      "last_modified": "2023-09-04T16:24:30Z",
-      "resolved": "github:NixOS/nixpkgs/3c15feef7770eb5500a4b8792623e2d6f598c9c1#glab",
+    "devcontainer@latest": {
+      "last_modified": "2026-02-06T12:24:04Z",
+      "resolved": "github:NixOS/nixpkgs/ae67888ff7ef9dff69b3cf0cc0fbfbcd3a722abe#devcontainer",
       "source": "devbox-search",
-      "version": "1.31.0"
+      "version": "0.82.0",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/hxglr0h1wm82qhf196g7d1z6yywrlrv2-devcontainer-0.82.0",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/hxglr0h1wm82qhf196g7d1z6yywrlrv2-devcontainer-0.82.0"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/qh640dj8g46rlcp1j8qwcri1w6s21rbx-devcontainer-0.82.0",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/qh640dj8g46rlcp1j8qwcri1w6s21rbx-devcontainer-0.82.0"
+        },
+        "x86_64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/028xc21ca6kd8wf45i3zvx0ah68mfliw-devcontainer-0.82.0",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/028xc21ca6kd8wf45i3zvx0ah68mfliw-devcontainer-0.82.0"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/l6n8fmzal6yx82z0b6sqgmcxhk7q1l9n-devcontainer-0.82.0",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/l6n8fmzal6yx82z0b6sqgmcxhk7q1l9n-devcontainer-0.82.0"
+        }
+      }
+    },
+    "github:NixOS/nixpkgs/nixpkgs-unstable": {
+      "last_modified": "2026-02-08T07:51:33Z",
+      "resolved": "github:NixOS/nixpkgs/fef9403a3e4d31b0a23f0bacebbec52c248fbb51?lastModified=1770537093&narHash=sha256-pF1quXG5wsgtyuPOHcLfYg%2Fft%2FQMr8NnX0i6tW2187s%3D"
     },
     "nodePackages.pyright@latest": {
       "last_modified": "2023-08-30T00:25:28Z",
@@ -25,24 +113,12 @@
       "source": "devbox-search",
       "version": "2.8.2"
     },
-    "pulumi-bin@latest": {
-      "last_modified": "2023-08-30T00:25:28Z",
-      "resolved": "github:NixOS/nixpkgs/a63a64b593dcf2fe05f7c5d666eb395950f36bc9#pulumi-bin",
-      "source": "devbox-search",
-      "version": "3.78.1"
-    },
     "python@3.11.4": {
       "last_modified": "2023-08-30T00:25:28Z",
-      "plugin_version": "0.0.1",
+      "plugin_version": "0.0.4",
       "resolved": "github:NixOS/nixpkgs/a63a64b593dcf2fe05f7c5d666eb395950f36bc9#python311",
       "source": "devbox-search",
       "version": "3.11.4"
-    },
-    "scaleway-cli@latest": {
-      "last_modified": "2023-08-30T00:25:28Z",
-      "resolved": "github:NixOS/nixpkgs/a63a64b593dcf2fe05f7c5d666eb395950f36bc9#scaleway-cli",
-      "source": "devbox-search",
-      "version": "2.19.0"
     }
   }
 }

@@ -25,3 +25,4 @@ htmlcov
 
 # Secrets directory (actual secrets, not the example)
 secrets/secrets.json
+.venv/
