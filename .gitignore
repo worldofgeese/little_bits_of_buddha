@@ -27,6 +27,8 @@ kubeconfig.yaml
 # Whitelist the local secret store component
 !.dapr/components/local-secret-store.yaml
 
+!.dapr/components/redis-pubsub.yaml
+
 # Secrets directory (actual secrets, not the example)
 secrets/secrets.json
 
