@@ -1,11 +1,8 @@
 {
   "name": "Little Bits of Buddha",
-  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
-  "features": {
-    "ghcr.io/devcontainers/features/python:1": {
-      "version": "3.11"
-    }
-  },
+  "dockerComposeFile": "compose.yaml",
+  "service": "devcontainer",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "postCreateCommand": "curl -fsSL https://get.jetpack.io/devbox | bash -s -- -f && curl -fsSL https://raw.githubusercontent.com/dapr/cli/master/install/install.sh | bash && devbox install",
   "postStartCommand": "dapr init --slim || true",
   "customizations": {
@@ -22,8 +19,5 @@
         "ms-python.debugpy"
       ]
     }
-  },
-  "forwardPorts": [6379, 8080, 8090],
-  "remoteUser": "vscode",
-  "runArgs": ["--userns=keep-id"]
+  }
 }

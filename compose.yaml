@@ -1,13 +1,22 @@
 # Little Bits of Buddha - Local Stack
 #
-# Usage:
-#   podman-compose up -d redis    # Start Redis first
-#   dapr run -f dapr.yaml         # Start services with Dapr sidecars
+# Development:
+#   Open in VS Code → "Reopen in Container"
+#   Inside container: dapr run -f dapr.yaml
 #
-# Or for full containerized deployment:
-#   podman-compose up -d
+# Production:
+#   podman-compose --profile production up -d
 
 services:
+  # Development container
+  devcontainer:
+    image: mcr.microsoft.com/devcontainers/base:ubuntu
+    volumes:
+      - ..:/workspaces:cached
+    depends_on:
+      - redis
+    command: sleep infinity
+
   redis:
     image: redis:7-alpine
     container_name: lbob-redis
