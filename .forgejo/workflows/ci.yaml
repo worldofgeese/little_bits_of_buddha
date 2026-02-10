@@ -30,3 +30,15 @@ jobs:
           pip install -q -e ".[dev]"
           pyright src/
         shell: bash
+
+  devcontainer:
+    runs-on: -self-hosted
+    steps:
+      - name: Build devcontainer
+        run: |
+          cd "${PROJECT_DIR:-.}"
+          # Source nix profile for devbox
+          . ~/.nix-profile/etc/profile.d/nix.sh 2>/dev/null || true
+          # Build devcontainer image (validates Dockerfile.devcontainer + compose.yaml)
+          devbox run -- devcontainer build --workspace-folder . --docker-path podman
+        shell: bash
