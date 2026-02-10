@@ -10,33 +10,23 @@ jobs:
   test:
     runs-on: -self-hosted
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install Devbox
-        uses: jetify-com/devbox-install-action@v0.11.0
-        with:
-          enable-cache: true
-
-      - name: Install dependencies
-        run: devbox run install
-
-      - name: Run tests
-        run: devbox run -- pytest -v
+      - name: Setup and test
+        run: |
+          cd "${PROJECT_DIR:-.}"
+          python3 -m venv .venv --clear
+          . .venv/bin/activate
+          pip install -q -e ".[test]"
+          pytest -v
+        shell: bash
 
   lint:
     runs-on: -self-hosted
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install Devbox
-        uses: jetify-com/devbox-install-action@v0.11.0
-        with:
-          enable-cache: true
-
-      - name: Install dependencies
-        run: devbox run install
-
-      - name: Type check
-        run: devbox run -- pyright src/
+      - name: Setup and lint
+        run: |
+          cd "${PROJECT_DIR:-.}"
+          python3 -m venv .venv --clear
+          . .venv/bin/activate
+          pip install -q -e ".[dev]"
+          pyright src/
+        shell: bash
