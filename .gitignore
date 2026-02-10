@@ -10,11 +10,7 @@ __pypackages__
 build
 htmlcov
 .pdm.toml
-
-.terraform*
-terraform.tfstate*
-.nixpacks
-kubeconfig.yaml
+.pdm-python
 
 # Ignore all files inside .dapr/components
 .dapr/components/*
@@ -29,11 +25,3 @@ kubeconfig.yaml
 
 # Secrets directory (actual secrets, not the example)
 secrets/secrets.json
-
-# Ignore chart packages
-my-chart/charts/helmet-0.7.0.tgz
-
-# Ignore all YAML files in the terraform directory except Pulumi.yaml
-terraform/*.yaml 
-!terraform/Pulumi.yaml
-.pdm-python
