@@ -5,7 +5,8 @@ RUN addgroup --system nixbld \
   && adduser gitpod nixbld \
   && for i in $(seq 1 30); do useradd -ms /bin/bash nixbld$i && adduser nixbld$i nixbld; done \
   && mkdir -m 0755 /nix && chown gitpod /nix \
-  && mkdir -p /etc/nix && echo 'sandbox = false' > /etc/nix/nix.conf
+  && mkdir -p /etc/nix && echo 'sandbox = false' > /etc/nix/nix.conf \
+  && echo 'gitpod ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/gitpod
 
 USER gitpod
 ENV USER gitpod

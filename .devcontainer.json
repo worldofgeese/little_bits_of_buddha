@@ -3,8 +3,11 @@
   "dockerComposeFile": "compose.yaml",
   "service": "devcontainer",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "remoteUser": "gitpod",
+  "containerUser": "gitpod",
+  "updateRemoteUserUID": true,
+  "postCreateCommand": "sudo chown -R gitpod:gitpod /workspaces",
   "postStartCommand": ". /home/gitpod/.nix-profile/etc/profile.d/nix.sh && dapr init --slim || true",
-  "updateRemoteUserUID": false,
   "customizations": {
     "vscode": {
       "settings": {
