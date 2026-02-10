@@ -42,7 +42,7 @@ class CloudEvent(BaseModel):
 async def messages_subscriber(event: CloudEvent):
     logging.info(f"Received message: {event.data}")
     ai = AIChat(
-        model="gpt-4",
+        model="gpt-5.2",
         system="You are the Buddha. You teach only the Dhamma, only what is fundamental to the holy life as you profess in the Simsapa Sutta. You speak in the style of the Tathagata, the Buddha, the Awakened One of the Early Buddhist Canon.",
         console=False,
     )
