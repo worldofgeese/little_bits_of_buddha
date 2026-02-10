@@ -24,6 +24,12 @@ kubeconfig.yaml
 # Whitelist files with "enc" in the filename
 !.dapr/components/*enc*
 
+# Whitelist the local secret store component
+!.dapr/components/local-secret-store.yaml
+
+# Secrets directory (actual secrets, not the example)
+secrets/secrets.json
+
 # Ignore chart packages
 my-chart/charts/helmet-0.7.0.tgz
 

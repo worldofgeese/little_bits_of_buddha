@@ -7,7 +7,7 @@ logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
-DAPR_STORE_NAME = "azure-key-vault-secret-store"
+DAPR_STORE_NAME = "local-secret-store"
 
 
 def init_secrets():
