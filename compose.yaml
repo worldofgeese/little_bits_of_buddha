@@ -1,0 +1,61 @@
+# Little Bits of Buddha - Local Stack
+#
+# Usage:
+#   podman-compose up -d redis    # Start Redis first
+#   dapr run -f dapr.yaml         # Start services with Dapr sidecars
+#
+# Or for full containerized deployment:
+#   podman-compose up -d
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: lbob-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # For containerized deployment (alternative to dapr run -f):
+  telegram-bot-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: telegram-bot-service-production
+    container_name: lbob-telegram
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      - TRIOGRAM_TOKEN=${TELEGRAM_BOT_TOKEN}
+    ports:
+      - "8090:8090"
+    restart: unless-stopped
+    profiles:
+      - production
+
+  openai-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: openai-service-production
+    container_name: lbob-openai
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    profiles:
+      - production
+
+volumes:
+  redis_data:
