@@ -3,10 +3,7 @@
     "python@3.11.4",
     "pdm@latest",
     "nodePackages.pyright@latest",
-    "azure-cli@latest",
-    "pulumi-bin@latest",
-    "scaleway-cli@latest",
-    "glab@latest"
+    "dapr-cli@latest"
   ],
   "env": {
     "PDM_CHECK_UPDATE": "0"
