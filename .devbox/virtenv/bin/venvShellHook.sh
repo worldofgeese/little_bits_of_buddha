@@ -1,1 +1,0 @@
-/home/node/.openclaw/workspace/projects/little_bits_of_buddha/.devbox/virtenv/python/bin/venvShellHook.sh
