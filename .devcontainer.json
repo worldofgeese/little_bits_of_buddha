@@ -3,8 +3,7 @@
   "dockerComposeFile": "compose.yaml",
   "service": "devcontainer",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
-  "postCreateCommand": "curl -fsSL https://get.jetpack.io/devbox | bash -s -- -f && curl -fsSL https://raw.githubusercontent.com/dapr/cli/master/install/install.sh | bash && devbox install",
-  "postStartCommand": "dapr init --slim || true",
+  "postStartCommand": ". /home/gitpod/.nix-profile/etc/profile.d/nix.sh && dapr init --slim || true",
   "customizations": {
     "vscode": {
       "settings": {
@@ -19,5 +18,6 @@
         "ms-python.debugpy"
       ]
     }
-  }
+  },
+  "remoteUser": "gitpod"
 }

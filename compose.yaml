@@ -2,7 +2,7 @@
 #
 # Development:
 #   Open in VS Code → "Reopen in Container"
-#   Inside container: dapr run -f dapr.yaml
+#   Inside container: devbox shell, then dapr run -f dapr.yaml
 #
 # Production:
 #   podman-compose --profile production up -d
@@ -10,7 +10,9 @@
 services:
   # Development container
   devcontainer:
-    image: mcr.microsoft.com/devcontainers/base:ubuntu
+    build:
+      context: .
+      dockerfile: Dockerfile.devcontainer
     volumes:
       - ..:/workspaces:cached
     depends_on:

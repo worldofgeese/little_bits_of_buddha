@@ -1,0 +1,28 @@
+FROM gitpod/workspace-base:latest
+
+USER root
+RUN addgroup --system nixbld \
+  && adduser gitpod nixbld \
+  && for i in $(seq 1 30); do useradd -ms /bin/bash nixbld$i && adduser nixbld$i nixbld; done \
+  && mkdir -m 0755 /nix && chown gitpod /nix \
+  && mkdir -p /etc/nix && echo 'sandbox = false' > /etc/nix/nix.conf
+
+USER gitpod
+ENV USER gitpod
+WORKDIR /home/gitpod
+
+# Install Nix
+RUN touch .bash_profile \
+  && curl https://nixos.org/releases/nix/nix-2.17.0/install | sh
+
+RUN echo '. /home/gitpod/.nix-profile/etc/profile.d/nix.sh' >> /home/gitpod/.bashrc
+
+# Install devbox and direnv via Nix
+RUN . /home/gitpod/.nix-profile/etc/profile.d/nix.sh \
+  && nix-env -i git git-lfs rsync devbox direnv \
+  && direnv hook bash >> /home/gitpod/.bashrc
+
+# Install Dapr CLI
+RUN curl -fsSL https://raw.githubusercontent.com/dapr/cli/master/install/install.sh | bash
+
+WORKDIR /workspaces
