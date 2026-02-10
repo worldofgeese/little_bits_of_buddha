@@ -87,14 +87,14 @@ async def send_message_to_pubsub(bot):
                 print(f"chat_id: {chat_id}")
                 print(f"text: {text}")
                 dapr_client.publish_event(
-                    pubsub_name="scaleway-redis-cluster-pubsub",
+                    pubsub_name="redis-pubsub",
                     topic_name="messages",
                     data=json.dumps(message),
                     data_content_type="application/json",
                 )
 
 
-@dapr_app.subscribe(pubsub="scaleway-redis-cluster-pubsub", topic="responses")
+@dapr_app.subscribe(pubsub="redis-pubsub", topic="responses")
 async def send_response_to_user(event: CloudEvent):
     logging.info(f"Received message: {event.data}")
     chat_id = event.data.get("chat_id")

@@ -38,7 +38,7 @@ class CloudEvent(BaseModel):
     traceid: str
 
 
-@dapr_app.subscribe(pubsub="scaleway-redis-cluster-pubsub", topic="messages")
+@dapr_app.subscribe(pubsub="redis-pubsub", topic="messages")
 async def messages_subscriber(event: CloudEvent):
     logging.info(f"Received message: {event.data}")
     ai = AIChat(
@@ -55,7 +55,7 @@ async def messages_subscriber(event: CloudEvent):
     # Publish the message to the message bus
     with DaprClient() as dapr_client:
         dapr_client.publish_event(
-            pubsub_name="scaleway-redis-cluster-pubsub",
+            pubsub_name="redis-pubsub",
             topic_name="responses",
             data=json.dumps(response),
             data_content_type="application/json",
