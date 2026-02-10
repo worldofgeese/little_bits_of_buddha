@@ -10,11 +10,12 @@
 services:
   # Development container
   devcontainer:
+    image: localhost/little_bits_of_buddha-devcontainer
     build:
       context: .
       dockerfile: Dockerfile.devcontainer
     volumes:
-      - ..:/workspaces:cached
+      - .:/workspaces/little_bits_of_buddha:cached,Z
     depends_on:
       - redis
     command: sleep infinity
@@ -28,7 +29,7 @@ services:
       - redis_data:/data
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5

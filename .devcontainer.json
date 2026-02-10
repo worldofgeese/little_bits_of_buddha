@@ -6,7 +6,7 @@
   "remoteUser": "gitpod",
   "containerUser": "gitpod",
   "updateRemoteUserUID": true,
-  "postCreateCommand": "sudo chown -R gitpod:gitpod /workspaces",
+  "postCreateCommand": "",
   "postStartCommand": ". /home/gitpod/.nix-profile/etc/profile.d/nix.sh && dapr init --slim || true",
   "customizations": {
     "vscode": {
