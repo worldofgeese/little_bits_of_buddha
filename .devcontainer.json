@@ -2,11 +2,9 @@
   "name": "Little Bits of Buddha",
   "dockerComposeFile": "compose.yaml",
   "service": "devcontainer",
-  "workspaceFolder": "/workspaces/little_bits_of_buddha",
-  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/little_bits_of_buddha,type=bind",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "postStartCommand": ". /home/gitpod/.nix-profile/etc/profile.d/nix.sh && dapr init --slim || true",
   "updateRemoteUserUID": false,
-  "containerUser": "gitpod",
   "customizations": {
     "vscode": {
       "settings": {
@@ -21,6 +19,5 @@
         "ms-python.debugpy"
       ]
     }
-  },
-  "remoteUser": "gitpod"
+  }
 }

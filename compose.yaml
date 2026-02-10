@@ -13,10 +13,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.devcontainer
+    volumes:
+      - ..:/workspaces:cached
     depends_on:
       - redis
     command: sleep infinity
-    user: gitpod
 
   redis:
     image: redis:7-alpine
