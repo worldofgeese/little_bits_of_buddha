@@ -13,7 +13,7 @@ WORKDIR /home/gitpod
 
 # Install Nix
 RUN touch .bash_profile \
-  && curl https://nixos.org/releases/nix/nix-2.17.0/install | sh
+  && curl -L https://nixos.org/nix/install | sh
 
 RUN echo '. /home/gitpod/.nix-profile/etc/profile.d/nix.sh' >> /home/gitpod/.bashrc
 
