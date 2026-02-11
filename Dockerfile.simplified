@@ -1,0 +1,24 @@
+# Simplified Dockerfile for Buddha Bot Service
+# This replaces the multi-stage build with a simple single-stage build
+
+FROM python:3.11-slim
+
+# Set working directory
+WORKDIR /app
+
+# Install dependencies
+COPY pyproject.toml .
+RUN pip install --no-cache-dir -e ".[test]"
+
+# Copy source code
+COPY src/buddha_bot_service/ ./src/buddha_bot_service/
+
+# Expose port
+EXPOSE 8080
+
+# Set environment variables
+ENV HOST=0.0.0.0
+ENV PORT=8080
+
+# Run the service
+CMD ["python", "-m", "buddha_bot_service"]

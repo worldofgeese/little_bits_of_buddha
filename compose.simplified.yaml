@@ -1,0 +1,34 @@
+# Buddha Bot Service - Simplified Single-Service Architecture
+#
+# This replaces the complex Dapr microservices with a single FastAPI service
+# that directly integrates with Telegram and OpenAI APIs.
+#
+# Architecture:
+# ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+# │   Telegram API  │────►│   FastAPI App   │────►│    OpenAI API   │
+# │   (webhooks)    │     │   (this app)    │     │    (GPT model)  │
+# └─────────────────┘     └─────────────────┘     └─────────────────┘
+#
+# Usage:
+#   cp .env.example .env  # Configure your API keys
+#   podman-compose up -d  # Start the service
+
+services:
+  buddha-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile.simplified
+    container_name: lbob-simplified
+    ports:
+      - "8080:8080"
+    environment:
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - HOST=0.0.0.0
+      - PORT=8080
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
