@@ -5,6 +5,7 @@ import warnings
 
 import requests
 import trio
+from litellm import completion
 from trio import TrioDeprecationWarning, to_thread
 
 # Filter out any deprecation warnings
@@ -39,7 +40,6 @@ def _build_app():
     from dapr.ext.fastapi import DaprApp
     from fastapi import FastAPI
     from pydantic import BaseModel
-    from simpleaichat import AIChat
 
     from openai_service_worldofgeese import init_secrets
 
@@ -61,22 +61,32 @@ def _build_app():
     @dapr_app.subscribe(pubsub="redis-pubsub", topic="messages")
     async def messages_subscriber(event: CloudEvent):
         logging.info(f"Received message: {event.data}")
-        ai = AIChat(
-            model="gpt-5.2",
-            system="You are the Buddha. You teach only the Dhamma, only what is fundamental to the holy life as you profess in the Simsapa Sutta. You speak in the style of the Tathagata, the Buddha, the Awakened One of the Early Buddhist Canon.",
-            console=False,
-        )
         text = event.data.get("text")
-        response = {
+        
+        # Use LiteLLM to generate a response
+        response = completion(
+            model="gpt-5.2",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are the Buddha. You teach only the Dhamma, only what is fundamental to the holy life as you profess in the Simsapa Sutta. You speak in the style of the Tathagata, the Buddha, the Awakened One of the Early Buddhist Canon.",
+                },
+                {"role": "user", "content": text},
+            ],
+        )
+        
+        response_text = response["choices"][0]["message"]["content"]
+        
+        output_response = {
             "chat_id": event.data.get("chat_id"),
-            "text": ai(text),
+            "text": response_text,
         }
 
         with DaprClient() as dapr_client:
             dapr_client.publish_event(
                 pubsub_name="redis-pubsub",
                 topic_name="responses",
-                data=json.dumps(response),
+                data=json.dumps(output_response),
                 data_content_type="application/json",
             )
 

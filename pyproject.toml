@@ -33,7 +33,7 @@ dependencies = [
     "fastapi>=0.97.0",
     "dapr>=1.10.0",
     "dapr-ext-fastapi>=1.10.0",
-    "simpleaichat>=0.1.1",
+    "litellm>=1.0.0",
     "requests>=2.31.0",
     "trio>=0.22.1",
 ]
