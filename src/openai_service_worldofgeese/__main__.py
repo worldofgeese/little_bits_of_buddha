@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 import time
 import warnings
 
@@ -62,10 +63,13 @@ def _build_app():
     async def messages_subscriber(event: CloudEvent):
         logging.info(f"Received message: {event.data}")
         text = event.data.get("text")
-        
+
+        # Get the model from environment variable, default to gpt-4o-mini
+        model = os.environ.get("LITELLM_MODEL", "gpt-4o-mini")
+
         # Use LiteLLM to generate a response
         response = completion(
-            model="gpt-5.2",
+            model=model,
             messages=[
                 {
                     "role": "system",

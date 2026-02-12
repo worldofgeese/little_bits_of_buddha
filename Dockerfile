@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1
-
 # Comments are provided throughout this file to help you get started.
 # If you need more help, visit the Dockerfile reference guide at
 # https://docs.docker.com/engine/reference/builder/
@@ -17,12 +15,8 @@ ENV PYTHONUNBUFFERED=1
 USER root
 
 # Download dependencies as a separate step to take advantage of Docker's caching.
-# Leverage a cache mount to /root/.cache/pip to speed up subsequent builds.
-# Leverage a bind mount to requirements.txt to avoid having to copy them into
-# into this layer.
-RUN --mount=type=cache,mode=0777,target=/root/.cache/pip \
-    --mount=type=bind,source=src/telegram_bot_service_worldofgeese/requirements.txt,target=requirements.txt \
-    pip install -r requirements.txt --user
+COPY src/telegram_bot_service_worldofgeese/requirements.txt /tmp/requirements.txt
+RUN pip install -r /tmp/requirements.txt --user
 
 FROM cgr.dev/chainguard/python:latest as telegram-bot-service-production
 
@@ -31,7 +25,7 @@ USER root
 # Change ownership of process files to non-privileged user that the app will run under.
 # See https://developers.redhat.com/articles/2021/11/11/best-practices-building-images-pass-red-hat-container-certification#best_practice__3__set_group_ownership_and_file_permissions
 # Copy package dependencies into container.
-COPY --from=telegram-bot-service-builder --chown=65332:0 --chmod=775 /root/.local/lib/python3.11/site-packages /home/nonroot/.local/lib/python3.11/site-packages
+COPY --from=telegram-bot-service-builder --chown=65332:0 --chmod=775 /root/.local /home/nonroot/.local
 
 # Switch the working directory to the non-privileged user.
 WORKDIR /home/nonroot
@@ -63,12 +57,8 @@ ENV PYTHONUNBUFFERED=1
 USER root
 
 # Download dependencies as a separate step to take advantage of Docker's caching.
-# Leverage a cache mount to /root/.cache/pip to speed up subsequent builds.
-# Leverage a bind mount to requirements.txt to avoid having to copy them into
-# into this layer.
-RUN --mount=type=cache,mode=0777,target=/root/.cache/pip \
-    --mount=type=bind,source=src/openai_service_worldofgeese/requirements.txt,target=requirements.txt \
-    pip install -r requirements.txt --user
+COPY src/openai_service_worldofgeese/requirements.txt /tmp/requirements.txt
+RUN pip install -r /tmp/requirements.txt --user
 
 FROM cgr.dev/chainguard/python:latest as openai-service-production
 
@@ -77,7 +67,7 @@ USER root
 # Change ownership of process files to non-privileged user that the app will run under.
 # See https://developers.redhat.com/articles/2021/11/11/best-practices-building-images-pass-red-hat-container-certification#best_practice__3__set_group_ownership_and_file_permissions
 # Copy package dependencies into container.
-COPY --from=openai-service-builder --chown=65332:0 --chmod=775 /root/.local/lib/python3.11/site-packages /home/nonroot/.local/lib/python3.11/site-packages
+COPY --from=openai-service-builder --chown=65332:0 --chmod=775 /root/.local /home/nonroot/.local
 
 # Switch the working directory to the non-privileged user.
 WORKDIR /home/nonroot
