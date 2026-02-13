@@ -9,149 +9,64 @@ on:
 jobs:
   test:
     name: Run Tests
-    runs-on: -self-hosted
+    runs-on: ubuntu-latest
+    container:
+      image: docker.io/library/python:3.11-slim
+
     steps:
-      - name: Setup and test
+      - name: Install git
+        run: apt-get update && apt-get install -y --no-install-recommends git
+
+      - name: Checkout code
         run: |
-          cd "${PROJECT_DIR:-.}"
-          
-          # Check Python version compatibility
-          PYTHON_VERSION=$(python3 --version | awk '{print $2}' | cut -d. -f1-2)
-          if [ "$PYTHON_VERSION" != "3.11" ]; then
-            echo "⚠️  Warning: Project requires Python 3.11, found Python $PYTHON_VERSION"
-            echo "⚠️  Skipping tests due to version mismatch (dependencies may fail)"
-            echo "✓ Test job acknowledged (skipped due to Python version)"
-            exit 0
-          fi
-          
-          python3 -m venv .venv --clear
-          . .venv/bin/activate
-          
-          # Install dependencies from requirements.txt files
-          pip install -q -r src/openai_service_worldofgeese/requirements.txt
-          pip install -q -r src/telegram_bot_service_worldofgeese/requirements.txt
-          pip install -q pytest pytest-mock
-          
-          # Run tests
-          pytest tests/ -v
-        shell: bash
+          git clone --depth 1 ${{ github.server_url }}/${{ github.repository }}.git repo
+          cd repo && git checkout ${{ github.sha }} || true
+
+      - name: Run tests
+        run: |
+          cd repo
+          pip install -q -e ".[test]"
+          pytest -v
 
   lint:
     name: Lint
-    runs-on: -self-hosted
-    steps:
-      - name: Setup and lint
-        run: |
-          cd "${PROJECT_DIR:-.}"
-          python3 -m venv .venv --clear
-          . .venv/bin/activate
-          
-          # Install dependencies
-          pip install -q -r src/openai_service_worldofgeese/requirements.txt
-          pip install -q -r src/telegram_bot_service_worldofgeese/requirements.txt
-          pip install -q pyright 2>/dev/null || echo "pyright not available, skipping type check"
-          
-          # Run pyright if available
-          which pyright >/dev/null 2>&1 && pyright src/ || echo "Skipping pyright (not installed)"
-        shell: bash
+    runs-on: ubuntu-latest
+    container:
+      image: docker.io/library/python:3.11-slim
 
-  build:
-    name: Build Container Images
-    runs-on: -self-hosted
-    needs: test
     steps:
-      - name: Build telegram-bot-service
-        run: |
-          cd "${PROJECT_DIR:-.}"
-          DOCKER_BUILDKIT=0 DOCKER_API_VERSION=1.41 docker build \
-            -f Dockerfile \
-            --target telegram-bot-service-production \
-            -t lbob-telegram:test .
-        shell: bash
-        env:
-          DOCKER_BUILDKIT: "0"
-          DOCKER_API_VERSION: "1.41"
-      
-      - name: Build openai-service
-        run: |
-          cd "${PROJECT_DIR:-.}"
-          DOCKER_BUILDKIT=0 DOCKER_API_VERSION=1.41 docker build \
-            -f Dockerfile \
-            --target openai-service-production \
-            -t lbob-openai:test .
-        shell: bash
-        env:
-          DOCKER_BUILDKIT: "0"
-          DOCKER_API_VERSION: "1.41"
+      - name: Install git
+        run: apt-get update && apt-get install -y --no-install-recommends git
 
-  smoke:
-    name: Smoke Test
-    runs-on: -self-hosted
-    needs: build
-    steps:
-      - name: Test telegram-bot-service startup
+      - name: Checkout code
         run: |
-          cd "${PROJECT_DIR:-.}"
-          
-          # Start container
-          CONTAINER_ID=$(DOCKER_BUILDKIT=0 DOCKER_API_VERSION=1.41 docker run -d lbob-telegram:test)
-          
-          # Wait 3 seconds
-          sleep 3
-          
-          # Check if still running (exit code 0 = running, non-zero = crashed)
-          if docker ps | grep -q $CONTAINER_ID; then
-            echo "✓ Telegram bot service started successfully"
-            docker stop $CONTAINER_ID
-            docker rm $CONTAINER_ID
-            exit 0
-          else
-            echo "✗ Telegram bot service crashed"
-            docker logs $CONTAINER_ID
-            docker rm $CONTAINER_ID
-            exit 1
-          fi
-        shell: bash
-        env:
-          DOCKER_BUILDKIT: "0"
-          DOCKER_API_VERSION: "1.41"
-      
-      - name: Test openai-service startup
-        run: |
-          cd "${PROJECT_DIR:-.}"
-          
-          # Start container
-          CONTAINER_ID=$(DOCKER_BUILDKIT=0 DOCKER_API_VERSION=1.41 docker run -d lbob-openai:test)
-          
-          # Wait 3 seconds
-          sleep 3
-          
-          # Check if still running
-          if docker ps | grep -q $CONTAINER_ID; then
-            echo "✓ OpenAI service started successfully"
-            docker stop $CONTAINER_ID
-            docker rm $CONTAINER_ID
-            exit 0
-          else
-            echo "✗ OpenAI service crashed"
-            docker logs $CONTAINER_ID
-            docker rm $CONTAINER_ID
-            exit 1
-          fi
-        shell: bash
-        env:
-          DOCKER_BUILDKIT: "0"
-          DOCKER_API_VERSION: "1.41"
+          git clone --depth 1 ${{ github.server_url }}/${{ github.repository }}.git repo
+          cd repo && git checkout ${{ github.sha }} || true
 
-  devcontainer:
-    name: Build Devcontainer
-    runs-on: -self-hosted
-    steps:
-      - name: Build devcontainer
+      - name: Run pyright
         run: |
-          cd "${PROJECT_DIR:-.}"
-          # Source nix profile for devbox
-          . ~/.nix-profile/etc/profile.d/nix.sh 2>/dev/null || true
-          # Build devcontainer image (validates Dockerfile.devcontainer + compose.yaml)
-          devbox run -- devcontainer build --workspace-folder . --docker-path podman
-        shell: bash
+          cd repo
+          pip install -q -e ".[dev]"
+          pyright src/
+
+  build-container:
+    name: Build Container Image
+    runs-on: ubuntu-latest
+    needs: [test, lint]
+    container:
+      image: quay.io/podman/stable:latest
+      options: --privileged
+
+    steps:
+      - name: Install git
+        run: dnf install -y git
+
+      - name: Checkout code
+        run: |
+          git clone --depth 1 ${{ github.server_url }}/${{ github.repository }}.git repo
+          cd repo && git checkout ${{ github.sha }} || true
+
+      - name: Build container image
+        run: |
+          cd repo
+          podman build --storage-driver=vfs -t little-bits-of-buddha:${{ github.sha }} -f Containerfile .
