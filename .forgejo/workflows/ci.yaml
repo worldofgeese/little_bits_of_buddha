@@ -43,14 +43,12 @@ jobs:
           git clone --depth 1 ${{ github.server_url }}/${{ github.repository }}.git repo
           cd repo && git checkout ${{ github.sha }} || true
 
-      - name: Install system dependencies
-        run: apt-get update && apt-get install -y --no-install-recommends libatomic1
-
-      - name: Run pyright
+      - name: Run ruff and ty
         run: |
           cd repo
-          pip install -q -e ".[dev]"
-          pyright src/
+          pip install -q ruff ty
+          ruff check src/
+          ty check src/
 
   build-container:
     name: Build Container Image
