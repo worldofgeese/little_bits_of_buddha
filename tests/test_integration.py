@@ -26,6 +26,7 @@ class TestMessageFlow:
         except ImportError as e:
             pytest.fail(f"Failed to import OpenAI service: {e}")
     
+    @pytest.mark.integration
     def test_telegram_service_can_be_imported(self):
         """Test that the Telegram bot service can be imported successfully."""
         try:
@@ -51,6 +52,7 @@ class TestMessageFlow:
         # We verify this by checking that _build_app doesn't raise an error
         # and returns a proper FastAPI app
     
+    @pytest.mark.integration
     def test_check_message_function_exists(self):
         """Test that the check_message function exists and is callable."""
         try:
