@@ -43,6 +43,9 @@ jobs:
           git clone --depth 1 ${{ github.server_url }}/${{ github.repository }}.git repo
           cd repo && git checkout ${{ github.sha }} || true
 
+      - name: Install system dependencies
+        run: apt-get update && apt-get install -y --no-install-recommends libatomic1
+
       - name: Run pyright
         run: |
           cd repo
