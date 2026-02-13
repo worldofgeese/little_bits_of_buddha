@@ -10,7 +10,7 @@ jobs:
       - name: Setup and test
         run: |
           cd "${PROJECT_DIR:-.}"
-          python3 -m venv .venv --clear
+          python3 -m venv .venv
           . .venv/bin/activate
           pip install -q -e ".[test]"
           pytest -v
@@ -22,10 +22,62 @@ jobs:
       - name: Setup and lint
         run: |
           cd "${PROJECT_DIR:-.}"
-          python3 -m venv .venv --clear
+          python3 -m venv .venv
           . .venv/bin/activate
           pip install -q -e ".[dev]"
           pyright src/
+        shell: bash
+
+  build:
+    runs-on: -self-hosted
+    needs: [test, lint]
+    steps:
+      - name: Build container image
+        run: |
+          cd "${PROJECT_DIR:-.}"
+          podman build -t little-bits-of-buddha:local -f Containerfile .
+        env:
+          DOCKER_HOST: ${{ env.DOCKER_HOST }}
+          DOCKER_API_VERSION: ${{ env.DOCKER_API_VERSION }}
+        shell: bash
+
+  smoke-test:
+    runs-on: -self-hosted
+    needs: build
+    steps:
+      - name: Run smoke test
+        run: |
+          cd "${PROJECT_DIR:-.}"
+          # Start container in background
+          CONTAINER_ID=$(podman run -d -p 8080:8080 little-bits-of-buddha:local)
+          echo "Started container: $CONTAINER_ID"
+          
+          # Wait for container to be ready (max 30 seconds)
+          for i in {1..30}; do
+            if curl -sf http://localhost:8080 >/dev/null 2>&1; then
+              echo "Container is responding!"
+              break
+            fi
+            echo "Waiting for container... ($i/30)"
+            sleep 1
+          done
+          
+          # Verify response
+          RESPONSE=$(curl -s http://localhost:8080)
+          echo "Response: $RESPONSE"
+          
+          if [ -z "$RESPONSE" ]; then
+            echo "ERROR: No response from container"
+            podman logs $CONTAINER_ID || true
+            podman stop $CONTAINER_ID || true
+            podman rm $CONTAINER_ID || true
+            exit 1
+          fi
+          
+          # Stop and remove container
+          podman stop $CONTAINER_ID
+          podman rm $CONTAINER_ID
+          echo "Smoke test passed!"
         shell: bash
 
   devcontainer:
