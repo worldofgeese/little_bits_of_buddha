@@ -78,9 +78,9 @@ def _build_app():
                 {"role": "user", "content": text},
             ],
         )
-        
+
         response_text = response["choices"][0]["message"]["content"]
-        
+
         output_response = {
             "chat_id": event.data.get("chat_id"),
             "text": response_text,

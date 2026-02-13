@@ -4,7 +4,7 @@ import time
 
 import requests
 import trio
-import triogram
+import triogram  # type: ignore[unresolved-import]
 from dapr.clients import DaprClient
 from dapr.ext.fastapi import DaprApp
 from fastapi import FastAPI
