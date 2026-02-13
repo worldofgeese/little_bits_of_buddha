@@ -79,3 +79,6 @@ build-backend = "pdm.backend"
 pythonpath = [
   "src"
 ]
+markers = [
+  "integration: tests that depend on local files (Dapr components, secrets)",
+]
