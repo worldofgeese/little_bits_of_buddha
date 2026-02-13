@@ -15,7 +15,7 @@ repos:
         always_run: true
       - id: ty-check
         name: ty check
-        entry: ty check src/
+        entry: bash -c '. .venv/bin/activate 2>/dev/null; ty check src/'
         language: system
         pass_filenames: false
         always_run: true
