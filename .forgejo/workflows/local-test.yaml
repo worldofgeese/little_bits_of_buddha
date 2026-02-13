@@ -1,0 +1,39 @@
+name: Local Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: -self-hosted
+    steps:
+      - name: Setup and test
+        run: |
+          cd "${PROJECT_DIR:-.}"
+          python3 -m venv .venv --clear
+          . .venv/bin/activate
+          pip install -q -e ".[test]"
+          pytest -v
+        shell: bash
+
+  lint:
+    runs-on: -self-hosted
+    steps:
+      - name: Setup and lint
+        run: |
+          cd "${PROJECT_DIR:-.}"
+          python3 -m venv .venv --clear
+          . .venv/bin/activate
+          pip install -q -e ".[dev]"
+          pyright src/
+        shell: bash
+
+  devcontainer:
+    runs-on: -self-hosted
+    steps:
+      - name: Build devcontainer
+        run: |
+          cd "${PROJECT_DIR:-.}"
+          . ~/.nix-profile/etc/profile.d/nix.sh 2>/dev/null || true
+          devbox run -- devcontainer build --workspace-folder . --docker-path podman
+        shell: bash
