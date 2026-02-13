@@ -96,6 +96,7 @@ class TestMessageFlow:
 class TestDaprConfiguration:
     """Tests for Dapr configuration and components."""
     
+    @pytest.mark.integration
     def test_redis_pubsub_component_exists(self):
         """Test that the Redis pubsub component configuration exists."""
         import os
@@ -107,6 +108,7 @@ class TestDaprConfiguration:
             assert 'redis-pubsub' in content
             assert 'pubsub.redis' in content
     
+    @pytest.mark.integration
     def test_secret_store_component_exists(self):
         """Test that the secret store component configuration exists."""
         import os
@@ -118,6 +120,7 @@ class TestDaprConfiguration:
             assert 'local-secret-store' in content
             assert 'secretstores.local.file' in content
     
+    @pytest.mark.integration
     def test_secrets_file_exists(self):
         """Test that the secrets file exists with required keys."""
         import os
