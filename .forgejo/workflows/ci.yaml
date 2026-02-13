@@ -70,4 +70,4 @@ jobs:
       - name: Build container image
         run: |
           cd repo
-          podman build --storage-driver=vfs -t little-bits-of-buddha:${{ github.sha }} -f Containerfile .
+          podman build --storage-driver=vfs -t little-bits-of-buddha:${{ github.sha }} -f Dockerfile .
