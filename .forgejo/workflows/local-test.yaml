@@ -36,7 +36,7 @@ jobs:
       - name: Build container image
         run: |
           cd "${PROJECT_DIR:-.}"
-          podman build -t little-bits-of-buddha:local -f Containerfile .
+          podman build -t little-bits-of-buddha:local -f Dockerfile .
         env:
           DOCKER_HOST: ${{ env.DOCKER_HOST }}
           DOCKER_API_VERSION: ${{ env.DOCKER_API_VERSION }}
