@@ -46,7 +46,7 @@ jobs:
       - name: Run ruff and ty
         run: |
           cd repo
-          pip install -q ruff ty
+          pip install -q -e ".[dev]"
           ruff check src/
           ty check src/
 
