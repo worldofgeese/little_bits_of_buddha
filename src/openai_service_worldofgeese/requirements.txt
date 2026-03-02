@@ -5,6 +5,7 @@ dapr>=1.10.0
 dapr-ext-fastapi>=1.10.0
 fastapi>=0.97.0
 hypercorn>=0.14.3
+httpx>=0.24.0
 litellm>=1.0.0
 pytest>=7.2.1
 pytest-mock>=3.11.1
