@@ -70,7 +70,7 @@ httpx = ">=0.24.1"
 trio = ">=0.22.0"
 
 [tool.pdm.options]
-install = ["--installer", "uv"]
+# install = ["--installer", "uv"]  # Disabled: requires PDM >= 2.12
 
 [build-system]
 requires = ["pdm-backend"]

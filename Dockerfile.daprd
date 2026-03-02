@@ -1,0 +1,7 @@
+FROM daprio/daprd:1.14.4
+
+# Copy Dapr components into the image (immutable infrastructure)
+COPY .dapr/components/*.yaml /components/
+
+# Default command - app-id and ports will be overridden at runtime
+ENTRYPOINT ["./daprd"]

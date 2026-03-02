@@ -4,13 +4,66 @@ import os
 import time
 import warnings
 
+import httpx
 import requests
 import trio
-from litellm import completion
 from trio import TrioDeprecationWarning, to_thread
 
 # Filter out any deprecation warnings
 warnings.filterwarnings(action="ignore", category=TrioDeprecationWarning)
+
+
+def _call_lego_mps(model, api_base, api_key, messages):
+    """Call LEGO MPS via raw httpx, avoiding LiteLLM's incompatible headers.
+
+    LEGO MPS is a Bedrock proxy that expects Anthropic Messages API format
+    but fails when both Authorization and x-api-key headers are present.
+    LiteLLM always sends x-api-key for anthropic/ provider, so we use raw httpx.
+    """
+    url = f"{api_base}/v1/messages"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {api_key}",
+    }
+
+    # Convert messages to Anthropic format
+    system_msg = None
+    user_messages = []
+    for msg in messages:
+        if msg["role"] == "system":
+            system_msg = msg["content"]
+        else:
+            user_messages.append(msg)
+
+    payload = {
+        "model": model.replace("anthropic/", ""),  # Strip prefix for LEGO MPS
+        "max_tokens": 4096,
+        "messages": [
+            {"role": m["role"], "content": m["content"]} for m in user_messages
+        ],
+    }
+    if system_msg:
+        payload["system"] = system_msg
+
+    with httpx.Client(timeout=60) as client:
+        response = client.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+        data = response.json()
+
+    # Convert Anthropic response to LiteLLM-compatible format
+    return {
+        "choices": [
+            {
+                "message": {
+                    "content": data["content"][0]["text"],
+                    "role": "assistant",
+                },
+                "finish_reason": data.get("stop_reason", "stop"),
+            }
+        ],
+        "model": model,
+        "usage": data.get("usage", {}),
+    }
 
 
 def wait_for_dapr_ready(dapr_port=3500, retries=20, delay=2):
@@ -64,12 +117,20 @@ def _build_app():
         logging.info(f"Received message: {event.data}")
         text = event.data.get("text")
 
-        # Get the model from environment variable, default to gpt-4o-mini
-        model = os.environ.get("LITELLM_MODEL", "gpt-4o-mini")
+        # Get the model from environment variable, default to Anthropic via LEGO MPS
+        model = os.environ.get(
+            "LITELLM_MODEL", "anthropic/anthropic.claude-sonnet-4-5-20250929-v1:0"
+        )
+        api_base = os.environ.get(
+            "ANTHROPIC_BASE_URL", "https://models.assistant.legogroup.io/claude"
+        )
+        api_key = os.environ.get("ANTHROPIC_AUTH_TOKEN")
 
-        # Use LiteLLM to generate a response
-        response = completion(
+        # Use raw httpx for LEGO MPS (LiteLLM sends incompatible x-api-key header)
+        response = _call_lego_mps(
             model=model,
+            api_base=api_base,
+            api_key=api_key,
             messages=[
                 {
                     "role": "system",

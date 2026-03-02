@@ -10,89 +10,185 @@ A Telegram bot that speaks as the Buddha, responding to users with teachings in 
 
 ## Architecture
 
-This project demonstrates a microservices architecture using [Dapr](https://dapr.io/) for service-to-service communication.
+Two microservices communicate via [Dapr](https://dapr.io/) pub/sub over Redis.
 
 ```
-┌─────────────────┐     pub/sub      ┌─────────────────┐
-│  Telegram Bot   │ ───────────────► │  OpenAI Service │
-│    Service      │ ◄─────────────── │                 │
-└─────────────────┘    (Redis)       └─────────────────┘
-        │                                     │
-        ▼                                     ▼
-   Telegram API                         OpenAI GPT-5.2
+User ──► Telegram API
+              │
+              ▼
+   ┌─────────────────────┐         pub/sub          ┌──────────────────────┐
+   │ telegram-bot-service │ ──── "messages" ──────► │    openai-service     │
+   │   (triogram/trio)    │ ◄─── "responses" ────── │  (httpx → LEGO MPS)  │
+   └─────────────────────┘       (Redis)            └──────────────────────┘
+         ▲  │                                               │
+         │  └── Dapr sidecar (daprd)                        └── Dapr sidecar (daprd)
+         │
+         ▼
+   Telegram API
 ```
+
+**Pipeline flow:**
+1. User sends message → Telegram Bot API → triogram polls `getUpdates`
+2. `telegram-bot-service` publishes `{chat_id, text}` to Dapr topic `messages`
+3. `openai-service` receives message, calls LEGO MPS (Anthropic Claude via Bedrock proxy)
+4. `openai-service` publishes `{chat_id, text}` to Dapr topic `responses`
+5. `telegram-bot-service` receives response, sends via Telegram `sendMessage`
 
 **Services:**
-- `telegram-bot-service` — Receives messages from Telegram, publishes to Dapr pub/sub, sends responses back to users
-- `openai-service` — Subscribes to messages, generates responses using GPT-5.2 with a Buddha persona
+- `telegram-bot-service` — Trio-based Telegram bot (triogram), FastAPI for Dapr subscription callbacks
+- `openai-service` — FastAPI + Trio, calls LLM via raw httpx (not LiteLLM — see ADR below)
 
 **Infrastructure:**
-- [Dapr](https://dapr.io/) — Pub/sub messaging, secrets management
-- [Redis](https://redis.io/) — Message broker for Dapr pub/sub
-- [Podman](https://podman.io/) — Container runtime (rootless)
+- [Dapr](https://dapr.io/) 1.14.4 — Pub/sub messaging via Redis Streams
+- [Redis](https://redis.io/) 7 — Message broker
+- [Podman](https://podman.io/) — Rootless container runtime
 
-## Quick Start
+## Operator Guide (Production)
 
 ### Prerequisites
 
-- [Devbox](https://www.jetpack.io/devbox/) — `curl -fsSL https://get.jetpack.io/devbox | bash`
-- [Dapr CLI](https://docs.dapr.io/getting-started/install-dapr-cli/) — `curl -fsSL https://raw.githubusercontent.com/dapr/cli/master/install/install.sh | bash`
-- [Podman](https://podman.io/) or Docker
+- Podman (or Docker) with compose support
+- Images built locally (see Building below)
 
-### Setup
+### Environment Variables
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://paphos.hound-celsius.ts.net/kypris/little_bits_of_buddha.git
-   cd little_bits_of_buddha
-   ```
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `TELEGRAM_BOT_TOKEN` | Bot token from [@BotFather](https://t.me/BotFather) | `6014356103:AAF...` |
+| `ANTHROPIC_AUTH_TOKEN` | LEGO MPS Bearer token (full `uuid:secret` format) | `6a7f7bb5...:5ltY...` |
 
-2. **Enter the development environment:**
-   ```bash
-   devbox shell
-   ```
+Optional (defaults in compose):
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `ANTHROPIC_BASE_URL` | `https://models.assistant.legogroup.io/claude` | LLM API base URL |
+| `LITELLM_MODEL` | `anthropic/anthropic.claude-sonnet-4-5-20250929-v1:0` | Model identifier |
 
-3. **Configure secrets:**
-   ```bash
-   cp secrets/secrets.json.example secrets/secrets.json
-   # Edit secrets/secrets.json with your actual tokens:
-   # - telegram-secret: Your Telegram bot token from @BotFather
-   # - openai-secret: Your OpenAI API key
-   ```
+### Building
 
-4. **Start Redis:**
-   ```bash
-   podman-compose up -d redis
-   ```
+```bash
+cd little_bits_of_buddha
 
-5. **Initialize Dapr:**
-   ```bash
-   dapr init --slim
-   ```
+# Build all images (DOCKER_BUILDKIT=0 required for rootless Podman cgroup workaround)
+DOCKER_BUILDKIT=0 podman build --target telegram-bot-service-production -t lbob-telegram:latest .
+DOCKER_BUILDKIT=0 podman build --target openai-service-production -t lbob-openai:latest .
+DOCKER_BUILDKIT=0 podman build -f Dockerfile.daprd -t lbob-daprd:latest .
+```
 
-6. **Run the services:**
-   ```bash
-   dapr run -f dapr.yaml
-   ```
+### Deploying
 
-The bot should now be responding to messages!
+```bash
+# Set secrets
+export TELEGRAM_BOT_TOKEN="your-bot-token"
+export ANTHROPIC_AUTH_TOKEN="your-lego-mps-token"
+
+# Start the production stack
+podman-compose --profile production up -d
+
+# If containers show as "Created" but not "Up" (compose timeout on health checks):
+podman start lbob-telegram lbob-openai
+podman start lbob-telegram-dapr lbob-openai-dapr
+```
+
+### Verifying
+
+```bash
+# All 6 containers should show "Up":
+podman ps --filter "name=lbob" --format "table {{.Names}}\t{{.Status}}"
+
+# Expected:
+#   lbob-redis           Up
+#   lbob-loki            Up
+#   lbob-telegram        Up
+#   lbob-openai          Up
+#   lbob-telegram-dapr   Up
+#   lbob-openai-dapr     Up
+
+# Check Dapr subscriptions loaded:
+podman logs lbob-openai-dapr 2>&1 | grep "subscribed"
+# Should show: app is subscribed to the following topics: [[messages]]
+
+podman logs lbob-telegram-dapr 2>&1 | grep "subscribed"
+# Should show: app is subscribed to the following topics: [[responses]]
+
+# Check bot is polling Telegram:
+podman logs lbob-telegram 2>&1 | grep "getupdates"
+```
+
+### E2E Smoke Test
+
+Publish a test message directly to Dapr pubsub:
+
+```bash
+podman exec lbob-openai python -c "
+import json, urllib.request
+data = json.dumps({'chat_id': YOUR_TELEGRAM_CHAT_ID, 'text': 'What is suffering?'}).encode()
+req = urllib.request.Request(
+    'http://localhost:3500/v1.0/publish/redis-pubsub/messages',
+    data=data,
+    headers={'Content-Type': 'application/json'},
+    method='POST'
+)
+resp = urllib.request.urlopen(req)
+print(f'Status: {resp.status}')
+"
+```
+
+Expected: Status 204, then a response from @LittleBitsOfBuddhaBot in your Telegram chat within ~10 seconds.
+
+### Health Check
+
+```bash
+bash scripts/lbob-healthcheck.sh
+```
+
+Checks: bot token validity (Telegram `getMe`), Redis connectivity, Dapr sidecar health, LEGO MPS reachability.
+
+### Stopping
+
+```bash
+podman-compose --profile production down
+```
+
+### Logs
+
+```bash
+# Individual service logs:
+podman logs -f lbob-telegram
+podman logs -f lbob-openai
+
+# Loki (if promtail is running):
+# Logs are shipped to lbob-loki:3100
+```
 
 ## Development
+
+### Quick Start (devcontainer)
+
+```bash
+devbox shell
+dapr init --slim
+podman-compose up -d redis
+dapr run -f dapr.yaml
+```
 
 ### Project Structure
 
 ```
 .
 ├── src/
-│   ├── telegram_bot_service_worldofgeese/   # Telegram bot service
-│   └── openai_service_worldofgeese/         # OpenAI/LLM service
+│   ├── telegram_bot_service_worldofgeese/   # Telegram bot (triogram + FastAPI)
+│   └── openai_service_worldofgeese/         # LLM service (httpx + FastAPI)
 ├── .dapr/
-│   └── components/                          # Dapr component configs
-├── secrets/                                 # Local secrets (gitignored)
-├── docs/
-│   └── adr/                                 # Architecture Decision Records
-├── dapr.yaml                                # Dapr multi-app config
-└── compose.yaml                             # Podman Compose config
+│   └── components/
+│       └── redis-pubsub.yaml                # Dapr pubsub component
+├── monitoring/
+│   └── promtail-config.yaml                 # Log shipping config
+├── scripts/
+│   └── lbob-healthcheck.sh                  # Health check script
+├── Dockerfile                               # Multi-stage: telegram + openai services
+├── Dockerfile.daprd                         # Dapr sidecar with baked-in components
+├── compose.yaml                             # Production + dev profiles
+└── docs/adr/                                # Architecture Decision Records
 ```
 
 ### Running Tests
@@ -101,33 +197,20 @@ The bot should now be responding to messages!
 devbox run -- pytest -v
 ```
 
-### Type Checking
+### Known Issues
 
-```bash
-devbox run -- pyright src/
-```
+- **`ty check` reports 4 `call-non-callable` errors** on `trio.TASK_STATUS_IGNORED` — these are false positives from trio's type stubs. Pre-commit hook is bypassed with `--no-verify` for now.
+- **Compose `up -d` may exit 130** before all containers start (health check timeout). Workaround: `podman start` individual containers after compose creates them.
+- **Rootless Podman bind mounts** can appear empty inside containers. Dapr components are baked into the daprd image (`Dockerfile.daprd`) instead of bind-mounted.
+- **triogram pins `trio==0.22.*`** which conflicts with anyio 4.x. We install triogram with `--no-deps` and pin `trio>=0.25.0` separately.
 
-### Local CI Testing
+## Why Not LiteLLM?
 
-Test the CI workflow locally using Forgejo runner:
-
-```bash
-forgejo-runner exec --image -self-hosted
-```
-
-## Deployment
-
-For production deployment, use the full containerized stack:
-
-```bash
-podman-compose --profile production up -d
-```
-
-This starts Redis and both services as containers.
+LEGO MPS (the LEGO Group's Bedrock proxy for Anthropic models) requires `Authorization: Bearer <token>` as the sole auth header. LiteLLM's `anthropic/` provider always injects an `x-api-key` header alongside `Authorization`, causing LEGO MPS to return 500. No LiteLLM configuration (`api_key=None`, `drop_params`, `extra_headers`) suppresses this. We use raw `httpx` instead.
 
 ## Architecture Decision Records
 
-See [docs/adr/](docs/adr/) for architectural decisions:
+See [docs/adr/](docs/adr/) for historical decisions:
 
 - [ADR 0001](docs/adr/0001-fix-secret-initialization-race-condition.md) — Fix secret initialization race condition
 - [ADR 0002](docs/adr/0002-replace-azure-keyvault-with-local-secrets.md) — Replace Azure Key Vault with local secrets
@@ -139,12 +222,12 @@ See [docs/adr/](docs/adr/) for architectural decisions:
 
 ## Built With
 
-- Python 3.11
-- [FastAPI](https://fastapi.tiangolo.com/) — Async web framework
+- Python 3.11 (`python:3.11-slim`)
+- [FastAPI](https://fastapi.tiangolo.com/) + [Hypercorn](https://github.com/pgjones/hypercorn) (Trio worker)
 - [Triogram](https://github.com/worldofgeese/triogram) — Trio-based Telegram bot library
-- [Dapr](https://dapr.io/) — Distributed application runtime
-- [PDM](https://pdm.fming.dev/) — Python package manager
-- [Devbox](https://www.jetpack.io/devbox/) — Reproducible development environments
+- [httpx](https://www.python-httpx.org/) — HTTP client for LLM calls
+- [Dapr](https://dapr.io/) 1.14.4 — Distributed application runtime
+- [Redis](https://redis.io/) 7 — Pub/sub message broker
 
 ## License
 
