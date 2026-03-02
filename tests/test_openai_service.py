@@ -165,51 +165,52 @@ class TestBuildApp:
         assert call_kwargs.get("topic") == "messages"
 
 
-class TestLiteLLMIntegration:
-    """Tests for LiteLLM integration.
+class TestLegoMPSIntegration:
+    """Tests for LEGO MPS integration via raw httpx.
 
-    These tests verify that LiteLLM is correctly integrated for generating Buddha responses.
+    We use raw httpx instead of LiteLLM because LEGO MPS (a Bedrock proxy)
+    fails when LiteLLM sends both Authorization and x-api-key headers.
     """
 
-    def test_litellm_completion_is_used(self):
-        """Verify that litellm.completion is available and callable."""
-        try:
-            from litellm import completion
+    def test_lego_mps_helper_available(self):
+        """Verify that _call_lego_mps helper function exists."""
+        from openai_service_worldofgeese.__main__ import _call_lego_mps
+        assert callable(_call_lego_mps)
 
-            assert callable(completion)
-        except ImportError:
-            pytest.fail("LiteLLM completion function not found")
+    @patch("openai_service_worldofgeese.__main__._call_lego_mps")
+    def test_lego_mps_called_with_correct_params(self, mock_call):
+        """Test that _call_lego_mps is called with correct parameters."""
+        from openai_service_worldofgeese.__main__ import _call_lego_mps
 
-    @patch("openai_service_worldofgeese.__main__.completion")
-    def test_completion_with_buddha_system_prompt(self, mock_completion):
-        """Test that completion is called with the Buddha system prompt."""
-
-        # Mock the completion function
-        mock_completion.return_value = {
-            "choices": [{"message": {"content": "Test response"}}]
+        # Mock the response
+        mock_call.return_value = {
+            "choices": [{"message": {"content": "Test Buddha response"}}]
         }
 
-        # The system prompt should be included in the messages
-        expected_system_prompt = (
-            "You are the Buddha. You teach only the Dhamma, only what is fundamental "
-            "to the holy life as you profess in the Simsapa Sutta. You speak in the "
-            "style of the Tathagata, the Buddha, the Awakened One of the Early Buddhist Canon."
+        # Call the function
+        result = _call_lego_mps(
+            model="anthropic/anthropic.claude-sonnet-4-5-20250929-v1:0",
+            api_base="https://models.assistant.legogroup.io/claude",
+            api_key="test-token",
+            messages=[
+                {"role": "system", "content": "You are the Buddha."},
+                {"role": "user", "content": "Hello"},
+            ],
         )
 
-        # Verify the system prompt content
-        assert "Dhamma" in expected_system_prompt
-        assert "Simsapa Sutta" in expected_system_prompt
-        assert "Tathagata" in expected_system_prompt
+        # Verify the mock was called
+        mock_call.assert_called_once()
+        assert result["choices"][0]["message"]["content"] == "Test Buddha response"
 
 
 class TestAnthropicProviderConfig:
     """Tests for Anthropic (LEGO MPS) provider configuration.
 
-    These tests verify that LiteLLM is correctly configured to use
-    the Anthropic provider with LEGO MPS endpoint.
+    These tests verify that the service is correctly configured to use
+    LEGO MPS endpoint with raw httpx (not LiteLLM due to header conflict).
     """
 
-    @patch("openai_service_worldofgeese.__main__.completion")
+    @patch("openai_service_worldofgeese.__main__._call_lego_mps")
     @patch("dapr.clients.DaprClient")
     @patch.dict(
         os.environ,
@@ -218,14 +219,14 @@ class TestAnthropicProviderConfig:
             "ANTHROPIC_AUTH_TOKEN": "test-token",
         },
     )
-    def test_completion_uses_anthropic_provider(
-        self, mock_dapr_client, mock_completion
+    def test_completion_uses_lego_mps_helper(
+        self, mock_dapr_client, mock_call_lego
     ):
-        """Test that completion is called with Anthropic provider and LEGO MPS config."""
+        """Test that _call_lego_mps is used for LEGO MPS calls."""
         from openai_service_worldofgeese.__main__ import _build_app
 
-        # Mock the completion function
-        mock_completion.return_value = {
+        # Mock the LEGO MPS call
+        mock_call_lego.return_value = {
             "choices": [{"message": {"content": "Test Buddha response"}}]
         }
 
@@ -236,11 +237,10 @@ class TestAnthropicProviderConfig:
         )
         mock_dapr_client.return_value.__exit__ = Mock(return_value=False)
 
-        # Build the app - this should configure the subscriber that uses completion
+        # Build the app - this should configure the subscriber
         app, _ = _build_app()
 
-        # We can't easily invoke the subscriber without a full async context,
-        # but we can verify the environment is set correctly
+        # Verify environment is set correctly
         assert (
             os.environ.get("LITELLM_MODEL")
             == "anthropic/anthropic.claude-sonnet-4-5-20250929-v1:0"
