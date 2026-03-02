@@ -64,12 +64,20 @@ def _build_app():
         logging.info(f"Received message: {event.data}")
         text = event.data.get("text")
 
-        # Get the model from environment variable, default to gpt-4o-mini
-        model = os.environ.get("LITELLM_MODEL", "gpt-4o-mini")
+        # Get the model from environment variable, default to Anthropic via LEGO MPS
+        model = os.environ.get(
+            "LITELLM_MODEL", "anthropic/anthropic.claude-sonnet-4-5-20250929-v1:0"
+        )
+        api_base = os.environ.get(
+            "ANTHROPIC_BASE_URL", "https://ANTHROPIC_PROXY_HOST/claude"
+        )
+        api_key = os.environ.get("ANTHROPIC_AUTH_TOKEN")
 
-        # Use LiteLLM to generate a response
+        # Use LiteLLM to generate a response via Anthropic (LEGO MPS)
         response = completion(
             model=model,
+            api_base=api_base,
+            api_key=api_key,
             messages=[
                 {
                     "role": "system",
