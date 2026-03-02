@@ -1,0 +1,29 @@
+name: E2E Smoke Test
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    name: End-to-End Smoke Test
+    runs-on: self-hosted
+    # Requires a self-hosted runner with Podman/Docker and compose
+    # Secrets: TELEGRAM_BOT_TOKEN, ANTHROPIC_AUTH_TOKEN
+
+    steps:
+      - name: Checkout code
+        run: |
+          git clone --depth 1 ${{ github.server_url }}/${{ github.repository }}.git repo
+          cd repo && git checkout ${{ github.sha }} || true
+
+      - name: Run E2E smoke test
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          ANTHROPIC_AUTH_TOKEN: ${{ secrets.ANTHROPIC_AUTH_TOKEN }}
+          DOCKER_BUILDKIT: "0"
+        run: |
+          cd repo
+          bash scripts/lbob-e2e-test.sh
+        timeout-minutes: 10
