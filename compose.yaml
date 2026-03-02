@@ -146,8 +146,9 @@ services:
   promtail:
     image: docker.io/grafana/promtail:3.3.2
     container_name: lbob-promtail
+    command: -config.file=/etc/promtail/config.yml
     volumes:
-      - ./monitoring/promtail-config.yaml:/etc/promtail/config.yml:ro
+      - ./monitoring/promtail-config.yaml:/etc/promtail/config.yml:ro,Z
       - /run/podman/podman.sock:/var/run/docker.sock:ro
     depends_on:
       - loki
