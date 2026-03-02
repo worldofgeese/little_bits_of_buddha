@@ -128,16 +128,19 @@ class TestDaprConfiguration:
         import os
         secrets_path = '/home/node/.openclaw/workspace/projects/little_bits_of_buddha/secrets/secrets.json'
         assert os.path.exists(secrets_path), f"Secrets file not found at {secrets_path}"
-        
+
         import json
         with open(secrets_path, 'r') as f:
             secrets = json.load(f)
             assert 'telegram-secret' in secrets, "Telegram secret not found"
-            assert 'openai-secret' in secrets, "OpenAI secret not found"
-            
+            assert 'anthropic-secret' in secrets, "Anthropic secret not found"
+
             # Verify secrets are not placeholder values
             assert secrets['telegram-secret'] != 'YOUR_TELEGRAM_BOT_TOKEN_HERE'
-            assert secrets['openai-secret'] != 'YOUR_OPENAI_API_KEY_HERE'
+            assert secrets['anthropic-secret'] != 'YOUR_ANTHROPIC_AUTH_TOKEN_HERE'
+
+            # Verify anthropic secret has colon-separated format (LEGO MPS)
+            assert ':' in secrets['anthropic-secret'], "LEGO MPS auth token should be colon-separated"
 
 
 class TestLiteLLMIntegration:
