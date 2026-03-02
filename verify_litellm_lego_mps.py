@@ -6,6 +6,7 @@ via LiteLLM with the Anthropic provider.
 """
 
 import os
+
 from litellm import completion
 
 
@@ -18,7 +19,9 @@ def test_lego_mps_connection():
 
     # Verify the token has the expected format (colon-separated)
     if ":" not in auth_token:
-        raise ValueError("ANTHROPIC_AUTH_TOKEN should be colon-separated (LEGO MPS format)")
+        raise ValueError(
+            "ANTHROPIC_AUTH_TOKEN should be colon-separated (LEGO MPS format)"
+        )
 
     print("✓ ANTHROPIC_AUTH_TOKEN is set and has correct format")
 
@@ -27,10 +30,10 @@ def test_lego_mps_connection():
     api_base = "https://ANTHROPIC_PROXY_HOST/claude"
     test_message = "Hello, please respond with a single word: 'Success'"
 
-    print(f"\nTesting LiteLLM configuration:")
+    print("\nTesting LiteLLM configuration:")
     print(f"  Model: {model}")
     print(f"  API Base: {api_base}")
-    print(f"  Note: LiteLLM will append /v1/messages to the base URL")
+    print("  Note: LiteLLM will append /v1/messages to the base URL")
 
     try:
         # Make the completion call
@@ -44,13 +47,13 @@ def test_lego_mps_connection():
 
         # Extract and display the response
         response_text = response["choices"][0]["message"]["content"]
-        print(f"\n✓ Successfully received response from LEGO MPS!")
+        print("\n✓ Successfully received response from LEGO MPS!")
         print(f"Response: {response_text}")
 
         return True
 
     except Exception as e:
-        print(f"\n✗ Failed to call LEGO MPS via LiteLLM")
+        print("\n✗ Failed to call LEGO MPS via LiteLLM")
         print(f"Error: {e}")
         raise
 
@@ -61,7 +64,7 @@ if __name__ == "__main__":
         print("\n" + "=" * 60)
         print("SUCCESS: LiteLLM -> LEGO MPS integration is working!")
         print("=" * 60)
-    except Exception as e:
+    except Exception:
         print("\n" + "=" * 60)
         print("FAILURE: LiteLLM -> LEGO MPS integration test failed")
         print("=" * 60)
