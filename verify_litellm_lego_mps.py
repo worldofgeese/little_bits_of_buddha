@@ -25,23 +25,26 @@ def test_lego_mps_connection():
 
     print("✓ ANTHROPIC_AUTH_TOKEN is set and has correct format")
 
-    # Test configuration
-    model = "anthropic/anthropic.claude-sonnet-4-5-20250929-v1:0"
+    # Test configuration - use bedrock/converse_like for LEGO MPS proxy
+    # LEGO MPS is a Bedrock proxy, not native Anthropic API
+    model = "bedrock/converse_like/anthropic.claude-sonnet-4-5-20250929-v1:0"
     api_base = "https://ANTHROPIC_PROXY_HOST/claude"
     test_message = "Hello, please respond with a single word: 'Success'"
 
     print("\nTesting LiteLLM configuration:")
     print(f"  Model: {model}")
     print(f"  API Base: {api_base}")
-    print("  Note: LiteLLM will append /v1/messages to the base URL")
+    print("  Using bedrock/converse_like provider for LEGO MPS proxy")
 
     try:
         # Make the completion call
+        # LEGO MPS requires Authorization: Bearer header
         print("\nSending test message to LEGO MPS...")
         response = completion(
             model=model,
             api_base=api_base,
-            api_key=auth_token,
+            api_key=auth_token,  # bedrock provider passes this differently
+            extra_headers={"Authorization": f"Bearer {auth_token}"},
             messages=[{"role": "user", "content": test_message}],
         )
 
