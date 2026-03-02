@@ -9,6 +9,11 @@ DAPR_STORE_NAME = "local-secret-store"
 
 
 def init_secrets():
+    # Prefer environment variable (set by compose/systemd) over Dapr secret store
+    if os.environ.get("ANTHROPIC_AUTH_TOKEN"):
+        logging.info("Using ANTHROPIC_AUTH_TOKEN from environment")
+        return
+
     from dapr.clients import DaprClient
 
     with DaprClient() as d:

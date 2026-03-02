@@ -6,6 +6,10 @@
 #
 # Production:
 #   podman-compose --profile production up -d
+#
+# Required env vars for production:
+#   TELEGRAM_BOT_TOKEN   - Telegram bot token
+#   ANTHROPIC_AUTH_TOKEN  - LEGO MPS Bearer token
 
 services:
   # Development container
@@ -34,7 +38,30 @@ services:
       timeout: 5s
       retries: 5
 
-  # For containerized deployment (alternative to dapr run -f):
+  # --- Production services (podman-compose --profile production up -d) ---
+
+  # Dapr sidecar for telegram-bot-service
+  telegram-bot-dapr:
+    image: docker.io/daprio/daprd:1.14.4
+    container_name: lbob-telegram-dapr
+    command:
+      - ./daprd
+      - --app-id=telegram-bot-service
+      - --app-port=8090
+      - --dapr-http-port=3510
+      - --resources-path=/components
+      - --log-level=info
+    volumes:
+      - ./.dapr/components:/components:ro
+      - ./secrets:/secrets:ro
+    network_mode: "service:telegram-bot-service"
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    profiles:
+      - production
+
   telegram-bot-service:
     build:
       context: .
@@ -46,8 +73,31 @@ services:
         condition: service_healthy
     environment:
       - TRIOGRAM_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - DAPR_HTTP_PORT=3510
     ports:
       - "8090:8090"
+    restart: unless-stopped
+    profiles:
+      - production
+
+  # Dapr sidecar for openai-service
+  openai-dapr:
+    image: docker.io/daprio/daprd:1.14.4
+    container_name: lbob-openai-dapr
+    command:
+      - ./daprd
+      - --app-id=openai-service
+      - --app-port=8080
+      - --dapr-http-port=3500
+      - --resources-path=/components
+      - --log-level=info
+    volumes:
+      - ./.dapr/components:/components:ro
+      - ./secrets:/secrets:ro
+    network_mode: "service:openai-service"
+    depends_on:
+      redis:
+        condition: service_healthy
     restart: unless-stopped
     profiles:
       - production
@@ -65,11 +115,38 @@ services:
       - ANTHROPIC_AUTH_TOKEN=${ANTHROPIC_AUTH_TOKEN}
       - ANTHROPIC_BASE_URL=https://ANTHROPIC_PROXY_HOST/claude
       - LITELLM_MODEL=anthropic/anthropic.claude-sonnet-4-5-20250929-v1:0
+      - DAPR_HTTP_PORT=3500
     ports:
       - "8080:8080"
     restart: unless-stopped
     profiles:
       - production
 
+  # --- Log shipping ---
+  loki:
+    image: docker.io/grafana/loki:3.3.2
+    container_name: lbob-loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - loki_data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    restart: unless-stopped
+    profiles:
+      - production
+
+  promtail:
+    image: docker.io/grafana/promtail:3.3.2
+    container_name: lbob-promtail
+    volumes:
+      - ./monitoring/promtail-config.yaml:/etc/promtail/config.yml:ro
+      - /run/podman/podman.sock:/var/run/docker.sock:ro
+    depends_on:
+      - loki
+    restart: unless-stopped
+    profiles:
+      - production
+
 volumes:
   redis_data:
+  loki_data:
