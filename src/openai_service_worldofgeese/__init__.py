@@ -12,8 +12,8 @@ def init_secrets():
     from dapr.clients import DaprClient
 
     with DaprClient() as d:
-        # Get the OpenAI API key from the Dapr state store
-        openai_key = "openai-secret"
-        secret = d.get_secret(DAPR_STORE_NAME, key=openai_key)
+        # Get the Anthropic API key from the Dapr state store
+        anthropic_key = "anthropic-secret"
+        secret = d.get_secret(DAPR_STORE_NAME, key=anthropic_key)
         logging.info("Fetched Secret: %s", secret.secret)
-        os.environ["OPENAI_API_KEY"] = secret.secret["openai-secret"]
+        os.environ["ANTHROPIC_AUTH_TOKEN"] = secret.secret["anthropic-secret"]
