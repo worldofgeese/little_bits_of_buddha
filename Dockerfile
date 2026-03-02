@@ -1,88 +1,44 @@
-# Comments are provided throughout this file to help you get started.
-# If you need more help, visit the Dockerfile reference guide at
-# https://docs.docker.com/engine/reference/builder/
+FROM python:3.11-slim as base-builder
 
-ARG PYTHON_VERSION=3.11.3
-FROM cgr.dev/chainguard/python:latest-dev as telegram-bot-service-builder
-
-# Prevents Python from writing pyc files.
 ENV PYTHONDONTWRITEBYTECODE=1
-
-# Keeps Python from buffering stdout and stderr to avoid situations where
-# the application crashes without emitting any logs due to buffering.
 ENV PYTHONUNBUFFERED=1
 
-USER root
+# Install git for pip installing from git repos (triogram)
+RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
 
-# Download dependencies as a separate step to take advantage of Docker's caching.
+# --- telegram-bot-service ---
+FROM base-builder as telegram-bot-service-builder
 COPY src/telegram_bot_service_worldofgeese/requirements.txt /tmp/requirements.txt
-RUN pip install -r /tmp/requirements.txt --user
+# Install triogram without its pinned deps (trio==0.22.* conflicts with anyio 4.x)
+# Then install requirements which pull trio>=0.25.0 to fix the anyio/trio mismatch
+RUN pip install --no-cache-dir --no-deps 'triogram @ git+https://github.com/worldofgeese/triogram@1b01daa' && \
+    pip install --no-cache-dir -r /tmp/requirements.txt
 
-FROM cgr.dev/chainguard/python:latest as telegram-bot-service-production
-
-USER root
-
-# Change ownership of process files to non-privileged user that the app will run under.
-# See https://developers.redhat.com/articles/2021/11/11/best-practices-building-images-pass-red-hat-container-certification#best_practice__3__set_group_ownership_and_file_permissions
-# Copy package dependencies into container.
-COPY --from=telegram-bot-service-builder --chown=65332:0 --chmod=775 /root/.local /home/nonroot/.local
-
-# Switch the working directory to the non-privileged user.
-WORKDIR /home/nonroot
-
-# Switch to the non-privileged user to run the application.
+FROM python:3.11-slim as telegram-bot-service-production
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+COPY --from=telegram-bot-service-builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=telegram-bot-service-builder /usr/local/bin /usr/local/bin
+WORKDIR /app
+RUN useradd --create-home nonroot
 USER nonroot
-
-# Copy tests separately to allow testing inside remote cluster.
-COPY --chown=65332:0 --chmod=775 tests tests
-
-# Copy the source code into the container.
-COPY --chown=65332:0 --chmod=775 src/telegram_bot_service_worldofgeese telegram_bot_service_worldofgeese/
-
-# Expose the port that the application listens on.
+COPY --chown=nonroot:nonroot src/telegram_bot_service_worldofgeese telegram_bot_service_worldofgeese/
 EXPOSE 8090
-
-# Run the application.
 ENTRYPOINT ["python", "-m", "telegram_bot_service_worldofgeese"]
 
-FROM cgr.dev/chainguard/python:latest-dev as openai-service-builder
-
-# Prevents Python from writing pyc files.
-ENV PYTHONDONTWRITEBYTECODE=1
-
-# Keeps Python from buffering stdout and stderr to avoid situations where
-# the application crashes without emitting any logs due to buffering.
-ENV PYTHONUNBUFFERED=1
-
-USER root
-
-# Download dependencies as a separate step to take advantage of Docker's caching.
+# --- openai-service ---
+FROM base-builder as openai-service-builder
 COPY src/openai_service_worldofgeese/requirements.txt /tmp/requirements.txt
-RUN pip install -r /tmp/requirements.txt --user
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
-FROM cgr.dev/chainguard/python:latest as openai-service-production
-
-USER root
-
-# Change ownership of process files to non-privileged user that the app will run under.
-# See https://developers.redhat.com/articles/2021/11/11/best-practices-building-images-pass-red-hat-container-certification#best_practice__3__set_group_ownership_and_file_permissions
-# Copy package dependencies into container.
-COPY --from=openai-service-builder --chown=65332:0 --chmod=775 /root/.local /home/nonroot/.local
-
-# Switch the working directory to the non-privileged user.
-WORKDIR /home/nonroot
-
-# Switch to the non-privileged user to run the application.
+FROM python:3.11-slim as openai-service-production
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+COPY --from=openai-service-builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=openai-service-builder /usr/local/bin /usr/local/bin
+WORKDIR /app
+RUN useradd --create-home nonroot
 USER nonroot
-
-# Copy tests separately to allow testing inside remote cluster.
-COPY --chown=65332:0 --chmod=775 tests tests
-
-# Copy the source code into the container.
-COPY --chown=65332:0 --chmod=775 src/openai_service_worldofgeese openai_service_worldofgeese/
-
-# Expose the port that the application listens on.
+COPY --chown=nonroot:nonroot src/openai_service_worldofgeese openai_service_worldofgeese/
 EXPOSE 8080
-
-# Run the application.
 ENTRYPOINT ["python", "-m", "openai_service_worldofgeese"]

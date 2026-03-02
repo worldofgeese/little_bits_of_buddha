@@ -23,6 +23,8 @@ services:
     depends_on:
       - redis
     command: sleep infinity
+    profiles:
+      - dev
 
   redis:
     image: redis:7-alpine
@@ -42,20 +44,23 @@ services:
 
   # Dapr sidecar for telegram-bot-service
   telegram-bot-dapr:
-    image: docker.io/daprio/daprd:1.14.4
+    image: lbob-daprd:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.daprd
     container_name: lbob-telegram-dapr
     command:
       - ./daprd
       - --app-id=telegram-bot-service
       - --app-port=8090
-      - --dapr-http-port=3510
+      - --dapr-http-port=3500
+      - --dapr-grpc-port=50001
       - --resources-path=/components
       - --log-level=info
-    volumes:
-      - ./.dapr/components:/components:ro
-      - ./secrets:/secrets:ro
     network_mode: "service:telegram-bot-service"
     depends_on:
+      telegram-bot-service:
+        condition: service_started
       redis:
         condition: service_healthy
     restart: unless-stopped
@@ -63,6 +68,7 @@ services:
       - production
 
   telegram-bot-service:
+    image: lbob-telegram:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -73,7 +79,6 @@ services:
         condition: service_healthy
     environment:
       - TRIOGRAM_TOKEN=${TELEGRAM_BOT_TOKEN}
-      - DAPR_HTTP_PORT=3510
     ports:
       - "8090:8090"
     restart: unless-stopped
@@ -82,20 +87,23 @@ services:
 
   # Dapr sidecar for openai-service
   openai-dapr:
-    image: docker.io/daprio/daprd:1.14.4
+    image: lbob-daprd:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.daprd
     container_name: lbob-openai-dapr
     command:
       - ./daprd
       - --app-id=openai-service
       - --app-port=8080
       - --dapr-http-port=3500
+      - --dapr-grpc-port=50001
       - --resources-path=/components
       - --log-level=info
-    volumes:
-      - ./.dapr/components:/components:ro
-      - ./secrets:/secrets:ro
     network_mode: "service:openai-service"
     depends_on:
+      openai-service:
+        condition: service_started
       redis:
         condition: service_healthy
     restart: unless-stopped
@@ -103,6 +111,7 @@ services:
       - production
 
   openai-service:
+    image: lbob-openai:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -115,7 +124,6 @@ services:
       - ANTHROPIC_AUTH_TOKEN=${ANTHROPIC_AUTH_TOKEN}
       - ANTHROPIC_BASE_URL=https://ANTHROPIC_PROXY_HOST/claude
       - LITELLM_MODEL=anthropic/anthropic.claude-sonnet-4-5-20250929-v1:0
-      - DAPR_HTTP_PORT=3500
     ports:
       - "8080:8080"
     restart: unless-stopped
