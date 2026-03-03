@@ -27,10 +27,10 @@ def test_lego_mps_connection():
     api_base = "https://models.assistant.legogroup.io/claude"
     test_message = "Hello Buddha, please respond with a single word: 'Success'"
 
-    print(f"\nTesting LEGO MPS integration:")
+    print("\nTesting LEGO MPS integration:")
     print(f"  Model: {model}")
     print(f"  API Base: {api_base}")
-    print(f"  Using: raw httpx (avoiding LiteLLM's x-api-key header)")
+    print("  Using: raw httpx (avoiding LiteLLM's x-api-key header)")
 
     try:
         # Make the completion call using our helper
@@ -53,7 +53,7 @@ def test_lego_mps_connection():
         return True
 
     except Exception as e:
-        print(f"\n✗ Failed to call LEGO MPS")
+        print("\n✗ Failed to call LEGO MPS")
         print(f"Error: {e}")
         raise
 

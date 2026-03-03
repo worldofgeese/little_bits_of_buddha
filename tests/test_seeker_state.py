@@ -10,8 +10,7 @@ This module follows the How to Design Functions (HtDF) recipe:
 
 import json
 import sys
-from datetime import datetime
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
@@ -42,10 +41,12 @@ class TestSaveMesage:
         """Test that save_message stores a user message correctly."""
         from openai_service_worldofgeese.seeker_state import save_message
 
-        # Create a mock Dapr client
-        mock_dapr_client = AsyncMock()
-        mock_dapr_client.get_state = AsyncMock(return_value=Mock(data=b"[]"))
-        mock_dapr_client.save_state = AsyncMock()
+        # Create a mock Dapr client (sync, not async)
+        mock_dapr_client = Mock()
+        mock_dapr_client.get_state = Mock(return_value=Mock(data=b"[]"))
+        mock_dapr_client.save_state = Mock()
+        mock_dapr_client.__enter__ = Mock(return_value=mock_dapr_client)
+        mock_dapr_client.__exit__ = Mock(return_value=None)
 
         with patch(
             "openai_service_worldofgeese.seeker_state.DaprClient",
@@ -78,12 +79,14 @@ class TestSaveMesage:
             {"role": "user", "content": "Hello", "timestamp": "2026-03-03T12:00:00"}
         ]
 
-        # Create a mock Dapr client
-        mock_dapr_client = AsyncMock()
-        mock_dapr_client.get_state = AsyncMock(
+        # Create a mock Dapr client (sync, not async)
+        mock_dapr_client = Mock()
+        mock_dapr_client.get_state = Mock(
             return_value=Mock(data=json.dumps(existing_history).encode())
         )
-        mock_dapr_client.save_state = AsyncMock()
+        mock_dapr_client.save_state = Mock()
+        mock_dapr_client.__enter__ = Mock(return_value=mock_dapr_client)
+        mock_dapr_client.__exit__ = Mock(return_value=None)
 
         with patch(
             "openai_service_worldofgeese.seeker_state.DaprClient",
@@ -130,11 +133,13 @@ class TestGetHistory:
             {"role": "user", "content": "Third", "timestamp": "2026-03-03T12:02:00"},
         ]
 
-        # Create a mock Dapr client
-        mock_dapr_client = AsyncMock()
-        mock_dapr_client.get_state = AsyncMock(
+        # Create a mock Dapr client (sync, not async)
+        mock_dapr_client = Mock()
+        mock_dapr_client.get_state = Mock(
             return_value=Mock(data=json.dumps(history).encode())
         )
+        mock_dapr_client.__enter__ = Mock(return_value=mock_dapr_client)
+        mock_dapr_client.__exit__ = Mock(return_value=None)
 
         with patch(
             "openai_service_worldofgeese.seeker_state.DaprClient",
@@ -163,11 +168,13 @@ class TestGetHistory:
             for i in range(5)
         ]
 
-        # Create a mock Dapr client
-        mock_dapr_client = AsyncMock()
-        mock_dapr_client.get_state = AsyncMock(
+        # Create a mock Dapr client (sync, not async)
+        mock_dapr_client = Mock()
+        mock_dapr_client.get_state = Mock(
             return_value=Mock(data=json.dumps(history).encode())
         )
+        mock_dapr_client.__enter__ = Mock(return_value=mock_dapr_client)
+        mock_dapr_client.__exit__ = Mock(return_value=None)
 
         with patch(
             "openai_service_worldofgeese.seeker_state.DaprClient",
@@ -185,9 +192,11 @@ class TestGetHistory:
         """Test that get_history returns empty list when no history exists."""
         from openai_service_worldofgeese.seeker_state import get_history
 
-        # Create a mock Dapr client that returns empty state
-        mock_dapr_client = AsyncMock()
-        mock_dapr_client.get_state = AsyncMock(return_value=Mock(data=b""))
+        # Create a mock Dapr client that returns empty state (sync, not async)
+        mock_dapr_client = Mock()
+        mock_dapr_client.get_state = Mock(return_value=Mock(data=b""))
+        mock_dapr_client.__enter__ = Mock(return_value=mock_dapr_client)
+        mock_dapr_client.__exit__ = Mock(return_value=None)
 
         with patch(
             "openai_service_worldofgeese.seeker_state.DaprClient",
@@ -217,9 +226,11 @@ class TestClearHistory:
         """Test that clear_history removes all messages for a chat."""
         from openai_service_worldofgeese.seeker_state import clear_history
 
-        # Create a mock Dapr client
-        mock_dapr_client = AsyncMock()
-        mock_dapr_client.delete_state = AsyncMock()
+        # Create a mock Dapr client (sync, not async)
+        mock_dapr_client = Mock()
+        mock_dapr_client.delete_state = Mock()
+        mock_dapr_client.__enter__ = Mock(return_value=mock_dapr_client)
+        mock_dapr_client.__exit__ = Mock(return_value=None)
 
         with patch(
             "openai_service_worldofgeese.seeker_state.DaprClient",
@@ -263,13 +274,15 @@ class TestMessageHandlerWithHistory:
             },
         ]
 
-        # Mock Dapr client for state operations
-        mock_dapr_client = AsyncMock()
-        mock_dapr_client.get_state = AsyncMock(
+        # Mock Dapr client for state operations (sync, not async)
+        mock_dapr_client = Mock()
+        mock_dapr_client.get_state = Mock(
             return_value=Mock(data=json.dumps(existing_history).encode())
         )
-        mock_dapr_client.save_state = AsyncMock()
-        mock_dapr_client.publish_event = AsyncMock()
+        mock_dapr_client.save_state = Mock()
+        mock_dapr_client.publish_event = Mock()
+        mock_dapr_client.__enter__ = Mock(return_value=mock_dapr_client)
+        mock_dapr_client.__exit__ = Mock(return_value=None)
 
         # Mock _call_lego_mps to verify it receives the full history
         with (

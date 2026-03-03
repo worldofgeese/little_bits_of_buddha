@@ -12,7 +12,10 @@ from typing import Any
 import numpy as np
 import redis
 from redis.commands.search.field import TagField, TextField, VectorField
-from redis.commands.search.indexDefinition import IndexDefinition, IndexType
+from redis.commands.search.indexDefinition import (  # type: ignore[unresolved-import]
+    IndexDefinition,
+    IndexType,
+)
 from redis.commands.search.query import Query
 from sentence_transformers import SentenceTransformer
 
@@ -73,7 +76,7 @@ def index_suttas(suttas: list[dict[str, Any]]) -> int:
     client = get_redis_client()
 
     # Define schema
-    schema = (
+    schema = [
         TextField("$.id", as_name="id"),
         TextField("$.title", as_name="title"),
         TextField("$.collection", as_name="collection"),
@@ -89,7 +92,7 @@ def index_suttas(suttas: list[dict[str, Any]]) -> int:
             },
             as_name="embedding",
         ),
-    )
+    ]
 
     # Try to create index, drop if exists
     try:

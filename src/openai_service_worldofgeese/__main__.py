@@ -116,14 +116,37 @@ def _build_app():
 
     @dapr_app.subscribe(pubsub="redis-pubsub", topic="messages")
     async def messages_subscriber(event: CloudEvent):
+        from openai_service_worldofgeese.rate_limiter import check_rate_limit
         from openai_service_worldofgeese.seeker_state import get_history, save_message
 
         logging.info(f"Received message: {event.data}")
-        text = event.data.get("text")
-        chat_id = event.data.get("chat_id")
+        text: str = event.data.get("text", "")
+        chat_id: str = event.data.get("chat_id", "")
 
         # Save user message to conversation history
         await save_message(chat_id, "user", text)
+
+        # Check rate limit
+        allowed, retry_after = await check_rate_limit(chat_id)
+        if not allowed:
+            # Rate-limited: send gentle Buddhist response
+            response_text = "Take a moment to sit with what we've discussed. The Dhamma unfolds in silence as much as in words. I'll be here when you're ready to continue."
+            await save_message(chat_id, "assistant", response_text)
+
+            output_response = {
+                "chat_id": chat_id,
+                "text": response_text,
+            }
+
+            with DaprClient() as dapr_client:
+                dapr_client.publish_event(
+                    pubsub_name="redis-pubsub",
+                    topic_name="responses",
+                    data=json.dumps(output_response),
+                    data_content_type="application/json",
+                )
+
+            return {"success": True, "rate_limited": True}
 
         # Load conversation history (last 10 messages)
         history = await get_history(chat_id, limit=10)

@@ -10,16 +10,16 @@ This module follows the How to Design Functions (HtDF) recipe:
 
 import os
 import sys
-from unittest.mock import Mock, MagicMock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 import requests
 
 # Mock dapr modules before any imports
-sys.modules['dapr'] = MagicMock()
-sys.modules['dapr.clients'] = MagicMock()
-sys.modules['dapr.ext'] = MagicMock()
-sys.modules['dapr.ext.fastapi'] = MagicMock()
+sys.modules["dapr"] = MagicMock()
+sys.modules["dapr.clients"] = MagicMock()
+sys.modules["dapr.ext"] = MagicMock()
+sys.modules["dapr.ext.fastapi"] = MagicMock()
 
 from openai_service_worldofgeese.__main__ import (
     wait_for_dapr_ready,
@@ -182,6 +182,7 @@ class TestLegoMPSIntegration:
     def test_lego_mps_helper_available(self):
         """Verify that _call_lego_mps helper function exists."""
         from openai_service_worldofgeese.__main__ import _call_lego_mps
+
         assert callable(_call_lego_mps)
 
     @patch("openai_service_worldofgeese.__main__._call_lego_mps")
@@ -226,9 +227,7 @@ class TestAnthropicProviderConfig:
             "ANTHROPIC_AUTH_TOKEN": "test-token",
         },
     )
-    def test_completion_uses_lego_mps_helper(
-        self, mock_dapr_client, mock_call_lego
-    ):
+    def test_completion_uses_lego_mps_helper(self, mock_dapr_client, mock_call_lego):
         """Test that _call_lego_mps is used for LEGO MPS calls."""
         from openai_service_worldofgeese.__main__ import _build_app
 
