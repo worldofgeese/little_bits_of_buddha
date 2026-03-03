@@ -9,7 +9,7 @@ This module follows the How to Design Functions (HtDF) recipe:
 """
 
 import os
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import AsyncMock
 
 import pytest
 import redis.asyncio as aioredis
@@ -38,7 +38,7 @@ class TestCheckRateLimit:
         - Redis error: should handle gracefully
     """
 
-    @pytest.mark.asyncio
+    @pytest.mark.trio
     async def test_check_rate_limit_allows_first_request(self, mocker):
         """Test that the first request from a user is allowed."""
         # Mock Redis client
@@ -65,7 +65,7 @@ class TestCheckRateLimit:
             "CL.THROTTLE", "rate_limit:chat_123", 19, 20, 3600, 1
         )
 
-    @pytest.mark.asyncio
+    @pytest.mark.trio
     async def test_check_rate_limit_allows_request_under_limit(self, mocker):
         """Test that requests under the limit are allowed."""
         # Mock Redis client - 10 requests used out of 20
@@ -85,7 +85,7 @@ class TestCheckRateLimit:
         assert allowed is True
         assert retry_after == 0
 
-    @pytest.mark.asyncio
+    @pytest.mark.trio
     async def test_check_rate_limit_blocks_request_over_limit(self, mocker):
         """Test that requests over the limit are blocked."""
         # Mock Redis client - rate limited, need to wait 120 seconds
@@ -105,7 +105,7 @@ class TestCheckRateLimit:
         assert allowed is False
         assert retry_after == 120
 
-    @pytest.mark.asyncio
+    @pytest.mark.trio
     async def test_check_rate_limit_respects_env_vars(self, mocker):
         """Test that rate limit configuration respects environment variables."""
         # Mock environment variables
@@ -134,7 +134,7 @@ class TestCheckRateLimit:
             "CL.THROTTLE", "rate_limit:chat_custom", 9, 10, 1800, 1
         )
 
-    @pytest.mark.asyncio
+    @pytest.mark.trio
     async def test_check_rate_limit_fallback_when_module_unavailable(self, mocker):
         """Test fallback to INCR + EXPIRE when redis-cell module is not available."""
         # Mock Redis client that raises error for CL.THROTTLE
@@ -167,7 +167,7 @@ class TestCheckRateLimit:
         # expire should NOT be called when count > 1 (this is the 5th request)
         mock_redis.expire.assert_not_called()
 
-    @pytest.mark.asyncio
+    @pytest.mark.trio
     async def test_check_rate_limit_fallback_blocks_over_limit(self, mocker):
         """Test that fallback pattern blocks requests over the limit."""
         # Mock Redis client with fallback
@@ -195,10 +195,8 @@ class TestCheckRateLimit:
         assert allowed is False
         assert retry_after == 1200
 
-    @pytest.mark.asyncio
-    async def test_check_rate_limit_fallback_sets_expire_on_first_request(
-        self, mocker
-    ):
+    @pytest.mark.trio
+    async def test_check_rate_limit_fallback_sets_expire_on_first_request(self, mocker):
         """Test that fallback pattern sets expiry on the first request."""
         # Mock Redis client with fallback
         mock_redis = AsyncMock(spec=aioredis.Redis)

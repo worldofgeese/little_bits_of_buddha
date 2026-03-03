@@ -1,9 +1,8 @@
 """Tests for sutta search with vector embeddings."""
 
 import json
-import pytest
 from pathlib import Path
-from unittest.mock import MagicMock, patch, mock_open
+from unittest.mock import MagicMock, patch
 
 from openai_service_worldofgeese.sutta_search import (
     embed_text,
@@ -35,7 +34,7 @@ class TestEmbedText:
 class TestIndexSuttas:
     """Test the index_suttas function."""
 
-    @patch('openai_service_worldofgeese.sutta_search.redis.Redis')
+    @patch("openai_service_worldofgeese.sutta_search.redis.Redis")
     def test_index_suttas_creates_index(self, mock_redis_class):
         """Test that index_suttas creates a Redis Search index."""
         mock_redis = MagicMock()
@@ -47,7 +46,7 @@ class TestIndexSuttas:
                 "title": "Dhammacakkappavattana Sutta",
                 "collection": "SN",
                 "text": "This is the teaching of the Four Noble Truths.",
-                "themes": ["four noble truths", "middle way"]
+                "themes": ["four noble truths", "middle way"],
             }
         ]
 
@@ -59,7 +58,7 @@ class TestIndexSuttas:
         # Verify that ft().create_index was called
         assert mock_redis.ft.called
 
-    @patch('openai_service_worldofgeese.sutta_search.redis.Redis')
+    @patch("openai_service_worldofgeese.sutta_search.redis.Redis")
     def test_index_suttas_stores_documents(self, mock_redis_class):
         """Test that index_suttas stores sutta documents in Redis."""
         mock_redis = MagicMock()
@@ -71,15 +70,15 @@ class TestIndexSuttas:
                 "title": "Dhammacakkappavattana Sutta",
                 "collection": "SN",
                 "text": "The Four Noble Truths.",
-                "themes": ["four noble truths"]
+                "themes": ["four noble truths"],
             },
             {
                 "id": "MN10",
                 "title": "Satipatthana Sutta",
                 "collection": "MN",
                 "text": "The foundations of mindfulness.",
-                "themes": ["mindfulness"]
-            }
+                "themes": ["mindfulness"],
+            },
         ]
 
         index_suttas(suttas)
@@ -87,7 +86,7 @@ class TestIndexSuttas:
         # Verify hset was called for each sutta
         assert mock_redis.hset.call_count >= 2
 
-    @patch('openai_service_worldofgeese.sutta_search.redis.Redis')
+    @patch("openai_service_worldofgeese.sutta_search.redis.Redis")
     def test_index_suttas_with_empty_list(self, mock_redis_class):
         """Test that index_suttas handles empty list gracefully."""
         mock_redis = MagicMock()
@@ -102,7 +101,7 @@ class TestIndexSuttas:
 class TestSearchSuttas:
     """Test the search_suttas function."""
 
-    @patch('openai_service_worldofgeese.sutta_search.redis.Redis')
+    @patch("openai_service_worldofgeese.sutta_search.redis.Redis")
     def test_search_suttas_returns_relevant_results(self, mock_redis_class):
         """Test that search_suttas returns relevant results."""
         mock_redis = MagicMock()
@@ -127,7 +126,7 @@ class TestSearchSuttas:
         assert "title" in results[0]
         assert "score" in results[0]
 
-    @patch('openai_service_worldofgeese.sutta_search.redis.Redis')
+    @patch("openai_service_worldofgeese.sutta_search.redis.Redis")
     def test_search_suttas_respects_top_k(self, mock_redis_class):
         """Test that search_suttas respects the top_k parameter."""
         mock_redis = MagicMock()
@@ -141,7 +140,7 @@ class TestSearchSuttas:
             mock_doc.title = f"Sutta {i}"
             mock_doc.text = "Text"
             mock_doc.collection = "SN"
-            mock_doc.themes = '[]'
+            mock_doc.themes = "[]"
             mock_doc.vector_score = 0.9 - (i * 0.1)
             mock_docs.append(mock_doc)
 
@@ -152,7 +151,7 @@ class TestSearchSuttas:
         # Should return only top 3 results
         assert len(results) <= 3
 
-    @patch('openai_service_worldofgeese.sutta_search.redis.Redis')
+    @patch("openai_service_worldofgeese.sutta_search.redis.Redis")
     def test_search_suttas_with_empty_corpus_returns_empty_list(self, mock_redis_class):
         """Test that search_suttas returns empty list when no documents match."""
         mock_redis = MagicMock()
@@ -176,7 +175,7 @@ class TestSuttaCorpus:
 
         assert corpus_path.exists(), "sutta_corpus/suttas.json does not exist"
 
-        with open(corpus_path, 'r', encoding='utf-8') as f:
+        with open(corpus_path, "r", encoding="utf-8") as f:
             suttas = json.load(f)
 
         assert isinstance(suttas, list)
@@ -187,14 +186,18 @@ class TestSuttaCorpus:
         """Test that each sutta has all required fields."""
         corpus_path = Path(__file__).parent.parent / "sutta_corpus" / "suttas.json"
 
-        with open(corpus_path, 'r', encoding='utf-8') as f:
+        with open(corpus_path, "r", encoding="utf-8") as f:
             suttas = json.load(f)
 
         required_fields = ["id", "title", "collection", "text", "themes"]
 
         for sutta in suttas:
             for field in required_fields:
-                assert field in sutta, f"Sutta {sutta.get('id', 'unknown')} missing field: {field}"
+                assert field in sutta, (
+                    f"Sutta {sutta.get('id', 'unknown')} missing field: {field}"
+                )
 
             assert isinstance(sutta["themes"], list), "themes should be a list"
-            assert len(sutta["text"]) <= 2000, f"Sutta {sutta['id']} text too long: {len(sutta['text'])} chars"
+            assert len(sutta["text"]) <= 2000, (
+                f"Sutta {sutta['id']} text too long: {len(sutta['text'])} chars"
+            )

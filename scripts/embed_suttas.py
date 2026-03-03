@@ -19,12 +19,14 @@ from openai_service_worldofgeese.sutta_search import index_suttas
 
 def main():
     """Load suttas and index them into Redis."""
-    parser = argparse.ArgumentParser(description="Index suttas into Redis with vector embeddings")
+    parser = argparse.ArgumentParser(
+        description="Index suttas into Redis with vector embeddings"
+    )
     parser.add_argument(
         "--corpus-path",
         type=Path,
         default=Path(__file__).parent.parent / "sutta_corpus" / "suttas.json",
-        help="Path to suttas.json file (default: sutta_corpus/suttas.json)"
+        help="Path to suttas.json file (default: sutta_corpus/suttas.json)",
     )
     args = parser.parse_args()
 
@@ -34,13 +36,13 @@ def main():
         print(f"Error: Corpus file not found at {args.corpus_path}", file=sys.stderr)
         return 1
 
-    with open(args.corpus_path, 'r', encoding='utf-8') as f:
+    with open(args.corpus_path, "r", encoding="utf-8") as f:
         suttas = json.load(f)
 
     print(f"Loaded {len(suttas)} suttas")
 
     # Validate structure
-    required_fields = {'id', 'title', 'collection', 'text', 'themes'}
+    required_fields = {"id", "title", "collection", "text", "themes"}
     for i, sutta in enumerate(suttas):
         missing = required_fields - set(sutta.keys())
         if missing:
@@ -52,12 +54,13 @@ def main():
     try:
         count = index_suttas(suttas)
         print(f"✓ Successfully indexed {count} suttas")
-        print(f"✓ Index name: sutta_idx")
-        print(f"✓ Embedding model: all-MiniLM-L6-v2 (384 dimensions)")
+        print("✓ Index name: sutta_idx")
+        print("✓ Embedding model: all-MiniLM-L6-v2 (384 dimensions)")
         return 0
     except Exception as e:
         print(f"Error during indexing: {e}", file=sys.stderr)
         import traceback
+
         traceback.print_exc()
         return 1
 
