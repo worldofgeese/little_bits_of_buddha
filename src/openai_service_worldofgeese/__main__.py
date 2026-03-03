@@ -23,6 +23,7 @@ def _call_lego_mps(model, api_base, api_key, messages):
     url = f"{api_base}/v1/messages"
     headers = {
         "Content-Type": "application/json",
+        "Accept": "application/json",
         "Authorization": f"Bearer {api_key}",
         "anthropic-version": "2023-06-01",
     }
