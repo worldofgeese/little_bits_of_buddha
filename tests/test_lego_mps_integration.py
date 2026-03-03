@@ -4,12 +4,15 @@
 import os
 import sys
 
+import pytest
+
 # Add src to path
-sys.path.insert(0, "/home/node/.openclaw/workspace/projects/little_bits_of_buddha/src")
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from openai_service_worldofgeese.__main__ import _call_lego_mps
 
 
+@pytest.mark.integration
 def test_lego_mps_connection():
     """Test that we can connect to LEGO MPS via raw httpx."""
     # Get credentials from environment
