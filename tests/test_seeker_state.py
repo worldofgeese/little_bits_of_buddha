@@ -37,14 +37,16 @@ class TestSaveMesage:
         - Messages include timestamp
     """
 
-    @pytest.mark.trio
+    @pytest.mark.asyncio
     async def test_save_message_stores_user_message(self):
         """Test that save_message stores a user message correctly."""
         from openai_service_worldofgeese.seeker_state import save_message
 
         # Create a mock Dapr client
         mock_dapr_client = AsyncMock()
-        mock_dapr_client.get_state = AsyncMock(return_value=Mock(data=b"[]"))
+        mock_response = Mock()
+        mock_response.data = b"[]"
+        mock_dapr_client.get_state = AsyncMock(return_value=mock_response)
         mock_dapr_client.save_state = AsyncMock()
 
         with patch(
@@ -68,7 +70,7 @@ class TestSaveMesage:
         assert saved_data[0]["content"] == "What is the First Noble Truth?"
         assert "timestamp" in saved_data[0]
 
-    @pytest.mark.trio
+    @pytest.mark.asyncio
     async def test_save_message_appends_to_existing_history(self):
         """Test that save_message appends to existing conversation history."""
         from openai_service_worldofgeese.seeker_state import save_message
@@ -80,9 +82,9 @@ class TestSaveMesage:
 
         # Create a mock Dapr client
         mock_dapr_client = AsyncMock()
-        mock_dapr_client.get_state = AsyncMock(
-            return_value=Mock(data=json.dumps(existing_history).encode())
-        )
+        mock_response = Mock()
+        mock_response.data = json.dumps(existing_history).encode()
+        mock_dapr_client.get_state = AsyncMock(return_value=mock_response)
         mock_dapr_client.save_state = AsyncMock()
 
         with patch(
@@ -114,7 +116,7 @@ class TestGetHistory:
         - Respects limit parameter
     """
 
-    @pytest.mark.trio
+    @pytest.mark.asyncio
     async def test_get_history_returns_messages_in_order(self):
         """Test that get_history returns messages in chronological order."""
         from openai_service_worldofgeese.seeker_state import get_history
@@ -132,9 +134,9 @@ class TestGetHistory:
 
         # Create a mock Dapr client
         mock_dapr_client = AsyncMock()
-        mock_dapr_client.get_state = AsyncMock(
-            return_value=Mock(data=json.dumps(history).encode())
-        )
+        mock_response = Mock()
+        mock_response.data = json.dumps(history).encode()
+        mock_dapr_client.get_state = AsyncMock(return_value=mock_response)
 
         with patch(
             "openai_service_worldofgeese.seeker_state.DaprClient",
@@ -148,7 +150,7 @@ class TestGetHistory:
         assert result[1]["content"] == "Second"
         assert result[2]["content"] == "Third"
 
-    @pytest.mark.trio
+    @pytest.mark.asyncio
     async def test_get_history_respects_limit(self):
         """Test that get_history returns only the last N messages."""
         from openai_service_worldofgeese.seeker_state import get_history
@@ -165,9 +167,9 @@ class TestGetHistory:
 
         # Create a mock Dapr client
         mock_dapr_client = AsyncMock()
-        mock_dapr_client.get_state = AsyncMock(
-            return_value=Mock(data=json.dumps(history).encode())
-        )
+        mock_response = Mock()
+        mock_response.data = json.dumps(history).encode()
+        mock_dapr_client.get_state = AsyncMock(return_value=mock_response)
 
         with patch(
             "openai_service_worldofgeese.seeker_state.DaprClient",
@@ -180,7 +182,7 @@ class TestGetHistory:
         assert result[0]["content"] == "Message 3"
         assert result[1]["content"] == "Message 4"
 
-    @pytest.mark.trio
+    @pytest.mark.asyncio
     async def test_get_history_with_empty_state_returns_empty_list(self):
         """Test that get_history returns empty list when no history exists."""
         from openai_service_worldofgeese.seeker_state import get_history
@@ -212,7 +214,7 @@ class TestClearHistory:
         - Deletes the state key for the given chat_id
     """
 
-    @pytest.mark.trio
+    @pytest.mark.asyncio
     async def test_clear_history_deletes_state(self):
         """Test that clear_history removes all messages for a chat."""
         from openai_service_worldofgeese.seeker_state import clear_history
@@ -244,7 +246,7 @@ class TestMessageHandlerWithHistory:
         - Saves assistant responses to state
     """
 
-    @pytest.mark.trio
+    @pytest.mark.asyncio
     async def test_message_handler_includes_history_in_llm_call(self):
         """Test that message handler passes conversation history to LLM."""
         from openai_service_worldofgeese.__main__ import _build_app
