@@ -5,7 +5,7 @@ import time
 import warnings
 
 import httpx
-import requests
+import httpx
 import trio
 from trio import TrioDeprecationWarning, to_thread
 
@@ -74,11 +74,11 @@ def wait_for_dapr_ready(dapr_port=3500, retries=20, delay=2):
     Uses DAPR_HTTP_ENDPOINT if set (for separate-container sidecars),
     otherwise falls back to localhost (shared network namespace).
     """
-    dapr_endpoint = os.environ.get("DAPR_HTTP_ENDPOINT", f"http://localhost:{dapr_port}")
+    dapr_endpoint = os.environ.get("DAPR_HTTP_ENDPOINT", f"http://localhost:{dapr_port}").rstrip("/")
     dapr_url = f"{dapr_endpoint}/v1.0/healthz"
     for _ in range(retries):
         try:
-            response = requests.get(dapr_url)
+            response = httpx.get(dapr_url, timeout=5)
             if response.status_code == 204:
                 print("Dapr is ready.")
                 return
@@ -164,11 +164,14 @@ def _build_app():
         )
 
         # Use raw httpx for Anthropic proxy (LiteLLM sends incompatible x-api-key header)
-        response = _call_anthropic_proxy(
-            model=model,
-            api_base=api_base,
-            api_key=api_key,
-            messages=messages,
+        # Wrap sync httpx call in trio thread to avoid blocking the event loop
+        response = await trio.to_thread.run_sync(
+            lambda: _call_anthropic_proxy(
+                model=model,
+                api_base=api_base,
+                api_key=api_key,
+                messages=messages,
+            )
         )
 
         response_text = response["choices"][0]["message"]["content"]
@@ -195,16 +198,6 @@ def _build_app():
     return app, init_secrets
 
 
-async def async_wait_for_dapr_ready(task_status=trio.TASK_STATUS_IGNORED):
-    await to_thread.run_sync(wait_for_dapr_ready)  # ty: ignore
-    task_status.started()
-
-
-async def async_init_secrets(init_secrets_fn, task_status=trio.TASK_STATUS_IGNORED):
-    await to_thread.run_sync(init_secrets_fn)  # ty: ignore
-    task_status.started()
-
-
 async def main():
     from hypercorn.config import Config
     from hypercorn.trio import serve
@@ -213,10 +206,12 @@ async def main():
     config = Config()
     config.bind = ["0.0.0.0:8080"]
 
+    # Init secrets and wait for Dapr before serving requests
+    await trio.to_thread.run_sync(init_secrets_fn)
+    await trio.to_thread.run_sync(wait_for_dapr_ready)
+
     async with trio.open_nursery() as nursery:
         nursery.start_soon(serve, app, config)
-        await nursery.start(async_wait_for_dapr_ready)
-        await nursery.start(async_init_secrets, init_secrets_fn)
 
 
 if __name__ == "__main__":

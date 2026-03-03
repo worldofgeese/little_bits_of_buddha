@@ -13,7 +13,7 @@ import sys
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
-import requests
+import httpx
 
 # Mock dapr modules before any imports
 sys.modules["dapr"] = MagicMock()
@@ -43,7 +43,7 @@ class TestWaitForDaprReady:
     def test_wait_for_dapr_ready_success_first_attempt(self, mocker):
         """Test that wait_for_dapr_ready succeeds when Dapr is ready on first attempt."""
         # Mock the requests.get call to return a response with status code 204
-        mock_get = mocker.patch("requests.get")
+        mock_get = mocker.patch("httpx.get")
         mock_response = Mock()
         mock_response.status_code = 204
         mock_get.return_value = mock_response
@@ -52,12 +52,12 @@ class TestWaitForDaprReady:
         wait_for_dapr_ready(retries=1, delay=0.1)
 
         # Assert that requests.get was called with the correct URL
-        mock_get.assert_called_once_with("http://localhost:3500/v1.0/healthz")
+        mock_get.assert_called_once_with("http://localhost:3500/v1.0/healthz", timeout=5)
 
     def test_wait_for_dapr_ready_success_after_retries(self, mocker):
         """Test that wait_for_dapr_ready retries and eventually succeeds."""
         # Mock the requests.get call to fail twice, then succeed
-        mock_get = mocker.patch("requests.get")
+        mock_get = mocker.patch("httpx.get")
 
         # First two calls fail, third call succeeds
         mock_response_fail = Mock()
@@ -80,19 +80,19 @@ class TestWaitForDaprReady:
 
     def test_wait_for_dapr_ready_custom_port(self, mocker):
         """Test that wait_for_dapr_ready uses the specified port."""
-        mock_get = mocker.patch("requests.get")
+        mock_get = mocker.patch("httpx.get")
         mock_response = Mock()
         mock_response.status_code = 204
         mock_get.return_value = mock_response
 
         wait_for_dapr_ready(dapr_port=3600, retries=1, delay=0.1)
 
-        mock_get.assert_called_once_with("http://localhost:3600/v1.0/healthz")
+        mock_get.assert_called_once_with("http://localhost:3600/v1.0/healthz", timeout=5)
 
     def test_wait_for_dapr_ready_raises_error_after_retries(self, mocker):
         """Test that wait_for_dapr_ready raises RuntimeError after exhausting retries."""
         # Mock the requests.get call to always fail
-        mock_get = mocker.patch("requests.get")
+        mock_get = mocker.patch("httpx.get")
         mock_response = Mock()
         mock_response.status_code = 500
         mock_get.return_value = mock_response
@@ -103,8 +103,8 @@ class TestWaitForDaprReady:
 
     def test_wait_for_dapr_ready_handles_connection_error(self, mocker):
         """Test that wait_for_dapr_ready handles connection errors gracefully."""
-        mock_get = mocker.patch("requests.get")
-        mock_get.side_effect = requests.exceptions.ConnectionError("Connection refused")
+        mock_get = mocker.patch("httpx.get")
+        mock_get.side_effect = httpx.ConnectError("Connection refused")
 
         # Expect RuntimeError to be raised
         with pytest.raises(RuntimeError, match="Dapr sidecar is not ready"):
