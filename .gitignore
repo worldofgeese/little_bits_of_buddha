@@ -27,3 +27,5 @@ htmlcov
 secrets/secrets.json
 .venv/
 .devbox/
+src/openai_service_worldofgeese/__pycache__/
+tests/__pycache__/

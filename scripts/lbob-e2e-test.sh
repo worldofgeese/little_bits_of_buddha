@@ -115,7 +115,7 @@ log "Waiting for LLM response..."
 LLM_WAIT=90
 LLM_ELAPSED=0
 while [ $LLM_ELAPSED -lt $LLM_WAIT ]; do
-    if docker logs lbob-openai 2>&1 | grep -q "HTTP Request: POST.*ANTHROPIC_PROXY_HOST.*200 OK"; then
+    if docker logs lbob-openai 2>&1 | grep -q "HTTP Request: POST.*models.assistant..io.*200 OK"; then
         log "LLM responded (200 OK) after ${LLM_ELAPSED}s"
         break
     fi
