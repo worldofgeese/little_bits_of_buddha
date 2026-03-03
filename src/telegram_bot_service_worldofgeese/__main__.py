@@ -137,13 +137,13 @@ def wait_for_dapr_ready(dapr_port=3500, retries=20, delay=2):
 
 # Define an async wrapper for wait_for_dapr_ready that reports when it's done
 async def async_wait_for_dapr_ready(task_status=trio.TASK_STATUS_IGNORED):
-    await to_thread.run_sync(wait_for_dapr_ready)
+    await to_thread.run_sync(wait_for_dapr_ready)  # ty: ignore
     task_status.started()
 
 
 # Define an async wrapper for init_secrets that reports when it's done
 async def async_init_secrets(task_status=trio.TASK_STATUS_IGNORED):
-    await to_thread.run_sync(init_secrets)
+    await to_thread.run_sync(init_secrets)  # ty: ignore
     task_status.started()
 
 

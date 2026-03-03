@@ -15,11 +15,13 @@ async def save_message(chat_id: str, role: str, content: str) -> None:
 
         history = json.loads(response.data.decode("utf-8")) if response.data else []
 
-        history.append({
-            "role": role,
-            "content": content,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-        })
+        history.append(
+            {
+                "role": role,
+                "content": content,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            }
+        )
 
         await client.save_state(
             store_name="statestore", key=f"seeker:{chat_id}", value=json.dumps(history)
