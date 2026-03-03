@@ -116,8 +116,20 @@ def _build_app():
 
     @dapr_app.subscribe(pubsub="redis-pubsub", topic="messages")
     async def messages_subscriber(event: CloudEvent):
+        from openai_service_worldofgeese.seeker_state import (
+            get_history,
+            save_message,
+        )
+
         logging.info(f"Received message: {event.data}")
         text = event.data.get("text")
+        chat_id = event.data.get("chat_id")
+
+        # Save user message to conversation history
+        await to_thread.run_sync(save_message, chat_id, "user", text)  # ty: ignore
+
+        # Load conversation history (last 10 messages)
+        history = await to_thread.run_sync(get_history, chat_id, 10)  # ty: ignore
 
         # Get the model from environment variable, default to Anthropic via LEGO MPS
         model = os.environ.get(
@@ -128,24 +140,30 @@ def _build_app():
         )
         api_key = os.environ.get("ANTHROPIC_AUTH_TOKEN")
 
+        # Build messages with system prompt + conversation history
+        messages = [
+            {
+                "role": "system",
+                "content": "You are the Buddha. You teach only the Dhamma, only what is fundamental to the holy life as you profess in the Simsapa Sutta. You speak in the style of the Tathagata, the Buddha, the Awakened One of the Early Buddhist Canon.",
+            }
+        ]
+
+        # Add conversation history (excluding timestamps for LLM)
+        for msg in history:
+            messages.append({"role": msg["role"], "content": msg["content"]})
+
         # Use raw httpx for LEGO MPS (LiteLLM sends incompatible x-api-key header)
         response = _call_lego_mps(
-            model=model,
-            api_base=api_base,
-            api_key=api_key,
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are the Buddha. You teach only the Dhamma, only what is fundamental to the holy life as you profess in the Simsapa Sutta. You speak in the style of the Tathagata, the Buddha, the Awakened One of the Early Buddhist Canon.",
-                },
-                {"role": "user", "content": text},
-            ],
+            model=model, api_base=api_base, api_key=api_key, messages=messages
         )
 
         response_text = response["choices"][0]["message"]["content"]
 
+        # Save assistant response to conversation history
+        await to_thread.run_sync(save_message, chat_id, "assistant", response_text)  # ty: ignore
+
         output_response = {
-            "chat_id": event.data.get("chat_id"),
+            "chat_id": chat_id,
             "text": response_text,
         }
 
