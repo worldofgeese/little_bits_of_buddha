@@ -31,7 +31,13 @@ BOT_TOKEN="${TELEGRAM_BOT_TOKEN:-6014356103:AAFMthhrKMXJLdeuU3rK09ViK27bCJiJTlw}
 check "Bot token valid" "curl -sf 'https://api.telegram.org/bot${BOT_TOKEN}/getMe' | grep -q '\"ok\":true'"
 
 # Check Anthropic proxy reachable (any HTTP response = reachable; 000 = network failure)
-check "Anthropic proxy reachable" "test $(curl -so /dev/null -w '%{http_code}' -X POST -H 'Content-Type: application/json' -d '{}' '${ANTHROPIC_BASE_URL}/v1/messages' 2>/dev/null) != '000'"
+PROXY_URL="${ANTHROPIC_BASE_URL:-}"
+if [ -z "$PROXY_URL" ]; then
+    STATUS="${STATUS}⚠ ANTHROPIC_BASE_URL not set, skipping proxy check\n"
+else
+    PROXY_CODE=$(curl -so /dev/null -w '%{http_code}' -X POST -H 'Content-Type: application/json' -d '{}' "${PROXY_URL}/v1/messages" 2>/dev/null)
+    check "Anthropic proxy reachable (HTTP ${PROXY_CODE})" "test '$PROXY_CODE' != '000'"
+fi
 
 # Check Redis has sutta index
 check "Sutta index exists" "docker exec lbob-redis redis-cli FT.INFO sutta_idx 2>/dev/null | grep -q sutta_idx"
