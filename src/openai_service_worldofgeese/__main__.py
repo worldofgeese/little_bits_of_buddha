@@ -163,12 +163,12 @@ def _build_app():
 
 
 async def async_wait_for_dapr_ready(task_status=trio.TASK_STATUS_IGNORED):
-    await to_thread.run_sync(wait_for_dapr_ready)
+    await to_thread.run_sync(wait_for_dapr_ready)  # ty: ignore
     task_status.started()
 
 
 async def async_init_secrets(init_secrets_fn, task_status=trio.TASK_STATUS_IGNORED):
-    await to_thread.run_sync(init_secrets_fn)
+    await to_thread.run_sync(init_secrets_fn)  # ty: ignore
     task_status.started()
 
 
