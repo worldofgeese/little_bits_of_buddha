@@ -9,10 +9,17 @@ This module follows the How to Design Functions (HtDF) recipe:
 """
 
 import os
-from unittest.mock import Mock, patch
+import sys
+from unittest.mock import Mock, MagicMock, patch
 
 import pytest
 import requests
+
+# Mock dapr modules before any imports
+sys.modules['dapr'] = MagicMock()
+sys.modules['dapr.clients'] = MagicMock()
+sys.modules['dapr.ext'] = MagicMock()
+sys.modules['dapr.ext.fastapi'] = MagicMock()
 
 from openai_service_worldofgeese.__main__ import (
     wait_for_dapr_ready,
