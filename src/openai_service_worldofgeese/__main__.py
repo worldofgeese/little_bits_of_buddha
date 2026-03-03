@@ -205,12 +205,14 @@ async def main():
     config = Config()
     config.bind = ["0.0.0.0:8080"]
 
-    # Init secrets and wait for Dapr before serving requests
+    # Init secrets first (fast, no external deps)
     await trio.to_thread.run_sync(init_secrets_fn)
-    await trio.to_thread.run_sync(wait_for_dapr_ready)
 
+    # With bridge networking: app must serve before Dapr can health-check.
+    # Start serving first, then verify Dapr becomes ready.
     async with trio.open_nursery() as nursery:
         nursery.start_soon(serve, app, config)
+        await trio.to_thread.run_sync(wait_for_dapr_ready)
 
 
 if __name__ == "__main__":
