@@ -36,6 +36,8 @@ dependencies = [
     "litellm>=1.0.0",
     "requests>=2.31.0",
     "trio>=0.22.1",
+    "sentence-transformers>=2.2.0",
+    "redis>=5.0.0",
 ]
 
 [project.optional-dependencies]
