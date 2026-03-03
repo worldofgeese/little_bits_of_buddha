@@ -284,7 +284,7 @@ class TestMessageHandlerWithHistory:
         mock_dapr_client.__enter__ = Mock(return_value=mock_dapr_client)
         mock_dapr_client.__exit__ = Mock(return_value=None)
 
-        # Mock _call_lego_mps to capture what messages it receives
+        # Mock _call_anthropic_proxy to capture what messages it receives
         messages_received = None
 
         def capture_messages(*args, **kwargs):
@@ -305,7 +305,7 @@ class TestMessageHandlerWithHistory:
         ]
 
         with (
-            patch("openai_service_worldofgeese.__main__._call_lego_mps") as mock_lego,
+            patch("openai_service_worldofgeese.__main__._call_anthropic_proxy") as mock_proxy,
             patch(
                 "dapr.clients.DaprClient",
                 return_value=mock_dapr_client,
@@ -315,7 +315,7 @@ class TestMessageHandlerWithHistory:
                 return_value=mock_rag_messages,
             ) as mock_build_rag,
         ):
-            mock_lego.side_effect = capture_messages
+            mock_proxy.side_effect = capture_messages
 
             # Build app
             app, _ = _build_app()

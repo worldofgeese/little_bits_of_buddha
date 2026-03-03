@@ -18,7 +18,7 @@ User ──► Telegram API
               ▼
    ┌─────────────────────┐         pub/sub          ┌──────────────────────┐
    │ telegram-bot-service │ ──── "messages" ──────► │    openai-service     │
-   │   (triogram/trio)    │ ◄─── "responses" ────── │  (httpx → LEGO MPS)  │
+   │   (triogram/trio)    │ ◄─── "responses" ────── │  (httpx → Anthropic proxy)  │
    └─────────────────────┘       (Redis)            └──────────────────────┘
          ▲  │                                               │
          │  └── Dapr sidecar (daprd)                        └── Dapr sidecar (daprd)
@@ -30,7 +30,7 @@ User ──► Telegram API
 **Pipeline flow:**
 1. User sends message → Telegram Bot API → triogram polls `getUpdates`
 2. `telegram-bot-service` publishes `{chat_id, text}` to Dapr topic `messages`
-3. `openai-service` receives message, calls LEGO MPS (Anthropic Claude via Bedrock proxy)
+3. `openai-service` receives message, calls Anthropic proxy (Anthropic Claude via Bedrock proxy)
 4. `openai-service` publishes `{chat_id, text}` to Dapr topic `responses`
 5. `telegram-bot-service` receives response, sends via Telegram `sendMessage`
 
@@ -55,7 +55,7 @@ User ──► Telegram API
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `TELEGRAM_BOT_TOKEN` | Bot token from [@BotFather](https://t.me/BotFather) | `6014356103:AAF...` |
-| `ANTHROPIC_AUTH_TOKEN` | LEGO MPS Bearer token (full `uuid:secret` format) | `6a7f7bb5...:5ltY...` |
+| `ANTHROPIC_AUTH_TOKEN` | Anthropic proxy Bearer token (full `uuid:secret` format) | `6a7f7bb5...:5ltY...` |
 
 Optional (defaults in compose):
 | Variable | Default | Description |
@@ -79,7 +79,7 @@ DOCKER_BUILDKIT=0 podman build -f Dockerfile.daprd -t lbob-daprd:latest .
 ```bash
 # Set secrets
 export TELEGRAM_BOT_TOKEN="your-bot-token"
-export ANTHROPIC_AUTH_TOKEN="your-lego-mps-token"
+export ANTHROPIC_AUTH_TOKEN="your-anthropic-proxy-token"
 
 # Start the production stack
 podman-compose --profile production up -d
@@ -141,7 +141,7 @@ Expected: Status 204, then a response from @LittleBitsOfBuddhaBot in your Telegr
 bash scripts/lbob-healthcheck.sh
 ```
 
-Checks: bot token validity (Telegram `getMe`), Redis connectivity, Dapr sidecar health, LEGO MPS reachability.
+Checks: bot token validity (Telegram `getMe`), Redis connectivity, Dapr sidecar health, Anthropic proxy reachability.
 
 ### Stopping
 
@@ -206,7 +206,7 @@ devbox run -- pytest -v
 
 ## Why Not LiteLLM?
 
-LEGO MPS (the LEGO Group's Bedrock proxy for Anthropic models) requires `Authorization: Bearer <token>` as the sole auth header. LiteLLM's `anthropic/` provider always injects an `x-api-key` header alongside `Authorization`, causing LEGO MPS to return 500. No LiteLLM configuration (`api_key=None`, `drop_params`, `extra_headers`) suppresses this. We use raw `httpx` instead.
+Anthropic proxy (the Bedrock proxy for Anthropic models) requires `Authorization: Bearer <token>` as the sole auth header. LiteLLM's `anthropic/` provider always injects an `x-api-key` header alongside `Authorization`, causing Anthropic proxy to return 500. No LiteLLM configuration (`api_key=None`, `drop_params`, `extra_headers`) suppresses this. We use raw `httpx` instead.
 
 ## Architecture Decision Records
 

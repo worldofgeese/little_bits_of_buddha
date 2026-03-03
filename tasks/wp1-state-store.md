@@ -43,7 +43,7 @@ Then implement until tests pass. Commit again.
    - After receiving a message: save user message to state
    - Before calling LLM: load last 10 messages as conversation context
    - After receiving LLM response: save assistant message to state
-   - Pass full conversation history (not just current message) to `_call_lego_mps`
+   - Pass full conversation history (not just current message) to `_call_anthropic_proxy`
 
 4. **Tests** (`tests/test_seeker_state.py`):
    - Test save_message stores correctly (mock DaprClient)

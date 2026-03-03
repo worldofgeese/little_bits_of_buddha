@@ -28,7 +28,7 @@ async def build_rag_prompt(
        - system message (original Buddha persona + injected sutta context)
        - conversation history messages
        - current user message
-    4. Return the full messages list ready for _call_lego_mps()
+    4. Return the full messages list ready for _call_anthropic_proxy()
 
     Args:
         chat_id: Unique identifier for the conversation

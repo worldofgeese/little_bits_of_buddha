@@ -7,7 +7,7 @@ LBOB requires two secrets at runtime:
 | Secret | Env Var | Source | Rotation |
 |--------|---------|--------|----------|
 | Telegram bot token | `TELEGRAM_BOT_TOKEN` | [@BotFather](https://t.me/BotFather) → `/revoke` | Revoke old, create new |
-| LEGO MPS auth token | `ANTHROPIC_AUTH_TOKEN` | LEGO internal portal | Generate new token |
+| Anthropic proxy auth token | `ANTHROPIC_AUTH_TOKEN` | Internal portal | Generate new token |
 
 ## Production: Environment File
 
@@ -34,7 +34,7 @@ chmod 600 ~/.config/containers/systemd/openclaw.env
 ```bash
 # 1. Generate new tokens (manual step — cannot be automated)
 #    - Telegram: message @BotFather, /revoke, then /token
-#    - LEGO MPS: generate new token in portal
+#    - Anthropic proxy: generate new token in portal
 
 # 2. Update the env file
 bash scripts/rotate-secrets.sh

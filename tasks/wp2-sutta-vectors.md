@@ -23,7 +23,7 @@ Then implement until tests pass. Commit again.
    - Keep excerpts under 2000 chars each (for embedding quality)
 
 2. **Create `src/openai_service_worldofgeese/sutta_search.py`**:
-   - `embed_text(text: str) -> list[float]` — call LEGO MPS embeddings endpoint (or use a local sentence-transformers model via `sentence-transformers` package for simplicity)
+   - `embed_text(text: str) -> list[float]` — call Anthropic proxy embeddings endpoint (or use a local sentence-transformers model via `sentence-transformers` package for simplicity)
    - `index_suttas(suttas: list[dict])` — create Redis Search index with vector field, embed and store all suttas
    - `search_suttas(query: str, top_k: int = 3) -> list[dict]` — semantic search, return top K results with scores
    - Use `redis.commands.search` (redis-py with RediSearch)
@@ -46,9 +46,9 @@ Then implement until tests pass. Commit again.
 
 ## Embedding Strategy Decision
 **Option A (recommended):** Use `sentence-transformers` with `all-MiniLM-L6-v2` (384-dim, fast, runs locally, no API cost)
-**Option B:** Use LEGO MPS embeddings endpoint (if available — check `https://ANTHROPIC_PROXY_HOST/claude/v1/embeddings`)
+**Option B:** Use Anthropic proxy embeddings endpoint (if available — check `https://ANTHROPIC_PROXY_HOST/claude/v1/embeddings`)
 
-Go with Option A unless LEGO MPS embeddings are confirmed working. Add `sentence-transformers` to PDM dependencies.
+Go with Option A unless Anthropic proxy embeddings are confirmed working. Add `sentence-transformers` to PDM dependencies.
 
 ## Constraints
 - Only modify/create: `sutta_corpus/`, `src/openai_service_worldofgeese/sutta_search.py`, `scripts/embed_suttas.py`, `tests/test_sutta_search.py`, `compose.yaml` (Redis image only), `pyproject.toml` (add deps)

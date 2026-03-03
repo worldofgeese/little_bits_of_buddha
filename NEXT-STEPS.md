@@ -7,7 +7,7 @@
 The bot is **live and responding** via Telegram with sutta-augmented RAG responses.
 
 ### What's Working
-- ✅ Telegram → Dapr pub/sub → LEGO MPS Claude → Dapr pub/sub → Telegram (full E2E)
+- ✅ Telegram → Dapr pub/sub → Anthropic proxy Claude → Dapr pub/sub → Telegram (full E2E)
 - ✅ Per-user conversation memory (Dapr state store → Redis)
 - ✅ Semantic sutta search (25 suttas embedded, all-MiniLM-L6-v2, Redis Search)
 - ✅ RAG pipeline: sutta context + conversation history injected into LLM prompt
@@ -19,7 +19,7 @@ The bot is **live and responding** via Telegram with sutta-augmented RAG respons
 - [ ] **Rebuild Docker image from main**: The running container was hot-patched (docker cp). Need a clean rebuild from `main` to bake in all fixes (sutta_search import path, tolist(), REDIS_HOST).
 - [ ] **Sutta re-indexing on container start**: Currently `embed_suttas.py` must be run manually after deploy. Should be automated — either an init container or a startup hook.
 - [ ] **E2E test with separate bot**: Tao wants tests to use a dedicated test bot/chat, not his personal Telegram (488228716). Need a test bot token + test chat ID.
-- [ ] **WP4 research spike**: Dapr Conversation API compatibility with LEGO MPS. May not work if LEGO MPS isn't a supported backend. Could defer to Phase 2.
+- [ ] **WP4 research spike**: Dapr Conversation API compatibility with Anthropic proxy. May not work if Anthropic proxy isn't a supported backend. Could defer to Phase 2.
 - [ ] **Expand sutta corpus**: Currently 25 suttas. Access to Insight has thousands. Need a scraping/curation pipeline.
 - [ ] **Model caching**: First query after restart takes ~3s (model load). Could pre-warm on startup.
 
@@ -47,7 +47,7 @@ From the vision doc:
 ## Key Infrastructure Notes
 
 - **Container restart order**: Stop both → start app → start sidecar. Dapr sidecar uses `network_mode: "service:<app>"`.
-- **LEGO MPS headers**: Must send `Accept: application/json` + `Authorization: Bearer`. No `x-api-key`.
+- **Anthropic proxy headers**: Must send `Accept: application/json` + `Authorization: Bearer`. No `x-api-key`.
 - **Redis hostname**: Set `REDIS_HOST=lbob-redis` in container env. Default `localhost` only works for local dev.
 - **sutta_search.py import**: Uses `redis.commands.search.index_definition` (lowercase), NOT `indexDefinition`.
 - **Embeddings stored as list[float]**: RedisJSON needs `.tolist()`, not `.tobytes()`.

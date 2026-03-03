@@ -13,10 +13,10 @@ from trio import TrioDeprecationWarning, to_thread
 warnings.filterwarnings(action="ignore", category=TrioDeprecationWarning)
 
 
-def _call_lego_mps(model, api_base, api_key, messages):
-    """Call LEGO MPS via raw httpx, avoiding LiteLLM's incompatible headers.
+def _call_anthropic_proxy(model, api_base, api_key, messages):
+    """Call Anthropic proxy via raw httpx, avoiding LiteLLM's incompatible headers.
 
-    LEGO MPS is a Bedrock proxy that expects Anthropic Messages API format
+    Anthropic proxy is a Bedrock proxy that expects Anthropic Messages API format
     but fails when both Authorization and x-api-key headers are present.
     LiteLLM always sends x-api-key for anthropic/ provider, so we use raw httpx.
     """
@@ -38,7 +38,7 @@ def _call_lego_mps(model, api_base, api_key, messages):
             user_messages.append(msg)
 
     payload = {
-        "model": model.replace("anthropic/", ""),  # Strip prefix for LEGO MPS
+        "model": model.replace("anthropic/", ""),  # Strip prefix for Anthropic proxy
         "max_tokens": 4096,
         "messages": [
             {"role": m["role"], "content": m["content"]} for m in user_messages
@@ -146,7 +146,7 @@ def _build_app():
 
             return {"success": True, "rate_limited": True}
 
-        # Get the model from environment variable, default to Anthropic via LEGO MPS
+        # Get the model from environment variable, default to Anthropic via Anthropic proxy
         model = os.environ.get(
             "LITELLM_MODEL", "anthropic/anthropic.claude-sonnet-4-5-20250929-v1:0"
         )
@@ -164,8 +164,8 @@ def _build_app():
             system_prompt=system_prompt,
         )
 
-        # Use raw httpx for LEGO MPS (LiteLLM sends incompatible x-api-key header)
-        response = _call_lego_mps(
+        # Use raw httpx for Anthropic proxy (LiteLLM sends incompatible x-api-key header)
+        response = _call_anthropic_proxy(
             model=model,
             api_base=api_base,
             api_key=api_key,

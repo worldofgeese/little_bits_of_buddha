@@ -37,7 +37,7 @@ class TestBuildRagPrompt:
         1. Load conversation history via seeker_state.get_history()
         2. Search for relevant suttas via sutta_search.search_suttas()
         3. Construct the message list with augmented system prompt
-        4. Return ready for _call_lego_mps()
+        4. Return ready for _call_anthropic_proxy()
 
     Examples:
         - When suttas are found, system prompt includes sutta context
@@ -314,7 +314,7 @@ class TestMessageHandlerUsesRagPrompt:
         mock_dapr_client.__enter__ = Mock(return_value=mock_dapr_client)
         mock_dapr_client.__exit__ = Mock(return_value=None)
 
-        # Mock _call_lego_mps
+        # Mock _call_anthropic_proxy
         with (
             patch(
                 "dapr.clients.DaprClient",

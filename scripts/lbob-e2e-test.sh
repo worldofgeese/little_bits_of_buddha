@@ -142,5 +142,5 @@ fi
 log "========================================="
 log "  E2E SMOKE TEST PASSED"
 log "========================================="
-log "Pipeline: Dapr publish → openai-service → LEGO MPS (200) → Dapr responses → telegram-service"
+log "Pipeline: Dapr publish → openai-service → Anthropic proxy (200) → Dapr responses → telegram-service"
 exit 0

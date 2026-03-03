@@ -15,7 +15,7 @@ Transform LBOB from stateless chatbot to a bot that remembers conversations and 
 ### WP2: Redis Vector Search — Sutta Embeddings
 **Branch:** `feat/sutta-vectors`
 - Create `sutta_corpus/` with curated excerpts from Access to Insight / SuttaCentral (public domain)
-- Script to embed suttas via LEGO MPS embeddings endpoint (or local model)
+- Script to embed suttas via Anthropic proxy embeddings endpoint (or local model)
 - Redis Search index with vector field
 - `sutta_search.py` module: semantic search given user query
 - Tests: unit (mock Redis) + integration (real Redis with test vectors)
@@ -33,7 +33,7 @@ Transform LBOB from stateless chatbot to a bot that remembers conversations and 
 - Replace raw httpx with Dapr Conversation building block
 - Get response caching + PII scrubbing for free
 - Requires Dapr 1.14+ — verify version in our stack
-- May be blocked if LEGO MPS isn't a supported Dapr Conversation backend
+- May be blocked if Anthropic proxy isn't a supported Dapr Conversation backend
 
 ### WP5: Redis-Cell Rate Limiting
 **Branch:** `feat/rate-limiting`
@@ -45,7 +45,7 @@ Transform LBOB from stateless chatbot to a bot that remembers conversations and 
 ## Dispatch Strategy
 - **WP1 + WP2**: Parallel (independent). Two ACP Agent Teams workers.
 - **WP3**: Sequential after WP1 + WP2 merge.
-- **WP4**: Research spike first — verify Dapr Conversation API compatibility with LEGO MPS. May defer.
+- **WP4**: Research spike first — verify Dapr Conversation API compatibility with Anthropic proxy. May defer.
 - **WP5**: Independent, can run parallel with anything.
 
 ## Execution Order

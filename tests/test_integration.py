@@ -140,9 +140,9 @@ class TestDaprConfiguration:
             assert secrets["telegram-secret"] != "YOUR_TELEGRAM_BOT_TOKEN_HERE"
             assert secrets["anthropic-secret"] != "YOUR_ANTHROPIC_AUTH_TOKEN_HERE"
 
-            # Verify anthropic secret has colon-separated format (LEGO MPS)
+            # Verify anthropic secret has colon-separated format (Anthropic proxy)
             assert ":" in secrets["anthropic-secret"], (
-                "LEGO MPS auth token should be colon-separated"
+                "Anthropic proxy auth token should be colon-separated"
             )
 
 
@@ -165,11 +165,11 @@ class TestEndToEndFlow:
         # by checking that the Buddha persona is set up
 
         with patch(
-            "openai_service_worldofgeese.__main__._call_lego_mps"
-        ) as mock_lego_mps:
+            "openai_service_worldofgeese.__main__._call_anthropic_proxy"
+        ) as mock_anthropic_proxy:
             with patch("dapr.clients.DaprClient") as mock_dapr_client:
-                # Mock the _call_lego_mps function
-                mock_lego_mps.return_value = {
+                # Mock the _call_anthropic_proxy function
+                mock_anthropic_proxy.return_value = {
                     "choices": [{"message": {"content": "Seek the Middle Way."}}]
                 }
 
@@ -182,7 +182,7 @@ class TestEndToEndFlow:
                 # The service is configured - verify the model is set
                 # We can't call the actual subscriber without a real event,
                 # but we can verify the configuration exists
-                mock_lego_mps.assert_not_called()  # Not called yet
+                mock_anthropic_proxy.assert_not_called()  # Not called yet
 
 
 if __name__ == "__main__":

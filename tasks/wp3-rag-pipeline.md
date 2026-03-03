@@ -34,7 +34,7 @@ async def build_rag_prompt(
        - system message (original Buddha persona + injected sutta context)
        - conversation history messages
        - current user message
-    4. Return the full messages list ready for _call_lego_mps()
+    4. Return the full messages list ready for _call_anthropic_proxy()
     """
 ```
 
@@ -60,7 +60,7 @@ In the `messages_subscriber` function:
 
 ```python
 # BEFORE (current):
-response = _call_lego_mps(model=model, api_base=api_base, api_key=api_key, messages=[...])
+response = _call_anthropic_proxy(model=model, api_base=api_base, api_key=api_key, messages=[...])
 
 # AFTER:
 from openai_service_worldofgeese.rag import build_rag_prompt
@@ -70,7 +70,7 @@ messages = await build_rag_prompt(
     user_message=text,
     system_prompt="You are the Buddha. You teach only the Dhamma...",
 )
-response = _call_lego_mps(model=model, api_base=api_base, api_key=api_key, messages=messages)
+response = _call_anthropic_proxy(model=model, api_base=api_base, api_key=api_key, messages=messages)
 ```
 
 Also: after getting the LLM response, save both the user message AND the assistant response to state:
@@ -93,7 +93,7 @@ Write these as failing tests FIRST:
 3. `test_build_rag_prompt_no_suttas_found` — when search returns empty, system prompt is unmodified
 4. `test_build_rag_prompt_sutta_search_fails_gracefully` — when search throws, falls back to plain prompt
 5. `test_build_rag_prompt_state_fails_gracefully` — when get_history throws, falls back to no history
-6. `test_message_handler_uses_rag_prompt` — verify __main__.py calls build_rag_prompt and passes result to _call_lego_mps
+6. `test_message_handler_uses_rag_prompt` — verify __main__.py calls build_rag_prompt and passes result to _call_anthropic_proxy
 
 Use `@pytest.mark.trio` for all async tests. Mock `sutta_search.search_suttas` and `seeker_state.get_history` — do NOT call real Redis.
 

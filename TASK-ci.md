@@ -18,9 +18,9 @@ CI runs `pytest -m "not integration" -v` and is failing with 10 test failures.
 ### 2. tests/test_openai_service.py — IMPORT FAILURES  
 - `TestBuildApp::test_build_app_returns_tuple` — `dapr.ext.fastapi` not importable (package split?)
 - `TestBuildApp::test_build_app_has_subscriber_decorator` — same
-- `TestAnthropicProviderConfig::test_completion_uses_lego_mps_helper` — `dapr.clients` not importable
+- `TestAnthropicProviderConfig::test_completion_uses_anthropic_proxy_helper` — `dapr.clients` not importable
 
-### 3. tests/test_lego_mps_integration.py — CORRECTLY MARKED
+### 3. tests/test_anthropic_proxy_integration.py — CORRECTLY MARKED
 - Already has `@pytest.mark.integration` — should be skipped by CI. Verify.
 
 ## What To Do
@@ -34,7 +34,7 @@ CI runs `pytest -m "not integration" -v` and is failing with 10 test failures.
    - Remove or update `TestDaprConfiguration::test_secret_store_component_exists` (file was deleted)
    - Remove `TestLiteLLMIntegration` class entirely (LiteLLM replaced with raw httpx)
    - Mark telegram import tests as `@pytest.mark.integration` (need triogram native lib)
-   - Update `TestEndToEndFlow` to use the new httpx-based `_call_lego_mps` function
+   - Update `TestEndToEndFlow` to use the new httpx-based `_call_anthropic_proxy` function
 
 3. **Fix `tests/test_openai_service.py`:**
    - Mock `dapr.ext.fastapi` and `dapr.clients` imports properly so tests run without dapr installed

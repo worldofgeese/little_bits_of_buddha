@@ -172,23 +172,23 @@ class TestBuildApp:
         assert call_kwargs.get("topic") == "messages"
 
 
-class TestLegoMPSIntegration:
-    """Tests for LEGO MPS integration via raw httpx.
+class TestAnthropicProxyIntegration:
+    """Tests for Anthropic proxy integration via raw httpx.
 
-    We use raw httpx instead of LiteLLM because LEGO MPS (a Bedrock proxy)
+    We use raw httpx instead of LiteLLM because Anthropic proxy (a Bedrock proxy)
     fails when LiteLLM sends both Authorization and x-api-key headers.
     """
 
-    def test_lego_mps_helper_available(self):
-        """Verify that _call_lego_mps helper function exists."""
-        from openai_service_worldofgeese.__main__ import _call_lego_mps
+    def test_anthropic_proxy_helper_available(self):
+        """Verify that _call_anthropic_proxy helper function exists."""
+        from openai_service_worldofgeese.__main__ import _call_anthropic_proxy
 
-        assert callable(_call_lego_mps)
+        assert callable(_call_anthropic_proxy)
 
-    @patch("openai_service_worldofgeese.__main__._call_lego_mps")
-    def test_lego_mps_called_with_correct_params(self, mock_call):
-        """Test that _call_lego_mps is called with correct parameters."""
-        from openai_service_worldofgeese.__main__ import _call_lego_mps
+    @patch("openai_service_worldofgeese.__main__._call_anthropic_proxy")
+    def test_anthropic_proxy_called_with_correct_params(self, mock_call):
+        """Test that _call_anthropic_proxy is called with correct parameters."""
+        from openai_service_worldofgeese.__main__ import _call_anthropic_proxy
 
         # Mock the response
         mock_call.return_value = {
@@ -196,7 +196,7 @@ class TestLegoMPSIntegration:
         }
 
         # Call the function
-        result = _call_lego_mps(
+        result = _call_anthropic_proxy(
             model="anthropic/anthropic.claude-sonnet-4-5-20250929-v1:0",
             api_base="https://ANTHROPIC_PROXY_HOST/claude",
             api_key="test-token",
@@ -212,13 +212,13 @@ class TestLegoMPSIntegration:
 
 
 class TestAnthropicProviderConfig:
-    """Tests for Anthropic (LEGO MPS) provider configuration.
+    """Tests for Anthropic (Anthropic proxy) provider configuration.
 
     These tests verify that the service is correctly configured to use
-    LEGO MPS endpoint with raw httpx (not LiteLLM due to header conflict).
+    Anthropic proxy endpoint with raw httpx (not LiteLLM due to header conflict).
     """
 
-    @patch("openai_service_worldofgeese.__main__._call_lego_mps")
+    @patch("openai_service_worldofgeese.__main__._call_anthropic_proxy")
     @patch("dapr.clients.DaprClient")
     @patch.dict(
         os.environ,
@@ -227,12 +227,12 @@ class TestAnthropicProviderConfig:
             "ANTHROPIC_AUTH_TOKEN": "test-token",
         },
     )
-    def test_completion_uses_lego_mps_helper(self, mock_dapr_client, mock_call_lego):
-        """Test that _call_lego_mps is used for LEGO MPS calls."""
+    def test_completion_uses_anthropic_proxy_helper(self, mock_dapr_client, mock_call_proxy):
+        """Test that _call_anthropic_proxy is used for Anthropic proxy calls."""
         from openai_service_worldofgeese.__main__ import _build_app
 
-        # Mock the LEGO MPS call
-        mock_call_lego.return_value = {
+        # Mock the Anthropic proxy call
+        mock_call_proxy.return_value = {
             "choices": [{"message": {"content": "Test Buddha response"}}]
         }
 
@@ -270,9 +270,9 @@ class TestAnthropicProviderConfig:
         """Test that ANTHROPIC_AUTH_TOKEN is available and can contain colons."""
         token = os.environ.get("ANTHROPIC_AUTH_TOKEN")
 
-        # The LEGO MPS token is colon-separated, verify we can handle that
+        # The Anthropic proxy token is colon-separated, verify we can handle that
         assert token is not None
-        assert ":" in token, "LEGO MPS auth token should be colon-separated"
+        assert ":" in token, "Anthropic proxy auth token should be colon-separated"
 
 
 if __name__ == "__main__":

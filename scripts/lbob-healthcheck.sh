@@ -30,8 +30,8 @@ done
 BOT_TOKEN="${TELEGRAM_BOT_TOKEN:-6014356103:AAFMthhrKMXJLdeuU3rK09ViK27bCJiJTlw}"
 check "Bot token valid" "curl -sf 'https://api.telegram.org/bot${BOT_TOKEN}/getMe' | grep -q '\"ok\":true'"
 
-# Check LEGO MPS reachable
-check "LEGO MPS reachable" "curl -sf -o /dev/null -w '%{http_code}' 'https://ANTHROPIC_PROXY_HOST/claude' | grep -qv 000"
+# Check Anthropic proxy reachable
+check "Anthropic proxy reachable" "curl -sf -o /dev/null -w '%{http_code}' 'https://ANTHROPIC_PROXY_HOST/claude' | grep -qv 000"
 
 # Check Redis has sutta index
 check "Sutta index exists" "docker exec lbob-redis redis-cli FT.INFO sutta_idx 2>/dev/null | grep -q sutta_idx"

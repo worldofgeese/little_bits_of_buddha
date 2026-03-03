@@ -9,7 +9,7 @@
 #
 # Required env vars for production:
 #   TELEGRAM_BOT_TOKEN   - Telegram bot token
-#   ANTHROPIC_AUTH_TOKEN  - LEGO MPS Bearer token
+#   ANTHROPIC_AUTH_TOKEN  - Anthropic proxy Bearer token
 
 services:
   # Development container

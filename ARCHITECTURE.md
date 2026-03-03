@@ -62,7 +62,7 @@ User sends Telegram message
               → Load conversation history (Dapr state store → Redis)
               → Semantic sutta search (Redis Search, all-MiniLM-L6-v2 embeddings)
               → Build RAG prompt: system prompt + sutta context + history + user message
-              → Call LEGO MPS (Anthropic Messages API via Bedrock proxy)
+              → Call Anthropic proxy (Anthropic Messages API via Bedrock proxy)
               → Save user message + response to conversation history
               → Publish response to "responses" topic
                 → lbob-telegram receives response
@@ -94,7 +94,7 @@ User sends Telegram message
 - **Python 3.12** with **trio** (not asyncio). DaprClient is sync-only; wrapped via `trio.to_thread.run_sync`.
 - **sentence-transformers** (`all-MiniLM-L6-v2`): Local embeddings, 384 dimensions. CPU-only PyTorch to keep image small (~300MB vs 2GB+ with CUDA).
 - **Redis Stack** (`redis/redis-stack-server`): Includes RediSearch (vector search), RedisJSON, redis-cell (rate limiting).
-- **LEGO MPS**: Anthropic Claude via LEGO's Bedrock proxy. Requires `Accept: application/json` header and `Authorization: Bearer` (not `x-api-key`). LiteLLM can't be used — sends incompatible headers.
+- **Anthropic proxy**: Anthropic Claude via the Anthropic Bedrock proxy. Requires `Accept: application/json` header and `Authorization: Bearer` (not `x-api-key`). LiteLLM can't be used — sends incompatible headers.
 - **Rootless Podman** with `DOCKER_BUILDKIT=0`.
 
 ## Dapr Components
@@ -114,8 +114,8 @@ Located in `.dapr/components/`:
 
 | Variable | Service | Purpose |
 |----------|---------|---------|
-| `ANTHROPIC_AUTH_TOKEN` | openai | LEGO MPS Bearer token |
-| `ANTHROPIC_BASE_URL` | openai | LEGO MPS endpoint |
+| `ANTHROPIC_AUTH_TOKEN` | openai | Anthropic proxy Bearer token |
+| `ANTHROPIC_BASE_URL` | openai | Anthropic proxy endpoint |
 | `LITELLM_MODEL` | openai | Model identifier |
 | `REDIS_HOST` | openai | Redis hostname (default: lbob-redis) |
 | `REDIS_PORT` | openai | Redis port (default: 6379) |

@@ -8,7 +8,7 @@
 
 Phase 1 requires vector embeddings for semantic sutta search. Two options:
 
-1. **LEGO MPS embeddings endpoint** — use the same Bedrock proxy that serves LLM calls
+1. **Anthropic proxy embeddings endpoint** — use the same Bedrock proxy that serves LLM calls
 2. **Local sentence-transformers** — run `all-MiniLM-L6-v2` in the container
 
 ## Decision
@@ -17,9 +17,9 @@ Use `sentence-transformers` with `all-MiniLM-L6-v2` locally.
 
 ## Rationale
 
-- **No API cost**: Embeddings are computed at indexing time and query time without network calls to LEGO MPS.
-- **No auth complexity**: LEGO MPS requires specific header handling (Accept: application/json, Bearer token). Adding embedding support would mean more fragile httpx code.
-- **Speed**: Local embedding of 25 suttas takes ~2 seconds. Query embedding takes ~50ms. Network round-trip to LEGO MPS would add 200-500ms per query.
+- **No API cost**: Embeddings are computed at indexing time and query time without network calls to Anthropic proxy.
+- **No auth complexity**: Anthropic proxy requires specific header handling (Accept: application/json, Bearer token). Adding embedding support would mean more fragile httpx code.
+- **Speed**: Local embedding of 25 suttas takes ~2 seconds. Query embedding takes ~50ms. Network round-trip to Anthropic proxy would add 200-500ms per query.
 - **Model size**: `all-MiniLM-L6-v2` is 80MB. CPU-only PyTorch adds ~300MB to the container. Acceptable for a server-side container.
 - **Quality**: 384-dim embeddings from MiniLM are sufficient for a 25-sutta corpus. Not competing with state-of-the-art retrieval benchmarks.
 
