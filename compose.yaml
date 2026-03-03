@@ -124,6 +124,7 @@ services:
       - ANTHROPIC_AUTH_TOKEN=${ANTHROPIC_AUTH_TOKEN}
       - ANTHROPIC_BASE_URL=https://ANTHROPIC_PROXY_HOST/claude
       - LITELLM_MODEL=anthropic/anthropic.claude-sonnet-4-5-20250929-v1:0
+      - REDIS_HOST=lbob-redis
     ports:
       - "8080:8080"
     restart: unless-stopped
