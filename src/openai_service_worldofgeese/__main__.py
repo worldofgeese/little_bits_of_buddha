@@ -116,15 +116,13 @@ def _build_app():
 
     @dapr_app.subscribe(pubsub="redis-pubsub", topic="messages")
     async def messages_subscriber(event: CloudEvent):
+        from openai_service_worldofgeese.rag import build_rag_prompt
         from openai_service_worldofgeese.rate_limiter import check_rate_limit
-        from openai_service_worldofgeese.seeker_state import get_history, save_message
+        from openai_service_worldofgeese.seeker_state import save_message
 
         logging.info(f"Received message: {event.data}")
         text: str = event.data.get("text", "")
         chat_id: str = event.data.get("chat_id", "")
-
-        # Save user message to conversation history
-        await save_message(chat_id, "user", text)
 
         # Check rate limit
         allowed, retry_after = await check_rate_limit(chat_id)
@@ -148,9 +146,6 @@ def _build_app():
 
             return {"success": True, "rate_limited": True}
 
-        # Load conversation history (last 10 messages)
-        history = await get_history(chat_id, limit=10)
-
         # Get the model from environment variable, default to Anthropic via LEGO MPS
         model = os.environ.get(
             "LITELLM_MODEL", "anthropic/anthropic.claude-sonnet-4-5-20250929-v1:0"
@@ -160,17 +155,14 @@ def _build_app():
         )
         api_key = os.environ.get("ANTHROPIC_AUTH_TOKEN")
 
-        # Build messages with system prompt + conversation history
-        messages = [
-            {
-                "role": "system",
-                "content": "You are the Buddha. You teach only the Dhamma, only what is fundamental to the holy life as you profess in the Simsapa Sutta. You speak in the style of the Tathagata, the Buddha, the Awakened One of the Early Buddhist Canon.",
-            }
-        ]
+        # Build RAG prompt with conversation history + sutta context
+        system_prompt = "You are the Buddha. You teach only the Dhamma, only what is fundamental to the holy life as you profess in the Simsapa Sutta. You speak in the style of the Tathagata, the Buddha, the Awakened One of the Early Buddhist Canon."
 
-        # Add conversation history (excluding timestamps for LLM)
-        for msg in history:
-            messages.append({"role": msg["role"], "content": msg["content"]})
+        messages = await build_rag_prompt(
+            chat_id=chat_id,
+            user_message=text,
+            system_prompt=system_prompt,
+        )
 
         # Use raw httpx for LEGO MPS (LiteLLM sends incompatible x-api-key header)
         response = _call_lego_mps(
@@ -182,7 +174,8 @@ def _build_app():
 
         response_text = response["choices"][0]["message"]["content"]
 
-        # Save assistant response to conversation history
+        # Save both user message and assistant response to conversation history
+        await save_message(chat_id, "user", text)
         await save_message(chat_id, "assistant", response_text)
 
         output_response = {
