@@ -42,8 +42,8 @@ fi
 # Check Redis has sutta index
 check "Sutta index exists" "docker exec lbob-redis redis-cli FT.INFO sutta_idx 2>/dev/null | grep -q sutta_idx"
 
-# Check Dapr health via app container (sidecar shares network namespace, so localhost:3500 works from app)
-check "Dapr sidecar healthy" "docker exec lbob-openai python -c \"import urllib.request; urllib.request.urlopen('http://localhost:3500/v1.0/healthz')\" 2>/dev/null"
+# Check Dapr health via direct container access (each container has its own network now)
+check "Dapr sidecar healthy" "docker exec lbob-openai-dapr /bin/sh -c 'wget -qO- http://localhost:3500/v1.0/healthz' 2>/dev/null || docker exec lbob-openai python -c \"import urllib.request; urllib.request.urlopen('http://lbob-openai-dapr:3500/v1.0/healthz')\" 2>/dev/null"
 
 # Check for recent errors in openai service logs (last 5 min)
 ERRORS=$(docker logs lbob-openai --since 5m 2>&1 | grep -ci "error\|traceback\|exception" || true)

@@ -37,16 +37,11 @@ This architecture isn't arbitrary. Each component handles a distinct concern tha
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### Critical: Container Network Sharing
+### Network Topology
 
-Dapr sidecars use `network_mode: "service:<app>"` (Podman) / `network_mode: "container:<app>"` (Docker). This means the sidecar **joins the app container's network namespace**. Both share `localhost`.
+All services share a bridge network (`lbob`). Dapr sidecars reach their app via `--app-channel-address=<container_name>` (DNS on the bridge network). Apps reach their Dapr sidecar via `DAPR_HTTP_ENDPOINT` / `DAPR_GRPC_ENDPOINT` env vars pointing to the sidecar's hostname.
 
-**Restart order matters:**
-1. Stop both: `docker stop lbob-openai-dapr lbob-openai`
-2. Start app first: `docker start lbob-openai`
-3. Start sidecar second: `docker start lbob-openai-dapr`
-
-Reversing this or restarting individually breaks the shared namespace. The sidecar will fail to bind to port 3500 if the app container it depends on isn't running.
+**No restart-order dependency.** Containers can start, stop, and restart in any order. Dapr retries app connections; apps retry Dapr connections via `wait_for_dapr_ready()`.
 
 ## Message Flow
 

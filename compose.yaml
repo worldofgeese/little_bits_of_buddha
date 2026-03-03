@@ -10,6 +10,7 @@
 # Required env vars for production:
 #   TELEGRAM_BOT_TOKEN   - Telegram bot token
 #   ANTHROPIC_AUTH_TOKEN  - Anthropic proxy Bearer token
+#   ANTHROPIC_BASE_URL   - Anthropic proxy endpoint
 
 services:
   # Development container
@@ -29,6 +30,8 @@ services:
   redis:
     image: redis/redis-stack-server:latest
     container_name: lbob-redis
+    networks:
+      - lbob
     ports:
       - "6379:6379"
     volumes:
@@ -49,18 +52,18 @@ services:
       context: .
       dockerfile: Dockerfile.daprd
     container_name: lbob-telegram-dapr
+    networks:
+      - lbob
     command:
       - ./daprd
       - --app-id=telegram-bot-service
+      - --app-channel-address=lbob-telegram
       - --app-port=8090
       - --dapr-http-port=3500
       - --dapr-grpc-port=50001
       - --resources-path=/components
       - --log-level=info
-    network_mode: "service:telegram-bot-service"
     depends_on:
-      telegram-bot-service:
-        condition: service_started
       redis:
         condition: service_healthy
     restart: unless-stopped
@@ -74,11 +77,15 @@ services:
       dockerfile: Dockerfile
       target: telegram-bot-service-production
     container_name: lbob-telegram
+    networks:
+      - lbob
     depends_on:
       redis:
         condition: service_healthy
     environment:
       - TRIOGRAM_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - DAPR_HTTP_ENDPOINT=http://lbob-telegram-dapr:3500
+      - DAPR_GRPC_ENDPOINT=lbob-telegram-dapr:50001
     ports:
       - "8090:8090"
     restart: unless-stopped
@@ -92,18 +99,18 @@ services:
       context: .
       dockerfile: Dockerfile.daprd
     container_name: lbob-openai-dapr
+    networks:
+      - lbob
     command:
       - ./daprd
       - --app-id=openai-service
+      - --app-channel-address=lbob-openai
       - --app-port=8080
       - --dapr-http-port=3500
       - --dapr-grpc-port=50001
       - --resources-path=/components
       - --log-level=info
-    network_mode: "service:openai-service"
     depends_on:
-      openai-service:
-        condition: service_started
       redis:
         condition: service_healthy
     restart: unless-stopped
@@ -117,6 +124,8 @@ services:
       dockerfile: Dockerfile
       target: openai-service-production
     container_name: lbob-openai
+    networks:
+      - lbob
     depends_on:
       redis:
         condition: service_healthy
@@ -125,6 +134,8 @@ services:
       - ANTHROPIC_BASE_URL=${ANTHROPIC_BASE_URL}
       - LITELLM_MODEL=anthropic/anthropic.claude-sonnet-4-5-20250929-v1:0
       - REDIS_HOST=lbob-redis
+      - DAPR_HTTP_ENDPOINT=http://lbob-openai-dapr:3500
+      - DAPR_GRPC_ENDPOINT=lbob-openai-dapr:50001
     ports:
       - "8080:8080"
     restart: unless-stopped
@@ -135,6 +146,8 @@ services:
   loki:
     image: docker.io/grafana/loki:3.3.2
     container_name: lbob-loki
+    networks:
+      - lbob
     ports:
       - "3100:3100"
     volumes:
@@ -147,6 +160,8 @@ services:
   promtail:
     image: docker.io/grafana/promtail:3.3.2
     container_name: lbob-promtail
+    networks:
+      - lbob
     command: -config.file=/etc/promtail/config.yml
     volumes:
       - ./monitoring/promtail-config.yaml:/etc/promtail/config.yml:ro,Z
@@ -156,6 +171,10 @@ services:
     restart: unless-stopped
     profiles:
       - production
+
+networks:
+  lbob:
+    driver: bridge
 
 volumes:
   redis_data:

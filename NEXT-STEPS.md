@@ -46,7 +46,7 @@ From the vision doc:
 
 ## Key Infrastructure Notes
 
-- **Container restart order**: Stop both → start app → start sidecar. Dapr sidecar uses `network_mode: "service:<app>"`.
+- **Network topology**: All containers on shared `lbob` bridge network. No restart-order dependency. Dapr uses `--app-channel-address`, apps use `DAPR_HTTP_ENDPOINT`.
 - **Anthropic proxy headers**: Must send `Accept: application/json` + `Authorization: Bearer`. No `x-api-key`.
 - **Redis hostname**: Set `REDIS_HOST=lbob-redis` in container env. Default `localhost` only works for local dev.
 - **sutta_search.py import**: Uses `redis.commands.search.index_definition` (lowercase), NOT `indexDefinition`.

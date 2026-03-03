@@ -71,12 +71,11 @@ def _call_anthropic_proxy(model, api_base, api_key, messages):
 def wait_for_dapr_ready(dapr_port=3500, retries=20, delay=2):
     """Wait for the Dapr sidecar to be ready.
 
-    Arguments:
-    dapr_port -- The port on which the Dapr sidecar is listening.
-    retries -- The number of times to check if Dapr is ready before giving up.
-    delay -- The delay between checks.
+    Uses DAPR_HTTP_ENDPOINT if set (for separate-container sidecars),
+    otherwise falls back to localhost (shared network namespace).
     """
-    dapr_url = f"http://localhost:{dapr_port}/v1.0/healthz"
+    dapr_endpoint = os.environ.get("DAPR_HTTP_ENDPOINT", f"http://localhost:{dapr_port}")
+    dapr_url = f"{dapr_endpoint}/v1.0/healthz"
     for _ in range(retries):
         try:
             response = requests.get(dapr_url)
