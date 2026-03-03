@@ -24,7 +24,9 @@ def test_anthropic_proxy_connection():
 
     # Test configuration
     model = "anthropic/anthropic.claude-sonnet-4-5-20250929-v1:0"
-    api_base = "https://ANTHROPIC_PROXY_HOST/claude"
+    api_base = os.environ.get("ANTHROPIC_BASE_URL")
+    if not api_base:
+        raise ValueError("ANTHROPIC_BASE_URL environment variable is not set for integration test")
     test_message = "Hello Buddha, please respond with a single word: 'Success'"
 
     print("\nTesting Anthropic proxy integration:")

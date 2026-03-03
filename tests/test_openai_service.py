@@ -196,9 +196,12 @@ class TestAnthropicProxyIntegration:
         }
 
         # Call the function
+        api_base = os.environ.get("ANTHROPIC_BASE_URL")
+        if not api_base:
+            raise RuntimeError("ANTHROPIC_BASE_URL must be set for tests")
         result = _call_anthropic_proxy(
             model="anthropic/anthropic.claude-sonnet-4-5-20250929-v1:0",
-            api_base="https://ANTHROPIC_PROXY_HOST/claude",
+            api_base=api_base,
             api_key="test-token",
             messages=[
                 {"role": "system", "content": "You are the Buddha."},

@@ -150,9 +150,9 @@ def _build_app():
         model = os.environ.get(
             "LITELLM_MODEL", "anthropic/anthropic.claude-sonnet-4-5-20250929-v1:0"
         )
-        api_base = os.environ.get(
-            "ANTHROPIC_BASE_URL", "https://ANTHROPIC_PROXY_HOST/claude"
-        )
+        api_base = os.environ.get("ANTHROPIC_BASE_URL")
+        if not api_base:
+            raise RuntimeError("ANTHROPIC_BASE_URL must be set in the environment to call Anthropic proxy")
         api_key = os.environ.get("ANTHROPIC_AUTH_TOKEN")
 
         # Build RAG prompt with conversation history + sutta context

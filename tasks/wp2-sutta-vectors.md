@@ -46,7 +46,7 @@ Then implement until tests pass. Commit again.
 
 ## Embedding Strategy Decision
 **Option A (recommended):** Use `sentence-transformers` with `all-MiniLM-L6-v2` (384-dim, fast, runs locally, no API cost)
-**Option B:** Use Anthropic proxy embeddings endpoint (if available — check `https://ANTHROPIC_PROXY_HOST/claude/v1/embeddings`)
+**Option B:** Use Anthropic proxy embeddings endpoint (if available — check `${ANTHROPIC_BASE_URL}/v1/embeddings`)
 
 Go with Option A unless Anthropic proxy embeddings are confirmed working. Add `sentence-transformers` to PDM dependencies.
 

@@ -60,7 +60,7 @@ User ──► Telegram API
 Optional (defaults in compose):
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `ANTHROPIC_BASE_URL` | `https://ANTHROPIC_PROXY_HOST/claude` | LLM API base URL |
+| `ANTHROPIC_BASE_URL` | `${ANTHROPIC_BASE_URL}` | LLM API base URL |
 | `LITELLM_MODEL` | `anthropic/anthropic.claude-sonnet-4-5-20250929-v1:0` | Model identifier |
 
 ### Building

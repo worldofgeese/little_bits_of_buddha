@@ -6,7 +6,7 @@
 
 ## Context
 
-Anthropic proxy (`ANTHROPIC_PROXY_HOST/claude`) is a Bedrock proxy that exposes the Anthropic Messages API. The original implementation used LiteLLM with `anthropic/` provider prefix.
+Anthropic proxy (`${ANTHROPIC_BASE_URL}`) is a Bedrock proxy that exposes the Anthropic Messages API. The original implementation used LiteLLM with `anthropic/` provider prefix.
 
 ## Problem
 
