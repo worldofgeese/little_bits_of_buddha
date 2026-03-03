@@ -29,6 +29,8 @@ ENTRYPOINT ["python", "-m", "telegram_bot_service_worldofgeese"]
 # --- openai-service ---
 FROM base-builder as openai-service-builder
 COPY src/openai_service_worldofgeese/requirements.txt /tmp/requirements.txt
+# Install CPU-only PyTorch first (avoids 2GB+ CUDA downloads)
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
 FROM python:3.12-slim as openai-service-production
