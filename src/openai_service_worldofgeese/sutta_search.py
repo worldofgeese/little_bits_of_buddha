@@ -12,7 +12,7 @@ from typing import Any
 import numpy as np
 import redis
 from redis.commands.search.field import TagField, TextField, VectorField
-from redis.commands.search.indexDefinition import (  # type: ignore[unresolved-import]
+from redis.commands.search.index_definition import (  # type: ignore[unresolved-import]
     IndexDefinition,
     IndexType,
 )
@@ -125,7 +125,7 @@ def index_suttas(suttas: list[dict[str, Any]]) -> int:
             "collection": sutta["collection"],
             "text": sutta["text"],
             "themes": sutta["themes"],
-            "embedding": embedding.astype(np.float32).tobytes(),
+            "embedding": embedding.astype(np.float32).tolist(),
         }
 
         # Store in Redis as JSON
