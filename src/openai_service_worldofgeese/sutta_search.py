@@ -12,7 +12,7 @@ from typing import Any
 import numpy as np
 import redis
 from redis.commands.search.field import TagField, TextField, VectorField
-from redis.commands.search.index_definition import (  # type: ignore[unresolved-import]
+from redis.commands.search.index_definition import (
     IndexDefinition,
     IndexType,
 )

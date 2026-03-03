@@ -5,9 +5,8 @@ import time
 import warnings
 
 import httpx
-import httpx
 import trio
-from trio import TrioDeprecationWarning, to_thread
+from trio import TrioDeprecationWarning
 
 # Filter out any deprecation warnings
 warnings.filterwarnings(action="ignore", category=TrioDeprecationWarning)
