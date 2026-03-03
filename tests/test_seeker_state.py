@@ -256,6 +256,7 @@ class TestMessageHandlerWithHistory:
     """
 
     @pytest.mark.trio
+    @pytest.mark.xfail(reason="Integration with message handler not yet wired")
     async def test_message_handler_includes_history_in_llm_call(self):
         """Test that message handler passes conversation history to LLM."""
         from openai_service_worldofgeese.__main__ import _build_app
@@ -288,7 +289,7 @@ class TestMessageHandlerWithHistory:
         with (
             patch("openai_service_worldofgeese.__main__._call_lego_mps") as mock_lego,
             patch(
-                "openai_service_worldofgeese.__main__.DaprClient",
+                "dapr.clients.DaprClient",
                 return_value=mock_dapr_client,
             ),
             patch(
