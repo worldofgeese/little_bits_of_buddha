@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LBOB Vision — Unlocking the Full Power</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600;700&display=swap');
+  
+  :root {
+    --bg: #0f0f14;
+    --surface: #1a1a24;
+    --surface-2: #22222e;
+    --border: #2d2d3d;
+    --text: #e8e6f0;
+    --muted: #8a879a;
+    --gold: #d4a853;
+    --gold-dim: #a08030;
+    --lotus: #c77dba;
+    --lotus-dim: rgba(199,125,186,0.15);
+    --teal: #5bb8a6;
+    --teal-dim: rgba(91,184,166,0.15);
+    --red: #d46a6a;
+    --blue: #6a9fd4;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    padding: 2rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    font-family: 'Crimson Pro', Georgia, serif;
+    font-size: 2.4rem;
+    font-weight: 600;
+    color: var(--gold);
+    margin-bottom: 0.3rem;
+    letter-spacing: -0.02em;
+  }
+
+  .subtitle {
+    font-family: 'Crimson Pro', serif;
+    font-style: italic;
+    color: var(--muted);
+    font-size: 1.1rem;
+    margin-bottom: 2.5rem;
+  }
+
+  h2 {
+    font-family: 'Crimson Pro', serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--gold);
+    margin: 2.5rem 0 1rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--lotus);
+    margin: 1.5rem 0 0.5rem;
+  }
+
+  p { margin-bottom: 0.8rem; color: var(--text); font-size: 0.92rem; }
+  p.muted { color: var(--muted); font-size: 0.85rem; }
+
+  /* Current vs Vision comparison */
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+
+  .compare-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.2rem;
+  }
+
+  .compare-card.current { border-left: 3px solid var(--muted); }
+  .compare-card.vision { border-left: 3px solid var(--gold); }
+
+  .compare-card .tag {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.6rem;
+  }
+
+  .compare-card.current .tag { color: var(--muted); }
+  .compare-card.vision .tag { color: var(--gold); }
+
+  .compare-card ul { list-style: none; }
+  .compare-card li {
+    font-size: 0.85rem;
+    padding: 0.25rem 0;
+    color: var(--text);
+    position: relative;
+    padding-left: 1.2rem;
+  }
+  .compare-card li::before {
+    position: absolute;
+    left: 0;
+    top: 0.25rem;
+  }
+  .compare-card.current li::before { content: '·'; color: var(--muted); }
+  .compare-card.vision li::before { content: '◆'; color: var(--gold); font-size: 0.6rem; top: 0.35rem; }
+
+  /* Architecture diagram */
+  .arch {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    margin: 1.5rem 0;
+    font-family: 'Inter', monospace;
+    font-size: 0.78rem;
+    line-height: 1.8;
+    overflow-x: auto;
+    white-space: pre;
+    color: var(--muted);
+  }
+
+  .arch .svc { color: var(--teal); font-weight: 600; }
+  .arch .dapr { color: var(--lotus); }
+  .arch .redis { color: var(--red); font-weight: 600; }
+  .arch .user { color: var(--gold); }
+  .arch .arrow { color: var(--muted); }
+  .arch .new { color: var(--gold); font-weight: 700; }
+
+  /* Feature cards */
+  .features {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+
+  .feat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    transition: border-color 0.2s;
+  }
+
+  .feat:hover { border-color: var(--gold-dim); }
+
+  .feat .icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+
+  .feat .name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .feat .desc {
+    font-size: 0.8rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .feat .tech {
+    margin-top: 0.5rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+
+  .feat .tech.dapr { color: var(--lotus); }
+  .feat .tech.redis { color: var(--red); }
+  .feat .tech.both { color: var(--teal); }
+
+  /* Phase timeline */
+  .phases {
+    margin: 1.5rem 0;
+    position: relative;
+    padding-left: 2rem;
+  }
+
+  .phases::before {
+    content: '';
+    position: absolute;
+    left: 0.55rem;
+    top: 0.8rem;
+    bottom: 0.8rem;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--gold), var(--lotus), var(--teal));
+  }
+
+  .phase {
+    position: relative;
+    margin-bottom: 1.5rem;
+  }
+
+  .phase::before {
+    content: '';
+    position: absolute;
+    left: -1.45rem;
+    top: 0.35rem;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid var(--gold);
+    background: var(--bg);
+  }
+
+  .phase:nth-child(2)::before { border-color: var(--lotus); }
+  .phase:nth-child(3)::before { border-color: var(--teal); }
+
+  .phase .label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.2rem;
+  }
+
+  .phase:nth-child(1) .label { color: var(--gold); }
+  .phase:nth-child(2) .label { color: var(--lotus); }
+  .phase:nth-child(3) .label { color: var(--teal); }
+
+  .phase .title { font-weight: 600; font-size: 0.95rem; margin-bottom: 0.3rem; }
+
+  .phase ul { list-style: none; }
+  .phase li {
+    font-size: 0.82rem;
+    color: var(--muted);
+    padding: 0.15rem 0 0.15rem 1rem;
+    position: relative;
+  }
+  .phase li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--border);
+  }
+
+  .callout {
+    background: var(--surface-2);
+    border-left: 3px solid var(--gold);
+    border-radius: 0 8px 8px 0;
+    padding: 1rem 1.2rem;
+    margin: 1.5rem 0;
+    font-size: 0.88rem;
+  }
+
+  .callout .q {
+    font-family: 'Crimson Pro', serif;
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--gold);
+    margin-bottom: 0.3rem;
+  }
+
+  .callout .a { color: var(--muted); font-size: 0.85rem; }
+</style>
+</head>
+<body>
+
+<h1>Little Bits of Buddha</h1>
+<p class="subtitle">From microservices showcase to something that actually deserves the architecture</p>
+
+<div class="callout">
+  <div class="q">"Could have been one lightweight process in a single container."</div>
+  <div class="a">True. So the question is: what would make the microservices architecture not just justified, but essential? What would a Buddhabot need that a single process can't provide?</div>
+</div>
+
+<h2>What We Have vs What's Possible</h2>
+
+<div class="compare">
+  <div class="compare-card current">
+    <div class="tag">Current — Pipes & Filters</div>
+    <ul>
+      <li>Telegram → pub/sub → LLM → pub/sub → Telegram</li>
+      <li>Stateless — every message starts fresh</li>
+      <li>Redis is just a message bus</li>
+      <li>Dapr is just pub/sub glue</li>
+      <li>One model, one personality, no memory</li>
+      <li>No awareness of who's asking</li>
+    </ul>
+  </div>
+  <div class="compare-card vision">
+    <div class="tag">Vision — Living Teacher</div>
+    <ul>
+      <li>Remembers each seeker's journey</li>
+      <li>Draws from searchable sutta library</li>
+      <li>Adapts tone: beginner vs practitioner</li>
+      <li>Scheduled practice reminders</li>
+      <li>Conversation flows as durable workflows</li>
+      <li>Multiple wisdom traditions, routable</li>
+    </ul>
+  </div>
+</div>
+
+<h2>Untapped Power</h2>
+
+<h3>Redis — Not Just a Message Bus</h3>
+
+<div class="features">
+  <div class="feat">
+    <div class="icon">🔍</div>
+    <div class="name">Vector Sutta Search</div>
+    <div class="desc">Embed the Pali Canon (Tipitaka) and key commentaries as vectors in Redis. When someone asks about suffering, search semantically — not keyword match, but meaning match. "I feel stuck" finds the Sallatha Sutta (the arrow) without needing the word "suffering."</div>
+    <div class="tech redis">REDIS SEARCH + VECTORS</div>
+  </div>
+  <div class="feat">
+    <div class="icon">🧠</div>
+    <div class="name">Seeker Memory</div>
+    <div class="desc">Redis state store holds each user's conversation history, practice level, and topics explored. The bot remembers: "You asked about the Five Hindrances last week — have you noticed restlessness since?" Continuity makes the difference between a chatbot and a teacher.</div>
+    <div class="tech both">DAPR STATE + REDIS</div>
+  </div>
+  <div class="feat">
+    <div class="icon">⏱️</div>
+    <div class="name">Session Rate Limiting</div>
+    <div class="desc">Redis-cell module: per-user rate limiting as a single atomic command. Prevents abuse while keeping the bot responsive. Also enables "daily wisdom limit" — encourage reflection over consumption.</div>
+    <div class="tech redis">REDIS-CELL MODULE</div>
+  </div>
+  <div class="feat">
+    <div class="icon">📊</div>
+    <div class="name">Practice Analytics</div>
+    <div class="desc">Redis TimeSeries tracks engagement patterns: when do seekers ask questions? What topics recur? This isn't surveillance — it's understanding the sangha. Aggregate, anonymous, respectful.</div>
+    <div class="tech redis">REDIS TIMESERIES</div>
+  </div>
+</div>
+
+<h3>Dapr — Not Just Pub/Sub Glue</h3>
+
+<div class="features">
+  <div class="feat">
+    <div class="icon">🔄</div>
+    <div class="name">Conversation Workflows</div>
+    <div class="desc">Dapr Workflows turn multi-step teaching into durable processes. A guided meditation isn't one message — it's a 10-minute workflow: instruction → pause (timer) → check-in → next step. Survives container restarts. Picks up where it left off.</div>
+    <div class="tech dapr">DAPR WORKFLOWS</div>
+  </div>
+  <div class="feat">
+    <div class="icon">🎭</div>
+    <div class="name">Dapr Actors as Seekers</div>
+    <div class="desc">Each user becomes a Dapr Actor — stateful, single-threaded, lifecycle-managed. The actor holds conversation state, practice level, preferred tradition (Theravada, Zen, Tibetan). Actor timers send daily practice reminders. Actors deactivate when idle, reactivate on message.</div>
+    <div class="tech dapr">DAPR ACTORS</div>
+  </div>
+  <div class="feat">
+    <div class="icon">🤖</div>
+    <div class="name">Dapr Conversation API</div>
+    <div class="desc">Replace our raw httpx calls with Dapr's native Conversation building block. Built-in response caching (same question = cached answer, saves LLM costs), PII scrubbing (strip personal details before they reach the LLM), circuit breakers, retries. The LLM call becomes infrastructure, not code.</div>
+    <div class="tech dapr">DAPR CONVERSATION API</div>
+  </div>
+  <div class="feat">
+    <div class="icon">🔗</div>
+    <div class="name">Multi-Tradition Routing</div>
+    <div class="desc">Dapr service invocation to route between specialized services: a Theravada service, a Zen service, a secular mindfulness service. Each with its own system prompt and sutta corpus. The user picks their path, or the system infers it from their questions.</div>
+    <div class="tech dapr">DAPR SERVICE INVOCATION</div>
+  </div>
+</div>
+
+<h3>The Combination — What Neither Can Do Alone</h3>
+
+<div class="features">
+  <div class="feat" style="grid-column: 1 / -1;">
+    <div class="icon">🪷</div>
+    <div class="name">RAG-Powered Buddhist Teacher</div>
+    <div class="desc">The full pipeline: User asks → Dapr Actor loads their context → Redis Vector Search finds relevant suttas → Dapr Conversation API calls the LLM with context + suttas + user history → Dapr Workflow manages follow-up ("Would you like to explore this sutta further?") → Redis caches the response for common questions → Dapr state persists everything. <strong>This is the architecture earning its keep.</strong> Each piece does what it's best at. The microservices boundary isn't arbitrary — it maps to distinct concerns: user state, wisdom retrieval, LLM inference, conversation flow.</div>
+    <div class="tech both">REDIS VECTORS + DAPR ACTORS + WORKFLOWS + CONVERSATION API</div>
+  </div>
+</div>
+
+<h2>Architecture — Vision</h2>
+
+<div class="arch"><span class="user">  Telegram User</span>
+       <span class="arrow">│</span>
+       <span class="arrow">▼</span>
+  <span class="svc">┌─────────────────────┐</span>    <span class="dapr">┌──────────────┐</span>
+  <span class="svc">│  telegram-service    │</span><span class="arrow">───▶</span><span class="dapr">│  dapr sidecar │</span>
+  <span class="svc">│  (triogram)          │</span>    <span class="dapr">│  pub/sub      │</span>
+  <span class="svc">└─────────────────────┘</span>    <span class="dapr">└──────┬───────┘</span>
+                                    <span class="arrow">│</span> topic: messages
+                                    <span class="arrow">▼</span>
+  <span class="new">┌─────────────────────┐</span>    <span class="dapr">┌──────────────┐</span>     <span class="redis">┌─────────────────┐</span>
+  <span class="new">│  seeker-actor        │</span><span class="arrow">◄──▶</span><span class="dapr">│  dapr sidecar │</span><span class="arrow">────▶</span><span class="redis">│  Redis           │</span>
+  <span class="new">│  (user state,        │</span>    <span class="dapr">│  actors       │</span>     <span class="redis">│  • state store   │</span>
+  <span class="new">│   practice level,    │</span>    <span class="dapr">│  state        │</span>     <span class="redis">│  • vector search │</span>
+  <span class="new">│   history)           │</span>    <span class="dapr">│  workflow     │</span>     <span class="redis">│  • rate limiting │</span>
+  <span class="new">└──────────┬──────────┘</span>    <span class="dapr">└──────────────┘</span>     <span class="redis">│  • timeseries    │</span>
+             <span class="arrow">│</span>                                       <span class="redis">│  • pub/sub       │</span>
+             <span class="arrow">│</span> enriched query                        <span class="redis">└─────────────────┘</span>
+             <span class="arrow">│</span> (user context + relevant suttas)
+             <span class="arrow">▼</span>
+  <span class="svc">┌─────────────────────┐</span>    <span class="dapr">┌──────────────┐</span>
+  <span class="svc">│  wisdom-service      │</span><span class="arrow">◄──▶</span><span class="dapr">│  dapr sidecar │</span>
+  <span class="svc">│  (LLM + RAG)         │</span>    <span class="dapr">│  conversation │</span>
+  <span class="svc">│                      │</span>    <span class="dapr">│  API + cache  │</span>
+  <span class="svc">└─────────────────────┘</span>    <span class="dapr">└──────────────┘</span>
+             <span class="arrow">│</span>
+             <span class="arrow">│</span> topic: responses
+             <span class="arrow">▼</span>
+  <span class="svc">┌─────────────────────┐</span>    <span class="new">┌──────────────────┐</span>
+  <span class="svc">│  telegram-service    │</span>    <span class="new">│  workflow-service  │</span>
+  <span class="svc">│  (delivers answer)   │</span>    <span class="new">│  (guided sessions, │</span>
+  <span class="svc">└─────────────────────┘</span>    <span class="new">│   daily reminders) │</span>
+                               <span class="new">└──────────────────┘</span></div>
+
+<h2>Roadmap</h2>
+
+<div class="phases">
+  <div class="phase">
+    <div class="label">Phase 1 — Memory & Search</div>
+    <div class="title">The bot that remembers</div>
+    <ul>
+      <li>Dapr state store for per-user conversation history</li>
+      <li>Embed Pali Canon excerpts (Access to Insight, SuttaCentral) into Redis vectors</li>
+      <li>RAG pipeline: semantic search → context injection → LLM</li>
+      <li>Switch from raw httpx to Dapr Conversation API (get caching + PII scrubbing free)</li>
+      <li>Redis-cell rate limiting per user</li>
+    </ul>
+  </div>
+  <div class="phase">
+    <div class="label">Phase 2 — Actors & Personality</div>
+    <div class="title">The bot that knows you</div>
+    <ul>
+      <li>Dapr Actors: one actor per seeker, holds state + practice level</li>
+      <li>Actor timers: daily mindfulness prompts, practice reminders</li>
+      <li>Adaptive tone: detect beginner vs practitioner from conversation patterns</li>
+      <li>Multi-tradition routing: Theravada, Zen, secular — user picks or system infers</li>
+    </ul>
+  </div>
+  <div class="phase">
+    <div class="label">Phase 3 — Guided Practice</div>
+    <div class="title">The bot that teaches</div>
+    <ul>
+      <li>Dapr Workflows for multi-step guided meditations</li>
+      <li>Structured learning paths (Four Noble Truths → Eightfold Path → specific practices)</li>
+      <li>Practice journaling: user logs sits, bot tracks patterns over time</li>
+      <li>Redis TimeSeries for community-level practice analytics</li>
+    </ul>
+  </div>
+</div>
+
+<div class="callout">
+  <div class="q">"Why not just use one container with SQLite?"</div>
+  <div class="a">Because a single process can't: vector-search 10,000 suttas in milliseconds (Redis), manage thousands of concurrent user sessions with automatic lifecycle (Dapr Actors), run durable multi-step meditation workflows that survive restarts (Dapr Workflows), cache repeated LLM calls to cut costs by 60% (Dapr Conversation API), or rate-limit per-user in a single atomic operation (Redis-cell). The architecture stops being a showcase when every component is load-bearing.</div>
+</div>
+
+<p class="muted" style="margin-top: 3rem; text-align: center; font-size: 0.75rem;">
+  Little Bits of Buddha · Vision Document · March 2026
+</p>
+
+</body>
+</html>
