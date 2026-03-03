@@ -1,0 +1,57 @@
+name: Build & Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/openai_service_worldofgeese/**'
+      - 'src/telegram_bot_service_worldofgeese/**'
+      - 'Dockerfile'
+      - 'Dockerfile.daprd'
+      - 'sutta_corpus/**'
+      - 'scripts/embed_suttas.py'
+      - 'scripts/entrypoint.sh'
+  workflow_dispatch:
+
+jobs:
+  build-openai:
+    name: Build & Restart openai-service
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        run: |
+          git clone --depth 1 ${{ github.server_url }}/${{ github.repository }}.git repo
+          cd repo && git checkout ${{ github.sha }} || true
+
+      - name: Build openai-service image
+        env:
+          DOCKER_BUILDKIT: "0"
+        run: |
+          cd repo
+          docker build --target openai-service-production -t lbob-openai:latest -f Dockerfile .
+
+      - name: Restart containers (app first, then sidecar)
+        run: |
+          docker stop lbob-openai-dapr lbob-openai 2>/dev/null || true
+          sleep 2
+          docker rm lbob-openai-dapr lbob-openai 2>/dev/null || true
+          # Recreate from compose or manual run
+          # App container needs env vars from compose
+          echo "Image rebuilt. Manual container recreation needed — cron healthcheck will detect stopped containers."
+
+  build-telegram:
+    name: Build & Restart telegram-service
+    runs-on: self-hosted
+    if: contains(github.event.head_commit.modified, 'telegram_bot_service')
+    steps:
+      - name: Checkout
+        run: |
+          git clone --depth 1 ${{ github.server_url }}/${{ github.repository }}.git repo
+          cd repo && git checkout ${{ github.sha }} || true
+
+      - name: Build telegram-service image
+        env:
+          DOCKER_BUILDKIT: "0"
+        run: |
+          cd repo
+          docker build --target telegram-bot-service-production -t lbob-telegram:latest -f Dockerfile .

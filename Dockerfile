@@ -42,5 +42,8 @@ WORKDIR /app
 RUN useradd --create-home nonroot
 USER nonroot
 COPY --chown=nonroot:nonroot src/openai_service_worldofgeese openai_service_worldofgeese/
+COPY --chown=nonroot:nonroot sutta_corpus/ sutta_corpus/
+COPY --chown=nonroot:nonroot scripts/embed_suttas.py embed_suttas.py
+COPY --chown=nonroot:nonroot scripts/entrypoint.sh entrypoint.sh
 EXPOSE 8080
-ENTRYPOINT ["python", "-m", "openai_service_worldofgeese"]
+ENTRYPOINT ["bash", "/app/entrypoint.sh"]

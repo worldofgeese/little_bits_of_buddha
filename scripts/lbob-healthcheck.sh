@@ -1,59 +1,62 @@
 #!/usr/bin/env bash
-# LBOB Health Check — sends a test message via Telegram getMe API
-# and checks if the bot process is responding.
-#
+# LBOB Health Check — checks container health via podman-in-podman
 # Usage: bash scripts/lbob-healthcheck.sh
-# Returns 0 if healthy, 1 if unhealthy.
+# Returns 0 if healthy, 1 if unhealthy. Outputs human-readable status.
 
 set -euo pipefail
 
-BOT_TOKEN="${TELEGRAM_BOT_TOKEN:-6014356103:AAFMthhrKMXJLdeuU3rK09ViK27bCJiJTlw}"
-LBOB_DIR="/home/node/.openclaw/workspace/projects/little_bits_of_buddha"
+export DOCKER_HOST="${DOCKER_HOST:-tcp://podman-in-podman:2375}"
+ALERT_FILE="${HOME}/.openclaw/workspace/memory/lbob-health-alert.txt"
 
-# Check 1: Bot token valid (getMe)
-echo "Checking Telegram bot token..."
-ME_RESPONSE=$(curl -sf "https://api.telegram.org/bot${BOT_TOKEN}/getMe" 2>/dev/null || echo '{"ok":false}')
-if echo "$ME_RESPONSE" | grep -q '"ok":true'; then
-    BOT_NAME=$(echo "$ME_RESPONSE" | grep -o '"username":"[^"]*"' | cut -d'"' -f4)
-    echo "✓ Bot @${BOT_NAME} token is valid"
-else
-    echo "✗ Bot token invalid or Telegram API unreachable"
-    exit 1
-fi
+FAILED=0
+STATUS=""
 
-# Check 2: Redis is running
-echo "Checking Redis..."
-if command -v redis-cli &>/dev/null; then
-    if redis-cli -h localhost ping 2>/dev/null | grep -q PONG; then
-        echo "✓ Redis is responding"
+check() {
+    local name="$1" cmd="$2"
+    if eval "$cmd" &>/dev/null; then
+        STATUS="${STATUS}✓ ${name}\n"
     else
-        echo "✗ Redis not responding"
-        exit 1
+        STATUS="${STATUS}✗ ${name}\n"
+        FAILED=1
     fi
-else
-    echo "⚠ redis-cli not available, skipping Redis check"
-fi
+}
 
-# Check 3: Dapr sidecar healthy (if running)
-echo "Checking Dapr sidecars..."
-for port in 3500 3510; do
-    if curl -sf "http://localhost:${port}/v1.0/healthz" -o /dev/null 2>/dev/null; then
-        echo "✓ Dapr sidecar on port ${port} is healthy"
-    else
-        echo "⚠ Dapr sidecar on port ${port} not responding (may not be running)"
-    fi
+# Check all 5 core containers are running
+for c in lbob-redis lbob-telegram lbob-telegram-dapr lbob-openai lbob-openai-dapr; do
+    check "$c running" "docker inspect -f '{{.State.Running}}' $c 2>/dev/null | grep -q true"
 done
 
-# Check 4: LEGO MPS endpoint reachable
-echo "Checking LEGO MPS endpoint..."
-LMS_RESPONSE=$(curl -sf -o /dev/null -w "%{http_code}" "https://ANTHROPIC_PROXY_HOST/claude" 2>/dev/null || echo "000")
-if [ "$LMS_RESPONSE" != "000" ]; then
-    echo "✓ LEGO MPS endpoint reachable (HTTP ${LMS_RESPONSE})"
+# Check Telegram bot token is valid
+BOT_TOKEN="${TELEGRAM_BOT_TOKEN:-6014356103:AAFMthhrKMXJLdeuU3rK09ViK27bCJiJTlw}"
+check "Bot token valid" "curl -sf 'https://api.telegram.org/bot${BOT_TOKEN}/getMe' | grep -q '\"ok\":true'"
+
+# Check LEGO MPS reachable
+check "LEGO MPS reachable" "curl -sf -o /dev/null -w '%{http_code}' 'https://ANTHROPIC_PROXY_HOST/claude' | grep -qv 000"
+
+# Check Redis has sutta index
+check "Sutta index exists" "docker exec lbob-redis redis-cli FT.INFO sutta_idx 2>/dev/null | grep -q sutta_idx"
+
+# Check Dapr subscriptions active (openai service)
+check "Dapr subscriptions" "docker exec lbob-openai-dapr wget -qO- http://localhost:3500/v1.0/healthz 2>/dev/null"
+
+# Check for recent errors in openai service logs (last 5 min)
+ERRORS=$(docker logs lbob-openai --since 5m 2>&1 | grep -ci "error\|traceback\|exception" || true)
+if [ "$ERRORS" -gt 3 ]; then
+    STATUS="${STATUS}⚠ ${ERRORS} errors in last 5min logs\n"
+    FAILED=1
 else
-    echo "✗ LEGO MPS endpoint unreachable"
-    exit 1
+    STATUS="${STATUS}✓ Logs clean (${ERRORS} errors)\n"
 fi
 
-echo ""
-echo "Health check passed ✓"
-exit 0
+echo -e "$STATUS"
+
+if [ "$FAILED" -eq 1 ]; then
+    echo -e "LBOB_UNHEALTHY\n$(date -Iseconds)\n${STATUS}" > "$ALERT_FILE"
+    echo "LBOB_UNHEALTHY"
+    exit 1
+else
+    # Clear any previous alert
+    rm -f "$ALERT_FILE"
+    echo "LBOB_HEALTHY"
+    exit 0
+fi
