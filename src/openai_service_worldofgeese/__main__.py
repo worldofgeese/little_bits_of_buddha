@@ -24,6 +24,7 @@ def _call_lego_mps(model, api_base, api_key, messages):
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {api_key}",
+        "anthropic-version": "2023-06-01",
     }
 
     # Convert messages to Anthropic format
