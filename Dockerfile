@@ -1,4 +1,4 @@
-FROM python:3.11-slim as base-builder
+FROM python:3.12-slim as base-builder
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
@@ -14,10 +14,10 @@ COPY src/telegram_bot_service_worldofgeese/requirements.txt /tmp/requirements.tx
 RUN pip install --no-cache-dir --no-deps 'triogram @ git+https://github.com/worldofgeese/triogram@1b01daa' && \
     pip install --no-cache-dir -r /tmp/requirements.txt
 
-FROM python:3.11-slim as telegram-bot-service-production
+FROM python:3.12-slim as telegram-bot-service-production
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-COPY --from=telegram-bot-service-builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=telegram-bot-service-builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
 COPY --from=telegram-bot-service-builder /usr/local/bin /usr/local/bin
 WORKDIR /app
 RUN useradd --create-home nonroot
@@ -31,10 +31,10 @@ FROM base-builder as openai-service-builder
 COPY src/openai_service_worldofgeese/requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
-FROM python:3.11-slim as openai-service-production
+FROM python:3.12-slim as openai-service-production
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-COPY --from=openai-service-builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=openai-service-builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
 COPY --from=openai-service-builder /usr/local/bin /usr/local/bin
 WORKDIR /app
 RUN useradd --create-home nonroot
