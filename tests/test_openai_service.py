@@ -195,13 +195,10 @@ class TestAnthropicProxyIntegration:
             "choices": [{"message": {"content": "Test Buddha response"}}]
         }
 
-        # Call the function
-        api_base = os.environ.get("ANTHROPIC_BASE_URL")
-        if not api_base:
-            raise RuntimeError("ANTHROPIC_BASE_URL must be set for tests")
+        # Call the function with a test URL
         result = _call_anthropic_proxy(
             model="anthropic/anthropic.claude-sonnet-4-5-20250929-v1:0",
-            api_base=api_base,
+            api_base="https://test.example.com",
             api_key="test-token",
             messages=[
                 {"role": "system", "content": "You are the Buddha."},
@@ -228,6 +225,7 @@ class TestAnthropicProviderConfig:
         {
             "LITELLM_MODEL": "anthropic/anthropic.claude-sonnet-4-5-20250929-v1:0",
             "ANTHROPIC_AUTH_TOKEN": "test-token",
+            "ANTHROPIC_BASE_URL": "https://test.example.com",
         },
     )
     def test_completion_uses_anthropic_proxy_helper(self, mock_dapr_client, mock_call_proxy):
