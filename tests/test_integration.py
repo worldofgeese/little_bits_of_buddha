@@ -41,6 +41,7 @@ class TestMessageFlow:
         except ImportError as e:
             pytest.fail(f"Failed to import Telegram service: {e}")
 
+    @pytest.mark.integration
     def test_message_subscriber_registration(self):
         """Test that the message subscriber is registered correctly."""
 
@@ -145,43 +146,10 @@ class TestDaprConfiguration:
             )
 
 
-class TestLiteLLMIntegration:
-    """Tests for LiteLLM integration."""
-
-    def test_litellm_completion_callable(self):
-        """Test that litellm.completion is available and callable."""
-        try:
-            from litellm import completion
-
-            assert callable(completion)
-        except ImportError:
-            pytest.fail("LiteLLM completion function not found")
-
-    def test_litellm_response_format(self):
-        """Test that litellm returns response in expected format."""
-
-        with patch("litellm.completion") as mock_completion:
-            # Mock the completion function
-            mock_completion.return_value = {
-                "choices": [{"message": {"content": "Test response from Buddha"}}]
-            }
-
-            from litellm import completion
-
-            result = completion(
-                model="gpt-3.5-turbo", messages=[{"role": "user", "content": "Hello"}]
-            )
-
-            # Verify response format
-            assert "choices" in result
-            assert len(result["choices"]) > 0
-            assert "message" in result["choices"][0]
-            assert "content" in result["choices"][0]["message"]
-
-
 class TestEndToEndFlow:
     """End-to-end tests for the complete message flow."""
 
+    @pytest.mark.integration
     def test_complete_message_flow(self):
         """Test the complete message flow configuration."""
         from openai_service_worldofgeese.__main__ import _build_app
@@ -197,11 +165,11 @@ class TestEndToEndFlow:
         # by checking that the Buddha persona is set up
 
         with patch(
-            "openai_service_worldofgeese.__main__.completion"
-        ) as mock_completion:
+            "openai_service_worldofgeese.__main__._call_lego_mps"
+        ) as mock_lego_mps:
             with patch("dapr.clients.DaprClient") as mock_dapr_client:
-                # Mock the completion function
-                mock_completion.return_value = {
+                # Mock the _call_lego_mps function
+                mock_lego_mps.return_value = {
                     "choices": [{"message": {"content": "Seek the Middle Way."}}]
                 }
 
@@ -214,7 +182,7 @@ class TestEndToEndFlow:
                 # The service is configured - verify the model is set
                 # We can't call the actual subscriber without a real event,
                 # but we can verify the configuration exists
-                mock_completion.assert_not_called()  # Not called yet
+                mock_lego_mps.assert_not_called()  # Not called yet
 
 
 if __name__ == "__main__":
