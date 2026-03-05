@@ -1,8 +1,8 @@
 """Seeker Actor Service — hosts Dapr Virtual Actors (one per Telegram user)."""
 
 import uvicorn
-from fastapi import FastAPI
 from dapr.ext.fastapi import DaprActor
+from fastapi import FastAPI
 
 from seeker_actor_service.seeker_actor import SeekerActor
 

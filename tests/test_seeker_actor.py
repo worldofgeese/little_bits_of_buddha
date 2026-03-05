@@ -80,16 +80,18 @@ class TestReceiveMessage:
         state_manager = MagicMock()
         state_manager.try_get_state = AsyncMock(return_value=(False, None))
         state_manager.set_state = AsyncMock()
-        state_manager.get_state = AsyncMock(return_value={
-            "chat_id": "12345",
-            "practice_level": "newcomer",
-            "conversation_count": 0,
-            "topics_explored": [],
-            "history": [],
-            "signal_history": [],
-            "last_active": datetime.now().isoformat(),
-            "preferences": {},
-        })
+        state_manager.get_state = AsyncMock(
+            return_value={
+                "chat_id": "12345",
+                "practice_level": "newcomer",
+                "conversation_count": 0,
+                "topics_explored": [],
+                "history": [],
+                "signal_history": [],
+                "last_active": datetime.now().isoformat(),
+                "preferences": {},
+            }
+        )
 
         actor = SeekerActor(MagicMock(), actor_id)
         actor._state_manager = state_manager
@@ -127,32 +129,43 @@ class TestReceiveMessage:
 
         # Create state with 20 messages
         existing_history = [
-            {"role": "user", "content": f"message {i}", "timestamp": datetime.now().isoformat()}
+            {
+                "role": "user",
+                "content": f"message {i}",
+                "timestamp": datetime.now().isoformat(),
+            }
             for i in range(20)
         ]
 
         state_manager = MagicMock()
-        state_manager.try_get_state = AsyncMock(return_value=(True, {
-            "chat_id": "12345",
-            "practice_level": "beginner",
-            "conversation_count": 10,
-            "topics_explored": [],
-            "history": existing_history,
-            "signal_history": [],
-            "last_active": datetime.now().isoformat(),
-            "preferences": {},
-        }))
+        state_manager.try_get_state = AsyncMock(
+            return_value=(
+                True,
+                {
+                    "chat_id": "12345",
+                    "practice_level": "beginner",
+                    "conversation_count": 10,
+                    "topics_explored": [],
+                    "history": existing_history,
+                    "signal_history": [],
+                    "last_active": datetime.now().isoformat(),
+                    "preferences": {},
+                },
+            )
+        )
         state_manager.set_state = AsyncMock()
-        state_manager.get_state = AsyncMock(return_value={
-            "chat_id": "12345",
-            "practice_level": "beginner",
-            "conversation_count": 10,
-            "topics_explored": [],
-            "history": existing_history,
-            "signal_history": [],
-            "last_active": datetime.now().isoformat(),
-            "preferences": {},
-        })
+        state_manager.get_state = AsyncMock(
+            return_value={
+                "chat_id": "12345",
+                "practice_level": "beginner",
+                "conversation_count": 10,
+                "topics_explored": [],
+                "history": existing_history,
+                "signal_history": [],
+                "last_active": datetime.now().isoformat(),
+                "preferences": {},
+            }
+        )
 
         actor = SeekerActor(MagicMock(), actor_id)
         actor._state_manager = state_manager
@@ -188,16 +201,18 @@ class TestReceiveMessage:
         state_manager = MagicMock()
         state_manager.try_get_state = AsyncMock(return_value=(False, None))
         state_manager.set_state = AsyncMock()
-        state_manager.get_state = AsyncMock(return_value={
-            "chat_id": "12345",
-            "practice_level": "newcomer",
-            "conversation_count": 0,
-            "topics_explored": [],
-            "history": [],
-            "signal_history": [],
-            "last_active": datetime.now().isoformat(),
-            "preferences": {},
-        })
+        state_manager.get_state = AsyncMock(
+            return_value={
+                "chat_id": "12345",
+                "practice_level": "newcomer",
+                "conversation_count": 0,
+                "topics_explored": [],
+                "history": [],
+                "signal_history": [],
+                "last_active": datetime.now().isoformat(),
+                "preferences": {},
+            }
+        )
 
         actor = SeekerActor(MagicMock(), actor_id)
         actor._state_manager = state_manager
@@ -217,7 +232,9 @@ class TestReceiveMessage:
             await actor._on_activate()
 
             # Send message with advanced vocabulary
-            await actor.receive_message("I'm studying dukkha, anicca, and anatta in my daily practice")
+            await actor.receive_message(
+                "I'm studying dukkha, anicca, and anatta in my daily practice"
+            )
 
         # Check that level detection was called
         save_calls = [call for call in state_manager.set_state.call_args_list]
@@ -232,27 +249,40 @@ class TestReceiveMessage:
         actor_id = ActorId("12345")
 
         state_manager = MagicMock()
-        state_manager.try_get_state = AsyncMock(return_value=(True, {
-            "chat_id": "12345",
-            "practice_level": "experienced",
-            "conversation_count": 50,
-            "topics_explored": [],
-            "history": [],
-            "signal_history": [{"message_num": 1, "vocab": 10, "complexity": 3, "practice": 3}] * 10,
-            "last_active": datetime.now().isoformat(),
-            "preferences": {},
-        }))
+        state_manager.try_get_state = AsyncMock(
+            return_value=(
+                True,
+                {
+                    "chat_id": "12345",
+                    "practice_level": "experienced",
+                    "conversation_count": 50,
+                    "topics_explored": [],
+                    "history": [],
+                    "signal_history": [
+                        {"message_num": 1, "vocab": 10, "complexity": 3, "practice": 3}
+                    ]
+                    * 10,
+                    "last_active": datetime.now().isoformat(),
+                    "preferences": {},
+                },
+            )
+        )
         state_manager.set_state = AsyncMock()
-        state_manager.get_state = AsyncMock(return_value={
-            "chat_id": "12345",
-            "practice_level": "experienced",
-            "conversation_count": 50,
-            "topics_explored": [],
-            "history": [],
-            "signal_history": [{"message_num": 1, "vocab": 10, "complexity": 3, "practice": 3}] * 10,
-            "last_active": datetime.now().isoformat(),
-            "preferences": {},
-        })
+        state_manager.get_state = AsyncMock(
+            return_value={
+                "chat_id": "12345",
+                "practice_level": "experienced",
+                "conversation_count": 50,
+                "topics_explored": [],
+                "history": [],
+                "signal_history": [
+                    {"message_num": 1, "vocab": 10, "complexity": 3, "practice": 3}
+                ]
+                * 10,
+                "last_active": datetime.now().isoformat(),
+                "preferences": {},
+            }
+        )
 
         actor = SeekerActor(MagicMock(), actor_id)
         actor._state_manager = state_manager
@@ -288,16 +318,18 @@ class TestReceiveMessage:
         state_manager = MagicMock()
         state_manager.try_get_state = AsyncMock(return_value=(False, None))
         state_manager.set_state = AsyncMock()
-        state_manager.get_state = AsyncMock(return_value={
-            "chat_id": "12345",
-            "practice_level": "newcomer",
-            "conversation_count": 0,
-            "topics_explored": [],
-            "history": [],
-            "signal_history": [],
-            "last_active": datetime.now().isoformat(),
-            "preferences": {},
-        })
+        state_manager.get_state = AsyncMock(
+            return_value={
+                "chat_id": "12345",
+                "practice_level": "newcomer",
+                "conversation_count": 0,
+                "topics_explored": [],
+                "history": [],
+                "signal_history": [],
+                "last_active": datetime.now().isoformat(),
+                "preferences": {},
+            }
+        )
 
         actor = SeekerActor(MagicMock(), actor_id)
         actor._state_manager = state_manager
@@ -321,27 +353,34 @@ class TestReceiveMessage:
         old_timestamp = "2026-03-01T10:00:00"
 
         state_manager = MagicMock()
-        state_manager.try_get_state = AsyncMock(return_value=(True, {
-            "chat_id": "12345",
-            "practice_level": "newcomer",
-            "conversation_count": 0,
-            "topics_explored": [],
-            "history": [],
-            "signal_history": [],
-            "last_active": old_timestamp,
-            "preferences": {},
-        }))
+        state_manager.try_get_state = AsyncMock(
+            return_value=(
+                True,
+                {
+                    "chat_id": "12345",
+                    "practice_level": "newcomer",
+                    "conversation_count": 0,
+                    "topics_explored": [],
+                    "history": [],
+                    "signal_history": [],
+                    "last_active": old_timestamp,
+                    "preferences": {},
+                },
+            )
+        )
         state_manager.set_state = AsyncMock()
-        state_manager.get_state = AsyncMock(return_value={
-            "chat_id": "12345",
-            "practice_level": "newcomer",
-            "conversation_count": 0,
-            "topics_explored": [],
-            "history": [],
-            "signal_history": [],
-            "last_active": old_timestamp,
-            "preferences": {},
-        })
+        state_manager.get_state = AsyncMock(
+            return_value={
+                "chat_id": "12345",
+                "practice_level": "newcomer",
+                "conversation_count": 0,
+                "topics_explored": [],
+                "history": [],
+                "signal_history": [],
+                "last_active": old_timestamp,
+                "preferences": {},
+            }
+        )
 
         actor = SeekerActor(MagicMock(), actor_id)
         actor._state_manager = state_manager
@@ -375,16 +414,18 @@ class TestReceiveMessage:
         state_manager = MagicMock()
         state_manager.try_get_state = AsyncMock(return_value=(False, None))
         state_manager.set_state = AsyncMock()
-        state_manager.get_state = AsyncMock(return_value={
-            "chat_id": "12345",
-            "practice_level": "newcomer",
-            "conversation_count": 0,
-            "topics_explored": ["meditation"],
-            "history": [],
-            "signal_history": [],
-            "last_active": datetime.now().isoformat(),
-            "preferences": {},
-        })
+        state_manager.get_state = AsyncMock(
+            return_value={
+                "chat_id": "12345",
+                "practice_level": "newcomer",
+                "conversation_count": 0,
+                "topics_explored": ["meditation"],
+                "history": [],
+                "signal_history": [],
+                "last_active": datetime.now().isoformat(),
+                "preferences": {},
+            }
+        )
 
         actor = SeekerActor(MagicMock(), actor_id)
         actor._state_manager = state_manager
@@ -450,27 +491,34 @@ class TestActorMethods:
         actor_id = ActorId("12345")
 
         state_manager = MagicMock()
-        state_manager.try_get_state = AsyncMock(return_value=(True, {
-            "chat_id": "12345",
-            "practice_level": "newcomer",
-            "conversation_count": 1,
-            "topics_explored": [],
-            "history": [],
-            "signal_history": [],
-            "last_active": datetime.now().isoformat(),
-            "preferences": {},
-        }))
+        state_manager.try_get_state = AsyncMock(
+            return_value=(
+                True,
+                {
+                    "chat_id": "12345",
+                    "practice_level": "newcomer",
+                    "conversation_count": 1,
+                    "topics_explored": [],
+                    "history": [],
+                    "signal_history": [],
+                    "last_active": datetime.now().isoformat(),
+                    "preferences": {},
+                },
+            )
+        )
         state_manager.set_state = AsyncMock()
-        state_manager.get_state = AsyncMock(return_value={
-            "chat_id": "12345",
-            "practice_level": "newcomer",
-            "conversation_count": 1,
-            "topics_explored": [],
-            "history": [],
-            "signal_history": [],
-            "last_active": datetime.now().isoformat(),
-            "preferences": {},
-        })
+        state_manager.get_state = AsyncMock(
+            return_value={
+                "chat_id": "12345",
+                "practice_level": "newcomer",
+                "conversation_count": 1,
+                "topics_explored": [],
+                "history": [],
+                "signal_history": [],
+                "last_active": datetime.now().isoformat(),
+                "preferences": {},
+            }
+        )
 
         actor = SeekerActor(MagicMock(), actor_id)
         actor._state_manager = state_manager
@@ -489,26 +537,33 @@ class TestActorMethods:
         actor_id = ActorId("12345")
 
         state_manager = MagicMock()
-        state_manager.try_get_state = AsyncMock(return_value=(True, {
-            "chat_id": "12345",
-            "practice_level": "beginner",
-            "conversation_count": 10,
-            "topics_explored": ["suffering", "meditation", "mindfulness"],
-            "history": [{"role": "user", "content": "test"}] * 5,
-            "signal_history": [],
-            "last_active": "2026-03-05T10:00:00",
-            "preferences": {},
-        }))
-        state_manager.get_state = AsyncMock(return_value={
-            "chat_id": "12345",
-            "practice_level": "beginner",
-            "conversation_count": 10,
-            "topics_explored": ["suffering", "meditation", "mindfulness"],
-            "history": [{"role": "user", "content": "test"}] * 5,
-            "signal_history": [],
-            "last_active": "2026-03-05T10:00:00",
-            "preferences": {},
-        })
+        state_manager.try_get_state = AsyncMock(
+            return_value=(
+                True,
+                {
+                    "chat_id": "12345",
+                    "practice_level": "beginner",
+                    "conversation_count": 10,
+                    "topics_explored": ["suffering", "meditation", "mindfulness"],
+                    "history": [{"role": "user", "content": "test"}] * 5,
+                    "signal_history": [],
+                    "last_active": "2026-03-05T10:00:00",
+                    "preferences": {},
+                },
+            )
+        )
+        state_manager.get_state = AsyncMock(
+            return_value={
+                "chat_id": "12345",
+                "practice_level": "beginner",
+                "conversation_count": 10,
+                "topics_explored": ["suffering", "meditation", "mindfulness"],
+                "history": [{"role": "user", "content": "test"}] * 5,
+                "signal_history": [],
+                "last_active": "2026-03-05T10:00:00",
+                "preferences": {},
+            }
+        )
 
         actor = SeekerActor(MagicMock(), actor_id)
         actor._state_manager = state_manager

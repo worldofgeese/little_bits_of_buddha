@@ -1,7 +1,6 @@
 """SeekerActor — Dapr Virtual Actor for LBOB seekers (one per Telegram user)."""
 
 from datetime import datetime
-from typing import Any
 
 import httpx
 from dapr.actor import Actor, ActorInterface, actormethod
@@ -81,7 +80,7 @@ class SeekerActor(Actor, SeekerActorInterface):
             response_text = wisdom_response["response"]
             suttas_cited = wisdom_response.get("suttas_cited", [])
             detected_themes = wisdom_response.get("detected_themes", [])
-        except Exception as e:
+        except Exception:
             # Graceful fallback when wisdom service is unreachable
             response_text = (
                 "I'm having trouble reaching my library right now. "
@@ -172,7 +171,9 @@ class SeekerActor(Actor, SeekerActorInterface):
         }
 
         # Call via Dapr service invocation
-        url = f"http://localhost:{dapr_port}/v1.0/invoke/wisdom-service/method/wisdom/ask"
+        url = (
+            f"http://localhost:{dapr_port}/v1.0/invoke/wisdom-service/method/wisdom/ask"
+        )
 
         async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.post(url, json=payload)
