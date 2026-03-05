@@ -14,6 +14,7 @@ from pydantic import BaseModel
 from trio import to_thread
 
 from telegram_bot_service_worldofgeese import init_secrets
+from telegram_bot_service_worldofgeese.commands import handle_command
 
 logging.basicConfig(level=logging.INFO)
 
@@ -72,24 +73,30 @@ async def send_message_to_pubsub(bot):
 
     async with bot.sub(check_message) as updates:
         async for update in updates:
-            chat_id = update["message"]["chat"]["id"]
-            text = update["message"]["text"]
+            message = update["message"]
+
+            # Check if this is a bot command
+            if await handle_command(bot, message):
+                continue  # Command handled, don't forward to pub/sub
+
+            chat_id = message["chat"]["id"]
+            text = message["text"]
 
             # Prepare the message
-            message = {
+            message_data = {
                 "chat_id": chat_id,
                 "text": text,
             }
 
             # Publish the message to the message bus
-            logging.info(f"Sending response: {message}")
+            logging.info(f"Sending response: {message_data}")
             with DaprClient() as dapr_client:
                 print(f"chat_id: {chat_id}")
                 print(f"text: {text}")
                 dapr_client.publish_event(
                     pubsub_name="redis-pubsub",
                     topic_name="messages",
-                    data=json.dumps(message),
+                    data=json.dumps(message_data),
                     data_content_type="application/json",
                 )
 
