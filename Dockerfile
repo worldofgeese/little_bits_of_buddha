@@ -47,3 +47,41 @@ COPY --chown=nonroot:nonroot scripts/embed_suttas.py embed_suttas.py
 COPY --chown=nonroot:nonroot scripts/entrypoint.sh entrypoint.sh
 EXPOSE 8080
 ENTRYPOINT ["bash", "/app/entrypoint.sh"]
+
+# --- seeker-actor-service ---
+FROM base-builder as seeker-actor-service-builder
+COPY src/seeker_actor_service/requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
+
+FROM python:3.12-slim as seeker-actor-service-production
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+COPY --from=seeker-actor-service-builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
+COPY --from=seeker-actor-service-builder /usr/local/bin /usr/local/bin
+WORKDIR /app
+RUN useradd --create-home nonroot
+USER nonroot
+COPY --chown=nonroot:nonroot src/seeker_actor_service seeker_actor_service/
+EXPOSE 8081
+ENTRYPOINT ["python", "-m", "seeker_actor_service"]
+
+# --- wisdom-service ---
+FROM base-builder as wisdom-service-builder
+COPY src/wisdom_service/requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
+
+FROM python:3.12-slim as wisdom-service-production
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+COPY --from=wisdom-service-builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
+COPY --from=wisdom-service-builder /usr/local/bin /usr/local/bin
+WORKDIR /app
+RUN useradd --create-home nonroot
+USER nonroot
+COPY --chown=nonroot:nonroot src/wisdom_service wisdom_service/
+COPY --chown=nonroot:nonroot sutta_corpus/ sutta_corpus/
+COPY --chown=nonroot:nonroot scripts/embed_suttas.py embed_suttas.py
+COPY --chown=nonroot:nonroot scripts/entrypoint.sh entrypoint.sh
+EXPOSE 8080
+ENTRYPOINT ["bash", "/app/entrypoint.sh"]

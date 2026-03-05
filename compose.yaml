@@ -92,19 +92,65 @@ services:
     profiles:
       - production
 
-  # Dapr sidecar for openai-service
-  openai-dapr:
+  # --- Seeker Actor Service (hosts Dapr Actors) ---
+  seeker-actor-dapr:
     image: lbob-daprd:latest
     build:
       context: .
       dockerfile: Dockerfile.daprd
-    container_name: lbob-openai-dapr
+    container_name: lbob-seeker-actor-dapr
     networks:
       - lbob
     command:
       - ./daprd
-      - --app-id=openai-service
-      - --app-channel-address=lbob-openai
+      - --app-id=seeker-actor-service
+      - --app-channel-address=lbob-seeker-actor
+      - --app-port=8081
+      - --dapr-http-port=3500
+      - --dapr-grpc-port=50001
+      - --resources-path=/components
+      - --log-level=info
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    profiles:
+      - production
+
+  seeker-actor-service:
+    image: lbob-seeker-actor:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: seeker-actor-service-production
+    container_name: lbob-seeker-actor
+    networks:
+      - lbob
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      - DAPR_HTTP_ENDPOINT=http://lbob-seeker-actor-dapr:3500
+      - DAPR_GRPC_ENDPOINT=lbob-seeker-actor-dapr:50001
+    ports:
+      - "8081:8081"
+    restart: unless-stopped
+    profiles:
+      - production
+
+  # --- Wisdom Service (LLM + RAG, stateless) ---
+  wisdom-dapr:
+    image: lbob-daprd:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.daprd
+    container_name: lbob-wisdom-dapr
+    networks:
+      - lbob
+    command:
+      - ./daprd
+      - --app-id=wisdom-service
+      - --app-channel-address=lbob-wisdom
       - --app-port=8080
       - --dapr-http-port=3500
       - --dapr-grpc-port=50001
@@ -117,13 +163,13 @@ services:
     profiles:
       - production
 
-  openai-service:
-    image: lbob-openai:latest
+  wisdom-service:
+    image: lbob-wisdom:latest
     build:
       context: .
       dockerfile: Dockerfile
-      target: openai-service-production
-    container_name: lbob-openai
+      target: wisdom-service-production
+    container_name: lbob-wisdom
     networks:
       - lbob
     depends_on:
@@ -134,8 +180,8 @@ services:
       - ANTHROPIC_BASE_URL=${ANTHROPIC_BASE_URL}
       - LITELLM_MODEL=anthropic/anthropic.claude-sonnet-4-5-20250929-v1:0
       - REDIS_HOST=lbob-redis
-      - DAPR_HTTP_ENDPOINT=http://lbob-openai-dapr:3500
-      - DAPR_GRPC_ENDPOINT=lbob-openai-dapr:50001
+      - DAPR_HTTP_ENDPOINT=http://lbob-wisdom-dapr:3500
+      - DAPR_GRPC_ENDPOINT=lbob-wisdom-dapr:50001
     ports:
       - "8080:8080"
     restart: unless-stopped
