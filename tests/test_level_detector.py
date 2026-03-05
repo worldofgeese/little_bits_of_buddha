@@ -225,16 +225,16 @@ class TestLevelPromotion:
         # First message
         level1, history1 = detect_practice_level(
             current_level="newcomer",
-            message="Tell me about dukkha",  # 1 point
+            message="Tell me about dukkha",  # 1 vocab point
             conversation_count=3,
             signal_history=[],
         )
         assert level1 == "newcomer"
 
-        # Second message
+        # Second message - still not enough
         level2, history2 = detect_practice_level(
             current_level="newcomer",
-            message="What is karma?",  # 1 point
+            message="I'm interested in karma",  # 1 vocab point (no "what is" pattern)
             conversation_count=4,
             signal_history=history1,
         )
@@ -243,7 +243,7 @@ class TestLevelPromotion:
         # Third message - should push over threshold
         level3, history3 = detect_practice_level(
             current_level="newcomer",
-            message="I want to learn dharma",  # 1 point, total 3
+            message="I want to learn dharma",  # 1 vocab point, total 3
             conversation_count=5,
             signal_history=history2,
         )
