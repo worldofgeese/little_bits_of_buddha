@@ -24,6 +24,7 @@ async def handle_command(bot, message: dict) -> bool:
         "/help": cmd_help,
         "/sit": cmd_sit,
         "/journal": cmd_journal,
+        "/daily": cmd_daily,
     }
 
     handler = handlers.get(command)
@@ -112,6 +113,7 @@ async def cmd_help(bot, chat_id: int, message: dict) -> None:
         "/level — Check your practice level\n"
         "/sit — Log a meditation session\n"
         "/journal — View your practice journal\n"
+        "/daily — Manage daily sutta delivery\n"
         "/forget — Clear your conversation history\n"
         "/help — Show this message\n\n"
         "Or just send me a message about the Dhamma."
@@ -275,5 +277,100 @@ async def cmd_journal(bot, chat_id: int, message: dict) -> None:
 
     except Exception:
         reply = "I couldn't fetch your journal. Try again in a moment."
+
+    await bot.api.send_message(params={"chat_id": chat_id, "text": reply})
+
+
+def parse_daily_command(text: str) -> tuple[str, str | None]:
+    """
+    Parse /daily command text.
+
+    Examples:
+        /daily on -> ("enable", None)
+        /daily off -> ("disable", None)
+        /daily time 07:00 -> ("time", "07:00")
+
+    Returns:
+        tuple of (action, value)
+    """
+    parts = text.strip().split()
+    if len(parts) < 2:
+        raise ValueError("Missing action")
+
+    action = parts[1].lower()
+
+    if action == "on":
+        return ("enable", None)
+    elif action == "off":
+        return ("disable", None)
+    elif action == "time":
+        if len(parts) < 3:
+            raise ValueError("Missing time value")
+        return ("time", parts[2])
+    else:
+        raise ValueError(f"Unknown action: {action}")
+
+
+async def cmd_daily(bot, chat_id: int, message: dict) -> None:
+    """Manage daily sutta delivery."""
+    text = message.get("text", "").strip()
+
+    try:
+        action, value = parse_daily_command(text)
+
+        if action == "enable":
+            # Enable daily sutta
+            payload = {"daily_sutta": True}
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f"http://localhost:3500/v1.0/actors/SeekerActor/{chat_id}/method/update_schedule",
+                    json=payload,
+                    timeout=2.0,
+                )
+
+                if response.status_code == 200:
+                    reply = "🌅 Daily sutta delivery enabled. You'll receive a teaching each morning."
+                else:
+                    reply = "I couldn't update your preferences right now. Try again in a moment."
+
+        elif action == "disable":
+            # Disable daily sutta
+            payload = {"daily_sutta": False}
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f"http://localhost:3500/v1.0/actors/SeekerActor/{chat_id}/method/update_schedule",
+                    json=payload,
+                    timeout=2.0,
+                )
+
+                if response.status_code == 200:
+                    reply = "🌅 Daily sutta delivery disabled."
+                else:
+                    reply = "I couldn't update your preferences right now. Try again in a moment."
+
+        elif action == "time":
+            # Update delivery time
+            payload = {"daily_sutta_time": value}
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f"http://localhost:3500/v1.0/actors/SeekerActor/{chat_id}/method/update_schedule",
+                    json=payload,
+                    timeout=2.0,
+                )
+
+                if response.status_code == 200:
+                    reply = f"🌅 Daily sutta time updated to {value} UTC."
+                else:
+                    reply = "I couldn't update your preferences right now. Try again in a moment."
+
+    except ValueError as e:
+        reply = (
+            "Invalid format. Use:\n"
+            "/daily on — Enable daily suttas\n"
+            "/daily off — Disable daily suttas\n"
+            "/daily time 07:00 — Set delivery time (UTC)"
+        )
+    except Exception:
+        reply = "I couldn't update your preferences right now. Try again in a moment."
 
     await bot.api.send_message(params={"chat_id": chat_id, "text": reply})
