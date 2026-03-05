@@ -56,7 +56,7 @@ bash scripts/subagent-tracker.sh register <label> <sessionKey> 90
 # 5. Message Tao with what you dispatched
 ```
 
-## How Completion Detection Works
+## How Completion Detection Works (Validated 2026-03-05)
 
 **Critical: You will NOT receive completion events in your session.**
 
@@ -64,14 +64,31 @@ bash scripts/subagent-tracker.sh register <label> <sessionKey> 90
 - ACP announce goes to Tao's Telegram channel, not to your session.
 - `sessions_list` is blind to ACP sessions.
 
-The `acp-branch-watcher` cron (every 3 min, claude-sonnet-4.5, isolated) handles the full pipeline:
-1. Polls git branches in `memory/active-tasks.json`
-2. Detects new commits (compares HEAD to baseline SHA)
-3. Merges to main, pushes, messages Tao directly
-4. Writes `memory/pipeline-state.json` on success
-5. Writes `memory/pipeline-errors.txt` on failure
+**New Architecture (zero LLM cost):**
 
-**Your heartbeat** checks these state files and handles follow-up orchestration (dispatching next workers, cleaning worktrees).
+1. **Background poller** (`scripts/acp-completion-poller.sh`) — launched by `gateway:startup` hook
+   - Polls git branches in `memory/active-tasks.json` every 60s
+   - Writes signal files to `memory/acp-completions/<label>.json` on detection
+   - Zero LLM cost, survives container restarts via hook relaunch
+
+2. **Heartbeat** checks `memory/acp-completions/` each cycle
+   - Runs `scripts/acp-merge-pipeline.sh` to merge, push, message Tao
+   - Mechanical — no LLM needed for git operations
+
+3. **Kill the old `acp-branch-watcher` cron** — it used claude-sonnet-4.5 every 3 min (expensive)
+
+**Pipeline flow:**
+```
+ACP worker completes → pushes to branch
+    ↓
+Background poller (60s) detects → writes signal file
+    ↓
+Heartbeat finds signal → runs merge-pipeline.sh
+    ↓
+Merged to main, pushed, Tao messaged, signal cleaned up
+```
+
+**Verified:** Experiments 1-5 (up to 10-min durations) all detected and merged autonomously.
 
 ## Key Constraints
 
