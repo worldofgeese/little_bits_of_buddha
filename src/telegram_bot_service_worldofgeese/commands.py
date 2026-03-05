@@ -144,7 +144,7 @@ def parse_sit_command(text: str) -> tuple[int, str, str | None]:
         raise ValueError("Invalid duration")
 
     duration = int(duration_match.group(1))
-    remaining = remaining[len(duration_match.group(1)):].strip()
+    remaining = remaining[len(duration_match.group(1)) :].strip()
 
     # Extract practice type and notes
     practice_type = "other"  # default
@@ -156,7 +156,7 @@ def parse_sit_command(text: str) -> tuple[int, str, str | None]:
         if notes_match:
             notes = notes_match.group(1)
             # Remove notes from remaining to extract practice type
-            type_part = remaining[:notes_match.start()].strip()
+            type_part = remaining[: notes_match.start()].strip()
             if type_part:
                 practice_type = type_part
         else:
@@ -195,8 +195,8 @@ async def cmd_sit(bot, chat_id: int, message: dict) -> None:
             else:
                 reply = "I couldn't log your session right now. Try again in a moment."
 
-    except ValueError as e:
-        reply = f"Invalid format. Use: /sit [duration] [type] [notes]\nExample: /sit 20 breathing"
+    except ValueError:
+        reply = "Invalid format. Use: /sit [duration] [type] [notes]\nExample: /sit 20 breathing"
     except Exception:
         reply = "I couldn't log your session right now. Try again in a moment."
 
@@ -240,7 +240,9 @@ async def cmd_journal(bot, chat_id: int, message: dict) -> None:
                         # TODO: Call wisdom-service to generate warm LLM summary
                         # For now, just show structured data
                 else:
-                    reply = "I couldn't fetch your weekly summary. Try again in a moment."
+                    reply = (
+                        "I couldn't fetch your weekly summary. Try again in a moment."
+                    )
             else:
                 # Get journal for last 7 days
                 response = await client.post(
@@ -262,7 +264,9 @@ async def cmd_journal(bot, chat_id: int, message: dict) -> None:
                             timestamp = entry["timestamp"][:10]  # Just date
                             duration = entry["duration_minutes"]
                             practice_type = entry["practice_type"]
-                            lines.append(f"• {timestamp}: {duration} min {practice_type}")
+                            lines.append(
+                                f"• {timestamp}: {duration} min {practice_type}"
+                            )
 
                         lines.append(f"\nTotal: {total_duration} minutes")
                         reply = "\n".join(lines)

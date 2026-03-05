@@ -17,6 +17,7 @@ This is a GENERATOR-based workflow (uses yield, NOT async/await).
 """
 
 from datetime import timedelta
+
 from dapr.ext.workflow import DaprWorkflowContext
 
 from meditation_workflow_service.templates import get_metta_instruction
@@ -38,9 +39,7 @@ def metta_meditation(ctx: DaprWorkflowContext):
     total_duration = 11
 
     # Step 1: Get seeker state (for potential future personalization)
-    seeker_state = yield ctx.call_activity(
-        "get_seeker_state", input={"chat_id": chat_id}
-    )
+    yield ctx.call_activity("get_seeker_state", input={"chat_id": chat_id})
 
     # Step 2: Send welcome message
     welcome_text = get_metta_instruction("welcome")

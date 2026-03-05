@@ -14,6 +14,7 @@ This is a GENERATOR-based workflow (uses yield, NOT async/await).
 """
 
 from datetime import timedelta
+
 from dapr.ext.workflow import DaprWorkflowContext, when_any
 
 from meditation_workflow_service.templates import get_breathing_instruction
@@ -76,7 +77,7 @@ def breathing_meditation(ctx: DaprWorkflowContext):
     timeout_task = ctx.create_timer(timedelta(minutes=5))
     event_task = ctx.wait_for_external_event("user_response")
 
-    winner = yield when_any([event_task, timeout_task])
+    yield when_any([event_task, timeout_task])
 
     # Step 8: Close meditation (log sit, suggest sutta)
     yield ctx.call_activity(

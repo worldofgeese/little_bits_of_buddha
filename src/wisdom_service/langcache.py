@@ -11,9 +11,7 @@ Uses the same all-MiniLM-L6-v2 embedding model as sutta_search for consistency.
 """
 
 import logging
-import os
 import uuid
-from typing import Any
 
 import numpy as np
 import redis

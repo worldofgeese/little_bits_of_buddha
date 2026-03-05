@@ -8,21 +8,22 @@ Endpoints:
 """
 
 import time
+
 import uvicorn
+from dapr.ext.workflow import DaprWorkflowClient, WorkflowRuntime
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from dapr.ext.workflow import WorkflowRuntime, DaprWorkflowClient
+
+# Import activities
+from meditation_workflow_service.activities import (
+    close_meditation,
+    get_seeker_state,
+    send_instruction,
+)
 
 # Import workflows
 from meditation_workflow_service.workflows.breathing import breathing_meditation
 from meditation_workflow_service.workflows.metta import metta_meditation
-
-# Import activities
-from meditation_workflow_service.activities import (
-    send_instruction,
-    close_meditation,
-    get_seeker_state,
-)
 
 # FastAPI app
 app = FastAPI(title="Meditation Workflow Service")
