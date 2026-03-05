@@ -1,5 +1,7 @@
 """Telegram bot commands for Phase 2."""
 
+import re
+
 import httpx
 
 
@@ -20,6 +22,8 @@ async def handle_command(bot, message: dict) -> bool:
         "/level": cmd_level,
         "/forget": cmd_forget,
         "/help": cmd_help,
+        "/sit": cmd_sit,
+        "/journal": cmd_journal,
     }
 
     handler = handlers.get(command)
@@ -106,8 +110,166 @@ async def cmd_help(bot, chat_id: int, message: dict) -> None:
         "Available commands:\n"
         "/start — Begin a conversation\n"
         "/level — Check your practice level\n"
+        "/sit — Log a meditation session\n"
+        "/journal — View your practice journal\n"
         "/forget — Clear your conversation history\n"
         "/help — Show this message\n\n"
         "Or just send me a message about the Dhamma."
     )
     await bot.api.send_message(params={"chat_id": chat_id, "text": text})
+
+
+def parse_sit_command(text: str) -> tuple[int, str, str | None]:
+    """
+    Parse /sit command text.
+
+    Examples:
+        /sit 20 breathing -> (20, "breathing", None)
+        /sit 10 metta "Focused on family" -> (10, "metta", "Focused on family")
+        /sit 15 -> (15, "other", None)
+
+    Returns:
+        tuple of (duration_minutes, practice_type, notes)
+    """
+    # Remove command prefix
+    parts = text.strip().split(maxsplit=1)
+    if len(parts) < 2:
+        raise ValueError("Missing duration")
+
+    remaining = parts[1]
+
+    # Extract duration (first number)
+    duration_match = re.match(r"^(\d+)", remaining)
+    if not duration_match:
+        raise ValueError("Invalid duration")
+
+    duration = int(duration_match.group(1))
+    remaining = remaining[len(duration_match.group(1)):].strip()
+
+    # Extract practice type and notes
+    practice_type = "other"  # default
+    notes = None
+
+    if remaining:
+        # Check for quoted notes
+        notes_match = re.search(r'"([^"]+)"', remaining)
+        if notes_match:
+            notes = notes_match.group(1)
+            # Remove notes from remaining to extract practice type
+            type_part = remaining[:notes_match.start()].strip()
+            if type_part:
+                practice_type = type_part
+        else:
+            # No quotes, entire remaining is practice type
+            practice_type = remaining
+
+    return duration, practice_type, notes
+
+
+async def cmd_sit(bot, chat_id: int, message: dict) -> None:
+    """Log a meditation session."""
+    text = message.get("text", "").strip()
+
+    try:
+        duration, practice_type, notes = parse_sit_command(text)
+
+        # Call seeker actor to log sit
+        payload = {
+            "duration_minutes": duration,
+            "practice_type": practice_type,
+            "notes": notes,
+            "from_workflow": False,
+        }
+
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"http://localhost:3500/v1.0/actors/SeekerActor/{chat_id}/method/log_sit",
+                json=payload,
+                timeout=2.0,
+            )
+
+            if response.status_code == 200:
+                result = response.json()
+                total = result.get("total_sits", 0)
+                reply = f"🪷 Logged: {duration} min {practice_type} meditation. You've sat {total} times."
+            else:
+                reply = "I couldn't log your session right now. Try again in a moment."
+
+    except ValueError as e:
+        reply = f"Invalid format. Use: /sit [duration] [type] [notes]\nExample: /sit 20 breathing"
+    except Exception:
+        reply = "I couldn't log your session right now. Try again in a moment."
+
+    await bot.api.send_message(params={"chat_id": chat_id, "text": reply})
+
+
+async def cmd_journal(bot, chat_id: int, message: dict) -> None:
+    """View practice journal."""
+    text = message.get("text", "").strip()
+    parts = text.split()
+
+    # Check if "week" is specified
+    show_weekly_summary = len(parts) > 1 and "week" in parts[1].lower()
+
+    try:
+        async with httpx.AsyncClient() as client:
+            if show_weekly_summary:
+                # Get weekly summary and use wisdom service to generate summary
+                response = await client.post(
+                    f"http://localhost:3500/v1.0/actors/SeekerActor/{chat_id}/method/get_weekly_summary",
+                    json={},
+                    timeout=2.0,
+                )
+
+                if response.status_code == 200:
+                    summary = response.json()
+
+                    if summary["total_sits"] == 0:
+                        reply = "📿 You haven't logged any sits this week yet."
+                    else:
+                        # Format summary
+                        reply = (
+                            f"📿 Week in Practice\n\n"
+                            f"🧘 Total sits: {summary['total_sits']}\n"
+                            f"⏱️ Total time: {summary['total_minutes']} minutes\n"
+                            f"🌟 Most practiced: {summary['most_practiced_type']}\n"
+                            f"⏰ Longest sit: {summary['longest_sit']} minutes\n"
+                            f"🔥 Current streak: {summary['streak']} days"
+                        )
+
+                        # TODO: Call wisdom-service to generate warm LLM summary
+                        # For now, just show structured data
+                else:
+                    reply = "I couldn't fetch your weekly summary. Try again in a moment."
+            else:
+                # Get journal for last 7 days
+                response = await client.post(
+                    f"http://localhost:3500/v1.0/actors/SeekerActor/{chat_id}/method/get_journal",
+                    json={"days": 7},
+                    timeout=2.0,
+                )
+
+                if response.status_code == 200:
+                    data = response.json()
+                    entries = data["entries"]
+                    total_duration = data["total_duration_minutes"]
+
+                    if not entries:
+                        reply = "📿 No meditation sessions logged in the last 7 days."
+                    else:
+                        lines = ["📿 Last 7 Days\n"]
+                        for entry in entries[-10:]:  # Show last 10
+                            timestamp = entry["timestamp"][:10]  # Just date
+                            duration = entry["duration_minutes"]
+                            practice_type = entry["practice_type"]
+                            lines.append(f"• {timestamp}: {duration} min {practice_type}")
+
+                        lines.append(f"\nTotal: {total_duration} minutes")
+                        reply = "\n".join(lines)
+                else:
+                    reply = "I couldn't fetch your journal. Try again in a moment."
+
+    except Exception:
+        reply = "I couldn't fetch your journal. Try again in a moment."
+
+    await bot.api.send_message(params={"chat_id": chat_id, "text": reply})
