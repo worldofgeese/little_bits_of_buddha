@@ -14,9 +14,9 @@ Phase 2 transforms LBOB from a stateless RAG chatbot into a personalized teacher
 
 **What Phase 2 adds:**
 - Dapr Actors: one per seeker, holding state + practice level + preferences
-- Actor timers: daily mindfulness prompts, practice reminders
 - Adaptive tone: detect beginner vs practitioner from conversation patterns
-- Multi-tradition routing (stretch goal): Theravada, Zen, secular
+- Dapr Conversation API for LLM calls (caching, PII scrubbing, circuit breakers)
+- Tradition: Early Buddhism only (no multi-tradition routing)
 
 ---
 
@@ -74,7 +74,6 @@ Create the Dapr Actor that represents a seeker (user).
 class SeekerState:
     chat_id: str
     practice_level: str  # "newcomer" | "beginner" | "intermediate" | "experienced"
-    tradition: str  # "theravada" (default) | "zen" | "secular"
     conversation_count: int
     topics_explored: list[str]  # theme tags from suttas discussed
     last_active: datetime
@@ -86,7 +85,6 @@ class SeekerState:
 - `receive_message(text: str) -> str` — Main entry point. Loads state, calls wisdom-service, saves state, returns response.
 - `get_state() -> SeekerState` — Read current seeker state.
 - `update_practice_level(level: str)` — Manual override.
-- `set_tradition(tradition: str)` — User preference.
 - `get_summary() -> dict` — Returns conversation stats for the seeker.
 
 **Constraints:**
@@ -104,10 +102,10 @@ class SeekerState:
 
 ---
 
-### WP2: Wisdom Service — Extract LLM/RAG into Standalone Service
-**Size: M | Priority: P0 | Branch: `feat/wisdom-service`**
+### WP2: Wisdom Service — Extract LLM/RAG with Dapr Conversation API
+**Size: L | Priority: P0 | Branch: `feat/wisdom-service`**
 
-Extract the LLM call + RAG pipeline from `openai-service` into a new `wisdom-service` that actors call via Dapr service invocation.
+Extract the LLM call + RAG pipeline from `openai-service` into a new `wisdom-service` that actors call via Dapr service invocation. **Replace raw httpx with Dapr Conversation API** to get caching, PII scrubbing, and circuit breakers for free.
 
 **Files to create:**
 - `src/wisdom_service/__init__.py`
@@ -119,6 +117,10 @@ Extract the LLM call + RAG pipeline from `openai-service` into a new `wisdom-ser
 - `src/openai_service_worldofgeese/sutta_search.py` → `src/wisdom_service/sutta_search.py`
 - `src/openai_service_worldofgeese/__main__.py` → delete (replaced by actor + wisdom)
 
+**New Dapr component:**
+- `.dapr/components/conversation.yaml` — Conversation API component backed by Anthropic proxy
+- Configure: caching (same question = cached answer, saves LLM costs), PII scrubbing, retry/circuit breaker
+
 **API:**
 ```
 POST /wisdom/ask
@@ -127,7 +129,6 @@ POST /wisdom/ask
     "message": "What is the cause of suffering?",
     "context": {
         "practice_level": "beginner",
-        "tradition": "theravada",
         "history": [...last 10 messages...],
         "topics_explored": ["four noble truths"]
     }
@@ -137,9 +138,13 @@ POST /wisdom/ask
 
 The wisdom service is stateless — all seeker context is passed in by the actor. This makes it independently scalable and testable.
 
+**LLM call via Dapr Conversation API:**
+- Replace `_call_anthropic_proxy()` with `DaprClient.converse()` (or the Python SDK equivalent)
+- ADR needed: `0013-dapr-conversation-api.md` — replaces ADR 0009 (raw httpx). The Conversation API handles auth, retries, caching, and PII scrubbing as infrastructure. If the alpha API has gaps, document the workaround.
+
 **System prompt adaptation (based on practice_level):**
-- `newcomer`: Simple language, define Pali terms, encourage questions, no assumptions about practice. "You are a patient teacher speaking to someone encountering the Dhamma for the first time."
-- `beginner`: Can use basic terms (dukkha, sila, metta), reference practice. "You are a kind teacher speaking to a new practitioner."
+- `newcomer`: Simple language, define Pali terms, encourage questions. "You are a patient teacher speaking to someone encountering the Dhamma for the first time."
+- `beginner`: Can use basic terms (dukkha, sila, metta), reference practice. "You are a kind teacher of the Early Buddhist tradition speaking to a new practitioner."
 - `intermediate`: Assume familiarity with core doctrines, can discuss subtleties. "You speak as the Tathagata to a sincere practitioner."
 - `experienced`: Full Pali terminology, direct pointing, fewer explanations. "You speak as the Tathagata to an experienced practitioner of the path."
 
@@ -147,7 +152,8 @@ The wisdom service is stateless — all seeker context is passed in by the actor
 - Test endpoint returns valid response format
 - Test system prompt changes with practice level
 - Test sutta citation extraction
-- Test graceful degradation when Redis is down (no sutta context, still responds)
+- Test graceful degradation when Conversation API is down (fallback to raw httpx)
+- Test caching behavior (same question returns cached response)
 
 ---
 
@@ -178,37 +184,6 @@ Heuristic to detect and update a seeker's practice level based on conversation p
 
 ---
 
-### WP4: Actor Timers — Daily Reminders
-**Size: M | Priority: P1 | Branch: `feat/actor-timers`**
-
-Dapr Actor timers to send proactive messages.
-
-**Reminder types:**
-1. **Daily practice prompt** — Short quote or teaching, different each day. Drawn from sutta corpus. Sent at user's preferred time (default: 7 AM).
-2. **Follow-up** — "Last time we spoke about [topic]. Have you had time to reflect on it?" Sent 24-48 hours after last conversation.
-3. **Gentle return** — "It's been a while since we last spoke. The path is always here." Sent after 7+ days of inactivity.
-
-**Implementation:**
-- Use `self.register_timer(name, callback, due_time, period)` in actor
-- Timer fires → actor method generates message → publishes to `responses` topic → Telegram delivers
-- User can opt out: `/silence` command disables all timers, `/remind` re-enables
-- Timer state persisted in actor state (active timers, preferred send time, opt-out flag)
-
-**Constraints:**
-- Dapr actor timers survive container restarts (Dapr re-registers them)
-- Timer callbacks must be idempotent (Dapr may fire them more than once)
-- Must respect Telegram rate limits (not more than 30 messages/second globally)
-
-**New Dapr component:** None — timers are built into the actor runtime. But need to configure actor idle timeout in Dapr config to prevent actors with active timers from being deactivated.
-
-**Tests:**
-- Test timer registration on first conversation
-- Test opt-out disables timer
-- Test follow-up content references last discussed topic
-- Test idle detection (7+ days)
-
----
-
 ### WP5: Compose & Infrastructure Updates
 **Size: M | Priority: P0 | Branch: `feat/phase2-infra`**
 
@@ -224,6 +199,7 @@ Update `compose.yaml`, Dockerfiles, and Dapr config for the new service topology
 
 **New Dapr components:**
 - `.dapr/components/actor-config.yaml` — Actor idle timeout, reentrancy settings
+- `.dapr/components/conversation.yaml` — Conversation API component for Anthropic proxy (caching, PII scrubbing, circuit breakers)
 - Update `.dapr/components/statestore.yaml` — Actor state store config (same Redis, Dapr handles actor key prefixing)
 
 **Dockerfile changes:**
@@ -246,8 +222,6 @@ Update `telegram-bot-service` for new commands and actor interaction.
 **New commands:**
 - `/start` — Activates seeker actor, sends welcome message
 - `/level` — Shows current practice level
-- `/tradition [theravada|zen|secular]` — Sets preferred tradition
-- `/silence` / `/remind` — Toggle daily reminders
 - `/forget` — Clears conversation history (GDPR-friendly)
 
 **Changes:**
@@ -260,11 +234,10 @@ Update `telegram-bot-service` for new commands and actor interaction.
 ## Dependency Graph
 
 ```
-WP5 (infra) ─────────┐
-                      ├──→ WP1 (actor) ──→ WP2 (wisdom) ──→ Integration testing
-WP3 (level detect) ───┘         │
-                                ├──→ WP4 (timers)
-WP6 (telegram cmds) ────────────┘
+WP5 (infra) ───────┐
+                    ├──→ WP1 (actor) ──→ WP2 (wisdom + Conversation API) ──→ Integration testing
+WP3 (level detect) ─┘
+WP6 (telegram cmds) ──→ (after WP1 skeleton)
 ```
 
 **Critical path:** WP5 → WP1 → WP2 → integration test
@@ -278,23 +251,24 @@ WP6 (telegram cmds) ────────────┘
 |-------|-----|---------------------|-------------|
 | 1 | WP5 (infra) | WP3 (level detect) | 2-3 hours |
 | 2 | WP1 (actor) | WP6 (telegram cmds) | 4-6 hours |
-| 3 | WP2 (wisdom) | WP4 (timers) | 3-4 hours |
-| 4 | WP4 (timers) | — | 2-3 hours |
-| 5 | Integration test + migration | — | 2-3 hours |
+| 3 | WP2 (wisdom + Conversation API) | — | 4-5 hours |
+| 4 | Integration test + migration | — | 2-3 hours |
 
-**Total estimate:** 13-19 hours of worker time. With parallel dispatch: ~8-12 hours wall clock.
+**Total estimate:** 12-17 hours of worker time. With parallel dispatch: ~7-10 hours wall clock.
 
 ---
 
-## Decisions to Make
+## Decisions
 
-1. **Dapr Conversation API** — Currently alpha. Vision doc lists it for Phase 2, but it's not stable. **Recommendation: Skip it.** Keep raw httpx to Anthropic proxy (ADR 0009 still applies). Revisit when Conversation API hits beta.
+1. **Use Dapr Conversation API** — Alpha, but we're maximally adopting Dapr features. Gets us caching (same question = cached LLM response, saves cost), PII scrubbing, retry/circuit breakers as infrastructure rather than application code. Supersedes ADR 0009. If alpha gaps emerge, document workarounds in ADR 0013 and keep raw httpx as fallback path.
 
-2. **Multi-tradition routing** — Full implementation (separate services per tradition) is Phase 3 complexity disguised as Phase 2. **Recommendation: Phase 2 does tradition as a system prompt variation only** (same wisdom service, different prompt prefix). Separate services deferred to Phase 3.
+2. **Early Buddhism only** — No multi-tradition routing. One tradition, taught well. The system prompt speaks as the Tathagata of the Early Buddhist Canon.
 
-3. **Actor placement service** — For single-node deployment, Dapr's default placement service works. If we ever scale to multiple nodes, we'll need the placement service as a separate container. **Recommendation: Use default placement for now.** Add `dapr-placement` container to compose only if needed.
+3. **Default Dapr placement service** — Single-node deployment doesn't need a separate placement container. Add `dapr-placement` only if multi-node.
 
-4. **State migration strategy** — Existing users have state in `seeker:{chat_id}` format. **Recommendation: Write migration script in WP5, run as one-time job.** No backward compatibility layer — clean cut.
+4. **Clean state migration** — One-time migration script, no backward compatibility layer. Run during deployment, delete old keys.
+
+5. **No proactive outreach** — The Buddha does not nudge, bug, or follow up. The seeker comes to the teacher. No timers, no reminders, no "it's been a while" messages.
 
 ---
 
@@ -303,7 +277,7 @@ WP6 (telegram cmds) ────────────┘
 | Risk | Impact | Mitigation |
 |------|--------|------------|
 | Dapr actor + trio incompatibility | High — actors are async but our stack is trio | Spike in WP1: verify `trio.to_thread.run_sync` works inside actor methods. Fallback: actor host runs on asyncio (separate from trio-based services) |
-| Timer reliability on container restart | Medium — missed reminders | Test explicitly in WP4. Dapr should re-register timers but verify with podman restart cycle |
+| Dapr Conversation API alpha instability | Medium — API may change or have gaps | Keep raw httpx fallback in wisdom-service. Document gaps in ADR 0013. |
 | LLM latency blocks actor methods | Medium — actor method timeout | WP2 extraction solves this: actor makes async service invocation call, doesn't block on LLM |
 | sutta_corpus too large for wisdom-service cold start | Low — 286 suttas, ~1.5MB | Embed on startup, cache in Redis. Already works in Phase 1. |
 
@@ -315,5 +289,4 @@ WP6 (telegram cmds) ────────────┘
 - Structured learning paths
 - Practice journaling
 - Redis TimeSeries analytics
-- Separate tradition services (beyond prompt variation)
-- Dapr Conversation API integration
+- Proactive outreach / timers / reminders

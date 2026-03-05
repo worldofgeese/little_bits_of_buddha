@@ -48,10 +48,9 @@ p,li{font-size:0.92rem;margin-bottom:0.5rem}
 code{font-family:var(--font-mono);font-size:0.82rem;background:var(--surface-warm);padding:0.15em 0.4em;border-radius:3px}
 pre{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1rem;overflow-x:auto;font-size:0.8rem;margin:1rem 0;font-family:var(--font-mono);line-height:1.5}
 
-/* Architecture diagram */
 .arch{display:flex;flex-direction:column;align-items:center;gap:0.5rem;margin:2rem 0}
 .arch-row{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
-.arch-box{background:var(--surface);border:2px solid var(--border);border-radius:8px;padding:0.75rem 1.25rem;text-align:center;min-width:140px;font-size:0.85rem;font-weight:500;position:relative}
+.arch-box{background:var(--surface);border:2px solid var(--border);border-radius:8px;padding:0.75rem 1.25rem;text-align:center;min-width:140px;font-size:0.85rem;font-weight:500}
 .arch-box.actor{border-color:var(--accent);background:var(--accent-dim)}
 .arch-box.wisdom{border-color:var(--sage);background:var(--sage-dim)}
 .arch-box.telegram{border-color:var(--navy);background:var(--navy-dim)}
@@ -60,7 +59,6 @@ pre{background:var(--surface);border:1px solid var(--border);border-radius:8px;p
 .arch-arrow{color:var(--text-dim);font-size:1.2rem;line-height:1}
 .arch-label{font-size:0.72rem;color:var(--text-dim);font-style:italic}
 
-/* Work package cards */
 .wp-grid{display:grid;gap:1rem;margin:1.5rem 0}
 .wp{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem 1.5rem;position:relative;overflow:hidden}
 .wp::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px}
@@ -68,7 +66,7 @@ pre{background:var(--surface);border:1px solid var(--border);border-radius:8px;p
 .wp.p1::before{background:var(--sage)}
 .wp-header{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.75rem}
 .wp-title{font-family:var(--font-heading);font-size:1.2rem;font-weight:600}
-.wp-meta{display:flex;gap:0.5rem;flex-wrap:wrap}
+.wp-meta{display:flex;gap:0.5rem}
 .wp-tag{font-size:0.7rem;font-weight:500;padding:0.2em 0.6em;border-radius:12px;text-transform:uppercase;letter-spacing:0.04em}
 .wp-tag.size{background:var(--navy-dim);color:var(--navy)}
 .wp-tag.priority{background:var(--accent-dim);color:var(--accent)}
@@ -76,25 +74,20 @@ pre{background:var(--surface);border:1px solid var(--border);border-radius:8px;p
 .wp ul{padding-left:1.25rem;margin:0.5rem 0}
 .wp li{font-size:0.85rem;margin-bottom:0.35rem}
 
-/* Decision cards */
 .decision{background:var(--surface-warm);border-left:3px solid var(--gold);border-radius:0 6px 6px 0;padding:0.75rem 1rem;margin:0.75rem 0;font-size:0.88rem}
 .decision strong{color:var(--accent)}
 
-/* Dep graph */
 .dep{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.5rem;margin:1.5rem 0;text-align:center;font-family:var(--font-mono);font-size:0.82rem;line-height:2;white-space:pre;overflow-x:auto}
 
-/* Risk table */
 table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:0.85rem}
 th{background:var(--surface-warm);font-weight:600;text-align:left;padding:0.6rem 0.75rem;border-bottom:2px solid var(--border)}
 td{padding:0.5rem 0.75rem;border-bottom:1px solid var(--border);vertical-align:top}
 tr:last-child td{border-bottom:none}
 
-/* Timeline */
 .timeline{position:relative;padding-left:2rem;margin:1.5rem 0}
 .timeline::before{content:'';position:absolute;left:0.5rem;top:0;bottom:0;width:2px;background:var(--border)}
 .timeline-step{position:relative;margin-bottom:1.25rem;padding-left:1rem}
 .timeline-step::before{content:'';position:absolute;left:-1.75rem;top:0.4rem;width:10px;height:10px;border-radius:50%;background:var(--accent);border:2px solid var(--bg)}
-.timeline-step.parallel::before{background:var(--sage)}
 .timeline-step .step-label{font-weight:600;font-size:0.9rem}
 .timeline-step .step-detail{font-size:0.82rem;color:var(--text-dim)}
 
@@ -111,7 +104,7 @@ tr:last-child td{border-bottom:none}
 <h1>LBOB Phase 2</h1>
 <div class="subtitle">"The bot that knows you." — Actors & Personality</div>
 
-<p>Phase 2 transforms LBOB from a stateless RAG chatbot into a personalized teacher. Each Telegram user gets a <strong>Dapr Virtual Actor</strong> — a persistent identity that remembers their practice level, adapts tone, and can proactively reach out with teachings.</p>
+<p>Phase 2 transforms LBOB from a stateless RAG chatbot into a personalized teacher. Each Telegram user gets a <strong>Dapr Virtual Actor</strong> — a persistent identity that remembers their practice level, adapts tone, and teaches at their level. The Buddha does not come to you. You come to the Buddha.</p>
 
 <h2>Architecture — Phase 1 → Phase 2</h2>
 
@@ -121,7 +114,7 @@ tr:last-child td{border-bottom:none}
 <div class="arch">
   <div class="arch-box telegram">Telegram Bot</div>
   <div class="arch-arrow">↕ pub/sub</div>
-  <div class="arch-box" style="border-color:var(--text-dim)">openai-service<br><span class="arch-label">stateless handler</span></div>
+  <div class="arch-box" style="border-color:var(--text-dim)">openai-service<br><span class="arch-label">stateless · raw httpx</span></div>
   <div class="arch-arrow">↕</div>
   <div class="arch-box redis">Redis<br><span class="arch-label">flat state + vectors</span></div>
 </div>
@@ -135,7 +128,7 @@ tr:last-child td{border-bottom:none}
   <div class="arch-row">
     <div style="display:flex;flex-direction:column;align-items:center;gap:0.5rem">
       <div class="arch-arrow">↓ service invoke</div>
-      <div class="arch-box wisdom">Wisdom Service<br><span class="arch-label">LLM + RAG</span></div>
+      <div class="arch-box wisdom">Wisdom Service<br><span class="arch-label">Dapr Conversation API</span></div>
     </div>
     <div style="display:flex;flex-direction:column;align-items:center;gap:0.5rem">
       <div class="arch-arrow">↕ state</div>
@@ -146,7 +139,7 @@ tr:last-child td{border-bottom:none}
 </div>
 </div>
 
-<p><strong>Key change:</strong> <code>openai-service</code> splits into <strong>seeker-actor-service</strong> (per-user state, lifecycle, timers) and <strong>wisdom-service</strong> (stateless LLM + RAG). Actors call wisdom via Dapr service invocation, so LLM latency never blocks actor method calls.</p>
+<p><strong>Key changes:</strong> <code>openai-service</code> splits into <strong>seeker-actor-service</strong> (per-user state, lifecycle) and <strong>wisdom-service</strong> (LLM via Dapr Conversation API + RAG). Raw httpx replaced by Dapr-managed LLM calls with caching, PII scrubbing, and circuit breakers.</p>
 
 <h2>Work Packages</h2>
 
@@ -157,10 +150,10 @@ tr:last-child td{border-bottom:none}
     <span class="wp-title">WP1: SeekerActor</span>
     <div class="wp-meta"><span class="wp-tag size">L</span><span class="wp-tag priority">P0</span></div>
   </div>
-  <p>The core Dapr Actor representing each seeker. Holds practice level, tradition preference, conversation history, and topic exploration map.</p>
+  <p>The core Dapr Actor representing each seeker. Holds practice level, conversation history, and topic exploration map.</p>
   <ul>
-    <li>Actor methods: <code>receive_message</code>, <code>get_state</code>, <code>update_practice_level</code>, <code>set_tradition</code></li>
-    <li>State: chat_id, practice_level (newcomer→experienced), tradition, conversation_count, topics_explored, preferences</li>
+    <li>Actor methods: <code>receive_message</code>, <code>get_state</code>, <code>update_practice_level</code>, <code>get_summary</code></li>
+    <li>State: chat_id, practice_level (newcomer→experienced), conversation_count, topics_explored, preferences</li>
     <li>Uses <code>trio.to_thread.run_sync</code> for DaprClient calls (consistent with Phase 1)</li>
     <li>Mock actor testing via <code>dapr.actor.runtime.mock_actor</code></li>
   </ul>
@@ -168,15 +161,15 @@ tr:last-child td{border-bottom:none}
 
 <div class="wp p0">
   <div class="wp-header">
-    <span class="wp-title">WP2: Wisdom Service</span>
-    <div class="wp-meta"><span class="wp-tag size">M</span><span class="wp-tag priority">P0</span></div>
+    <span class="wp-title">WP2: Wisdom Service + Dapr Conversation API</span>
+    <div class="wp-meta"><span class="wp-tag size">L</span><span class="wp-tag priority">P0</span></div>
   </div>
-  <p>Extract LLM + RAG pipeline into standalone stateless service. Actors pass seeker context in; wisdom returns response + cited suttas + detected themes.</p>
+  <p>Stateless LLM + RAG service. Replaces raw httpx with <strong>Dapr Conversation API</strong> for LLM calls — gets caching, PII scrubbing, and circuit breakers as infrastructure.</p>
   <ul>
     <li>Moves <code>rag.py</code> + <code>sutta_search.py</code> from openai-service</li>
-    <li>Adaptive system prompt based on <code>practice_level</code> (newcomer gets definitions, experienced gets Pali)</li>
-    <li>Returns structured response: text + suttas_cited + detected_themes</li>
-    <li>Independently testable and scalable</li>
+    <li>Adaptive system prompt based on <code>practice_level</code> — newcomer gets definitions, experienced gets Pali</li>
+    <li>New Dapr component: <code>conversation.yaml</code> backed by Anthropic proxy</li>
+    <li>ADR 0013 supersedes ADR 0009 (raw httpx → Conversation API, raw httpx as fallback)</li>
   </ul>
 </div>
 
@@ -193,27 +186,15 @@ tr:last-child td{border-bottom:none}
   </ul>
 </div>
 
-<div class="wp p1">
-  <div class="wp-header">
-    <span class="wp-title">WP4: Actor Timers</span>
-    <div class="wp-meta"><span class="wp-tag size">M</span><span class="wp-tag priority p1">P1</span></div>
-  </div>
-  <p>Proactive outreach via Dapr actor timers. Daily practice prompts, follow-up messages ("Last time we spoke about…"), and gentle return after 7+ days idle.</p>
-  <ul>
-    <li>Timers survive container restarts (Dapr re-registers)</li>
-    <li>User opt-out: <code>/silence</code> and <code>/remind</code> commands</li>
-    <li>Callbacks must be idempotent (Dapr may fire >1x)</li>
-  </ul>
-</div>
-
 <div class="wp p0">
   <div class="wp-header">
     <span class="wp-title">WP5: Compose & Infrastructure</span>
     <div class="wp-meta"><span class="wp-tag size">M</span><span class="wp-tag priority">P0</span></div>
   </div>
-  <p>compose.yaml, Dockerfiles, Dapr component config for new two-service topology. State migration script for existing users.</p>
+  <p>compose.yaml, Dockerfiles, Dapr components (actor config + conversation API + state store). State migration script.</p>
   <ul>
     <li>Remove openai-service containers, add seeker-actor + wisdom containers + sidecars</li>
+    <li>New: <code>conversation.yaml</code> component for Anthropic proxy</li>
     <li>Actor idle timeout config, placement service</li>
     <li><code>scripts/migrate_state_to_actors.py</code> for existing seeker state</li>
   </ul>
@@ -224,7 +205,7 @@ tr:last-child td{border-bottom:none}
     <span class="wp-title">WP6: Telegram Updates</span>
     <div class="wp-meta"><span class="wp-tag size">S</span><span class="wp-tag priority p1">P1</span></div>
   </div>
-  <p>New bot commands: <code>/start</code>, <code>/level</code>, <code>/tradition</code>, <code>/silence</code>, <code>/remind</code>, <code>/forget</code>. Command interception before pub/sub.</p>
+  <p>New bot commands: <code>/start</code>, <code>/level</code>, <code>/forget</code>. Command interception before pub/sub.</p>
 </div>
 
 </div>
@@ -232,36 +213,35 @@ tr:last-child td{border-bottom:none}
 <h2>Dependency Graph & Sequencing</h2>
 
 <div class="dep">WP5 (infra) ───────┐
-                    ├──→ WP1 (actor) ──→ WP2 (wisdom) ──→ Integration
-WP3 (level detect) ─┘         │
-                               ├──→ WP4 (timers)
-WP6 (telegram cmds) ───────────┘</div>
+                    ├──→ WP1 (actor) ──→ WP2 (wisdom + Conversation API) ──→ Integration
+WP3 (level detect) ─┘
+WP6 (telegram cmds) ──→ (after WP1 skeleton)</div>
 
 <div class="timeline">
   <div class="timeline-step"><span class="step-label">1. WP5 (infra) + WP3 (level detect)</span><span class="step-detail"> — parallel, ~2-3h each</span></div>
   <div class="timeline-step"><span class="step-label">2. WP1 (actor) + WP6 (telegram cmds)</span><span class="step-detail"> — parallel after WP5, ~4-6h + 1-2h</span></div>
-  <div class="timeline-step"><span class="step-label">3. WP2 (wisdom) + WP4 (timers)</span><span class="step-detail"> — parallel after WP1, ~3-4h + 2-3h</span></div>
+  <div class="timeline-step"><span class="step-label">3. WP2 (wisdom + Conversation API)</span><span class="step-detail"> — after WP1, ~4-5h</span></div>
   <div class="timeline-step"><span class="step-label">4. Integration test + migration</span><span class="step-detail"> — sequential, ~2-3h</span></div>
 </div>
 
-<p><strong>Total:</strong> 13-19 hours worker time. With parallel dispatch: <strong>~8-12 hours wall clock</strong>.</p>
+<p><strong>Total:</strong> 12-17 hours worker time. With parallel dispatch: <strong>~7-10 hours wall clock</strong>.</p>
 
-<h2>Key Decisions</h2>
+<h2>Decisions</h2>
 
 <div class="decision">
-  <strong>Skip Dapr Conversation API.</strong> Still alpha as of March 2026. Keep raw httpx to Anthropic proxy (ADR 0009). Revisit when it hits beta.
+  <strong>Use Dapr Conversation API.</strong> Alpha, but we're maximally adopting Dapr. Gets caching, PII scrubbing, circuit breakers as infrastructure. Raw httpx fallback if alpha gaps emerge.
 </div>
 
 <div class="decision">
-  <strong>Multi-tradition = prompt variation only.</strong> Same wisdom service, different system prompt per tradition. Separate service-per-tradition is Phase 3 complexity.
+  <strong>Early Buddhism only.</strong> One tradition, taught well. The system prompt speaks as the Tathagata of the Early Buddhist Canon. No multi-tradition routing.
 </div>
 
 <div class="decision">
-  <strong>Default Dapr placement service.</strong> Single-node deployment doesn't need a separate placement container. Add only if multi-node.
+  <strong>No proactive outreach.</strong> The Buddha sat under the tree. People came to him. No timers, no reminders, no "it's been a while" messages.
 </div>
 
 <div class="decision">
-  <strong>Clean state migration.</strong> One-time migration script, no backward compatibility layer. Run during deployment, delete old keys.
+  <strong>Clean state migration.</strong> One-time script, no backward compatibility. Run during deployment, delete old keys.
 </div>
 
 <h2>Risks</h2>
@@ -269,13 +249,13 @@ WP6 (telegram cmds) ───────────┘</div>
 <table>
 <tr><th>Risk</th><th>Impact</th><th>Mitigation</th></tr>
 <tr><td>Dapr actor + trio incompatibility</td><td style="color:var(--accent);font-weight:600">High</td><td>Spike in WP1: verify <code>trio.to_thread.run_sync</code> inside actor methods. Fallback: actor host on asyncio.</td></tr>
-<tr><td>Timer reliability on restart</td><td style="font-weight:600">Medium</td><td>Explicit test in WP4 with podman restart cycle.</td></tr>
+<tr><td>Dapr Conversation API alpha instability</td><td style="font-weight:600">Medium</td><td>Keep raw httpx fallback in wisdom-service. Document gaps in ADR 0013.</td></tr>
 <tr><td>LLM latency blocking actors</td><td style="font-weight:600">Medium</td><td>WP2 extraction: actor makes async service invocation, doesn't block on LLM.</td></tr>
 <tr><td>Corpus cold start time</td><td style="color:var(--sage)">Low</td><td>286 suttas, ~1.5MB. Embed on startup + Redis cache. Already works.</td></tr>
 </table>
 
 <h2>Out of Scope (Phase 3)</h2>
-<p style="color:var(--text-dim);font-size:0.88rem">Dapr Workflows for guided meditations · Structured learning paths · Practice journaling · Redis TimeSeries analytics · Separate tradition services · Dapr Conversation API</p>
+<p style="color:var(--text-dim);font-size:0.88rem">Dapr Workflows for guided meditations · Structured learning paths · Practice journaling · Redis TimeSeries analytics · Proactive outreach / timers / reminders</p>
 
 </div>
 </body>
