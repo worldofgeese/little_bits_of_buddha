@@ -19,7 +19,7 @@ Read these files in order before doing anything:
 
 - **Repo**: `/home/node/.openclaw/workspace/projects/little_bits_of_buddha`
 - **Remote**: `ssh://forgejo@paphos.hound-celsius.ts.net/kypris/little_bits_of_buddha.git`
-- **Main branch HEAD**: `185fd3e` (Phase 3 complete — all 3 waves merged)
+- **Main branch HEAD**: `89eb410` (Phase 3 complete, pipeline experiments cleaned up)
 - **Bot**: `@LittleBitsOfBuddhaBot`, token in `TRIOGRAM_TOKEN` env var
 - **Model**: `anthropic/anthropic.claude-sonnet-4-5-20250929-v1:0` (via Bedrock proxy)
 
@@ -41,20 +41,25 @@ Phase 2 and 3 images haven't been pushed to Paphos. The bot needs new Docker ima
 
 ```
 # 1. Write task brief to a file
-write projects/lbob-<name>/prompts/<task>.md
+write /tmp/lbob-<task>.md
 
-# 2. Create git worktree
-cd projects/little_bits_of_buddha && git worktree add ../lbob-<name> -b feat/<branch> main
+# 2. Create isolated worktree (MANDATORY for parallel workers)
+WORKTREE=$(bash scripts/acp-worktree-setup.sh projects/little_bits_of_buddha feat/<branch>)
 
-# 3. Dispatch via ACP
-sessions_spawn(runtime="acp", model="anthropic/anthropic.claude-sonnet-4-5-20250929-v1:0", label="lbob-<name>", task="Read task brief at .../prompts/<task>.md and complete all tasks.")
+# 3. Copy task brief into worktree
+cp /tmp/lbob-<task>.md $WORKTREE/.acp-task.md
 
-# 4. Register with tracker (include branch + baseline SHA)
-bash scripts/subagent-tracker.sh register <label> <sessionKey> 90
-# Then update memory/active-tasks.json with branch and baseline fields
+# 4. Dispatch via ACP with worktree as cwd
+sessions_spawn(runtime="acp", agentId="claude", cwd=$WORKTREE, label="lbob-<name>", task="Read .acp-task.md and complete all tasks.")
 
-# 5. Message Tao with what you dispatched
+# 5. Register with tracker
+BASELINE=$(cd projects/little_bits_of_buddha && git rev-parse HEAD)
+# Update memory/active-tasks.json with: label, sessionKey, branch, baseline, repoDir, status:"running"
+
+# 6. Message Tao with what you dispatched
 ```
+
+**The poller handles everything after push.** Detection → merge → cleanup → state update. You just dispatch and register.
 
 ## How Completion Detection Works (Validated 2026-03-05)
 
@@ -62,33 +67,54 @@ bash scripts/subagent-tracker.sh register <label> <sessionKey> 90
 
 - ACP workers have no OpenClaw tools. They can't sessions_send.
 - ACP announce goes to Tao's Telegram channel, not to your session.
-- `sessions_list` is blind to ACP sessions.
+- `sessions_list` and `subagents list` are blind to ACP sessions.
 
-**New Architecture (zero LLM cost):**
+**Architecture (zero LLM cost, validated with 14/14 acceptance tests):**
 
 1. **Background poller** (`scripts/acp-completion-poller.sh`) — launched by `gateway:startup` hook
-   - Polls git branches in `memory/active-tasks.json` every 60s
-   - Writes signal files to `memory/acp-completions/<label>.json` on detection
-   - Zero LLM cost, survives container restarts via hook relaunch
+   - Polls git branches registered in `memory/active-tasks.json` every 60s
+   - On detection: writes signal file to `memory/acp-completions/<label>.json` AND immediately runs `scripts/acp-merge-pipeline.sh` (merge → push → cleanup)
+   - Zero LLM cost, survives gateway restarts via hook relaunch
 
-2. **Heartbeat** checks `memory/acp-completions/` each cycle
-   - Runs `scripts/acp-merge-pipeline.sh` to merge, push, message Tao
-   - Mechanical — no LLM needed for git operations
+2. **Merge pipeline** (`scripts/acp-merge-pipeline.sh`) — called by poller on detection
+   - Merges branch to main (fast-forward or ort strategy), pushes, deletes remote branch
+   - Updates `memory/pipeline-state.json` and `scripts/subagent-tracker.sh complete`
+   - Logs failures to `memory/pipeline-errors.txt`
 
-3. **Kill the old `acp-branch-watcher` cron** — it used claude-sonnet-4.5 every 3 min (expensive)
+3. **Heartbeat** audits `memory/pipeline-state.json` and `memory/pipeline-errors.txt`
+   - Does NOT run merges (poller handles that)
+   - Dispatches follow-on work (next wave) or escalates errors to Tao
+
+4. **Worktree isolation** — MANDATORY for parallel workers
+   - `scripts/acp-worktree-setup.sh <repo> <branch>` creates isolated worktrees
+   - Without worktrees, workers share a checkout and cross-contaminate branches (proven failure mode)
 
 **Pipeline flow:**
 ```
+Dispatch: sessions_spawn(runtime="acp", cwd=<worktree>) + register in active-tasks.json
+    ↓
 ACP worker completes → pushes to branch
     ↓
-Background poller (60s) detects → writes signal file
+Background poller (60s) detects new commits → writes signal + runs merge
     ↓
-Heartbeat finds signal → runs merge-pipeline.sh
+Merged to main, pushed, branch deleted, tracker completed
     ↓
-Merged to main, pushed, Tao messaged, signal cleaned up
+Heartbeat picks up pipeline-state.json → messages Tao, dispatches next wave
 ```
 
-**Verified:** Experiments 1-5 (up to 10-min durations) all detected and merged autonomously.
+**Validated:** 7 experiments across 2 rounds (2-30 min durations), plus 14-assertion acceptance test covering worktree isolation, cross-contamination prevention, independent commits, and poller-driven merge.
+
+**Key files:**
+- `hooks/acp-pipeline/` — gateway:startup hook (launches poller)
+- `scripts/acp-completion-poller.sh` — detection + merge trigger
+- `scripts/acp-merge-pipeline.sh` — mechanical merge/push
+- `scripts/acp-worktree-setup.sh` — per-worker worktree creation
+- `scripts/acp-pipeline-acceptance.sh` — 14-assertion acceptance test
+- `scripts/subagent-tracker.sh` — register/complete/check
+- `memory/active-tasks.json` — worker registry
+- `memory/acp-completions/` — signal files (audit trail)
+- `memory/pipeline-state.json` — last merge record
+- `memory/pipeline-errors.txt` — failure log
 
 ## Key Constraints
 
