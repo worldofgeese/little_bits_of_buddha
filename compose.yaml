@@ -188,6 +188,52 @@ services:
     profiles:
       - production
 
+  # --- Meditation Workflow Service (Dapr Workflows for guided meditation) ---
+  meditation-workflow-dapr:
+    image: lbob-daprd:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.daprd
+    container_name: lbob-meditation-workflow-dapr
+    networks:
+      - lbob
+    command:
+      - ./daprd
+      - --app-id=meditation-workflow-service
+      - --app-channel-address=lbob-meditation-workflow
+      - --app-port=8003
+      - --dapr-http-port=3500
+      - --dapr-grpc-port=50001
+      - --resources-path=/components
+      - --log-level=info
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    profiles:
+      - production
+
+  meditation-workflow-service:
+    image: lbob-meditation-workflow:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: meditation-workflow-service-production
+    container_name: lbob-meditation-workflow
+    networks:
+      - lbob
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      - DAPR_HTTP_ENDPOINT=http://lbob-meditation-workflow-dapr:3500
+      - DAPR_GRPC_ENDPOINT=lbob-meditation-workflow-dapr:50001
+    ports:
+      - "8003:8003"
+    restart: unless-stopped
+    profiles:
+      - production
+
   # --- Log shipping ---
   loki:
     image: docker.io/grafana/loki:3.3.2

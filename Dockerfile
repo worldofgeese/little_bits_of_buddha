@@ -85,3 +85,20 @@ COPY --chown=nonroot:nonroot scripts/embed_suttas.py embed_suttas.py
 COPY --chown=nonroot:nonroot scripts/entrypoint.sh entrypoint.sh
 EXPOSE 8080
 ENTRYPOINT ["bash", "/app/entrypoint.sh"]
+
+# --- meditation-workflow-service ---
+FROM base-builder as meditation-workflow-service-builder
+COPY src/meditation_workflow_service/requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
+
+FROM python:3.12-slim as meditation-workflow-service-production
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+COPY --from=meditation-workflow-service-builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
+COPY --from=meditation-workflow-service-builder /usr/local/bin /usr/local/bin
+WORKDIR /app
+RUN useradd --create-home nonroot
+USER nonroot
+COPY --chown=nonroot:nonroot src/meditation_workflow_service meditation_workflow_service/
+EXPOSE 8003
+ENTRYPOINT ["python", "-m", "meditation_workflow_service"]
