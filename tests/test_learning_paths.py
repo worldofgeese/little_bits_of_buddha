@@ -26,10 +26,10 @@ class TestCurriculum:
         assert "3" in CURRICULUM
         assert "4" in CURRICULUM
 
-    def test_curriculum_has_15_topics(self):
-        """Curriculum should have exactly 15 topics across all sections."""
+    def test_curriculum_has_19_topics(self):
+        """Curriculum should have exactly 19 topics across all sections (4+8+4+3)."""
         total_topics = sum(len(section["topics"]) for section in CURRICULUM.values())
-        assert total_topics == 15
+        assert total_topics == 19
 
     def test_section_1_four_noble_truths(self):
         """Section 1 should be The Four Noble Truths with 4 topics."""

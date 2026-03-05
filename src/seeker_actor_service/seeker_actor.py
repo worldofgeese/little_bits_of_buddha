@@ -58,6 +58,11 @@ class SeekerActorInterface(ActorInterface):
         """Get weekly summary statistics."""
         ...
 
+    @actormethod(name="get_path_progress")
+    async def get_path_progress(self, data: dict) -> dict:
+        """Get learning path progress."""
+        ...
+
 
 class SeekerActor(Actor, SeekerActorInterface):
     """One actor per Telegram user (actor_id = chat_id)."""
@@ -78,6 +83,7 @@ class SeekerActor(Actor, SeekerActorInterface):
                 "last_active": datetime.now().isoformat(),
                 "preferences": {},
                 "practice_journal": [],  # List of SitEntry dicts, max 90 days
+                "path_progress": {},  # Learning path progress tracking
             }
             await self._state_manager.set_state("seeker_state", default_state)
 
@@ -146,6 +152,15 @@ class SeekerActor(Actor, SeekerActorInterface):
         for theme in detected_themes:
             if theme not in state["topics_explored"]:
                 state["topics_explored"].append(theme)
+
+        # Update learning path progress
+        from .learning_paths import detect_topics, update_progress
+
+        topics = detect_topics(text, detected_themes)
+        if topics:
+            state["path_progress"] = update_progress(
+                state.get("path_progress", {}), topics, state.get("practice_journal", [])
+            )
 
         # Update last_active timestamp
         state["last_active"] = datetime.now().isoformat()
@@ -322,6 +337,36 @@ class SeekerActor(Actor, SeekerActorInterface):
             "most_practiced_type": most_practiced_type,
             "longest_sit": longest_sit,
             "streak": streak,
+        }
+
+    async def get_path_progress(self, data: dict) -> dict:
+        """
+        Get learning path progress.
+
+        Returns:
+            dict with path_progress, formatted display, and next suggestion
+        """
+        from .learning_paths import format_path_progress, suggest_next
+
+        state = await self._state_manager.get_state("seeker_state")
+
+        # Ensure path_progress exists (for backward compatibility)
+        if "path_progress" not in state:
+            state["path_progress"] = {}
+
+        path_progress = state["path_progress"]
+        practice_level = state.get("practice_level", "newcomer")
+
+        # Format progress for display
+        formatted = format_path_progress(path_progress)
+
+        # Get next suggestion
+        suggestion = suggest_next(path_progress, practice_level)
+
+        return {
+            "path_progress": path_progress,
+            "formatted": formatted,
+            "next_suggestion": suggestion,
         }
 
     async def _call_wisdom_service(self, message: str, state: dict) -> dict:

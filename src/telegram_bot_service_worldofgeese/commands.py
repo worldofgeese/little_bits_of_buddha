@@ -24,6 +24,7 @@ async def handle_command(bot, message: dict) -> bool:
         "/help": cmd_help,
         "/sit": cmd_sit,
         "/journal": cmd_journal,
+        "/path": cmd_path,
     }
 
     handler = handlers.get(command)
@@ -112,6 +113,7 @@ async def cmd_help(bot, chat_id: int, message: dict) -> None:
         "/level — Check your practice level\n"
         "/sit — Log a meditation session\n"
         "/journal — View your practice journal\n"
+        "/path — View your learning path progress\n"
         "/forget — Clear your conversation history\n"
         "/help — Show this message\n\n"
         "Or just send me a message about the Dhamma."
@@ -277,3 +279,43 @@ async def cmd_journal(bot, chat_id: int, message: dict) -> None:
         reply = "I couldn't fetch your journal. Try again in a moment."
 
     await bot.api.send_message(params={"chat_id": chat_id, "text": reply})
+
+
+async def cmd_path(bot, chat_id: int, message: dict) -> None:
+    """View learning path progress."""
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"http://localhost:3500/v1.0/actors/SeekerActor/{chat_id}/method/get_path_progress",
+                json={},
+                timeout=2.0,
+            )
+
+            if response.status_code == 200:
+                data = response.json()
+                formatted = data["formatted"]
+                next_suggestion = data.get("next_suggestion")
+
+                # Build reply with formatted progress
+                reply_parts = ["📿 Your Learning Path\n", formatted]
+
+                # Add next suggestion if available
+                if next_suggestion:
+                    reply_parts.append(
+                        f"\n\n💡 *Next to explore:*\n{next_suggestion['title']} ({next_suggestion['section']})"
+                    )
+                else:
+                    reply_parts.append(
+                        "\n\n🎉 You've touched upon all topics in the curriculum!"
+                    )
+
+                reply = "".join(reply_parts)
+            else:
+                reply = "I couldn't fetch your learning path. Try again in a moment."
+
+    except Exception:
+        reply = "I couldn't fetch your learning path. Try again in a moment."
+
+    await bot.api.send_message(
+        params={"chat_id": chat_id, "text": reply, "parse_mode": "Markdown"}
+    )
