@@ -271,4 +271,6 @@ class TestOutputFormat:
             suttas = json.load(f)
 
         for sutta in suttas:
-            assert sutta.get("text", "").strip() != "", f"Sutta {sutta.get('id')} has empty text"
+            assert sutta.get("text", "").strip() != "", (
+                f"Sutta {sutta.get('id')} has empty text"
+            )

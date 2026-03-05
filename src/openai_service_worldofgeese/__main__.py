@@ -73,7 +73,9 @@ def wait_for_dapr_ready(dapr_port=3500, retries=20, delay=2):
     Uses DAPR_HTTP_ENDPOINT if set (for separate-container sidecars),
     otherwise falls back to localhost (shared network namespace).
     """
-    dapr_endpoint = os.environ.get("DAPR_HTTP_ENDPOINT", f"http://localhost:{dapr_port}").rstrip("/")
+    dapr_endpoint = os.environ.get(
+        "DAPR_HTTP_ENDPOINT", f"http://localhost:{dapr_port}"
+    ).rstrip("/")
     dapr_url = f"{dapr_endpoint}/v1.0/healthz"
     for _ in range(retries):
         try:
@@ -150,7 +152,9 @@ def _build_app():
         )
         api_base = os.environ.get("ANTHROPIC_BASE_URL")
         if not api_base:
-            raise RuntimeError("ANTHROPIC_BASE_URL must be set in the environment to call Anthropic proxy")
+            raise RuntimeError(
+                "ANTHROPIC_BASE_URL must be set in the environment to call Anthropic proxy"
+            )
         api_key = os.environ.get("ANTHROPIC_AUTH_TOKEN")
 
         # Build RAG prompt with conversation history + sutta context

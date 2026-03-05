@@ -125,8 +125,20 @@ def assign_themes(text: str, title: str) -> list[str]:
     theme_keywords = {
         "suffering": ["suffering", "dukkha", "pain", "stress"],
         "mindfulness": ["mindfulness", "sati", "awareness", "attention"],
-        "meditation": ["meditation", "jhana", "samadhi", "concentration", "contemplation"],
-        "impermanence": ["impermanent", "anicca", "change", "transient", "arising and passing"],
+        "meditation": [
+            "meditation",
+            "jhana",
+            "samadhi",
+            "concentration",
+            "contemplation",
+        ],
+        "impermanence": [
+            "impermanent",
+            "anicca",
+            "change",
+            "transient",
+            "arising and passing",
+        ],
         "non-self": ["not-self", "anatta", "non-self", "selfless"],
         "eightfold path": ["eightfold path", "noble eightfold", "eight factors"],
         "dependent origination": [
@@ -279,7 +291,9 @@ def main():
         clone_sc_data(temp_path)
 
         # Find all translation JSON files
-        translation_dir = temp_path / "sc_bilara_data" / "translation" / "en" / "sujato" / "sutta"
+        translation_dir = (
+            temp_path / "sc_bilara_data" / "translation" / "en" / "sujato" / "sutta"
+        )
         json_files = list(translation_dir.glob("**/*_translation-en-sujato.json"))
         print(f"Found {len(json_files)} translation files.")
 

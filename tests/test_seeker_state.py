@@ -305,7 +305,9 @@ class TestMessageHandlerWithHistory:
         ]
 
         with (
-            patch("openai_service_worldofgeese.__main__._call_anthropic_proxy") as mock_proxy,
+            patch(
+                "openai_service_worldofgeese.__main__._call_anthropic_proxy"
+            ) as mock_proxy,
             patch(
                 "dapr.clients.DaprClient",
                 return_value=mock_dapr_client,

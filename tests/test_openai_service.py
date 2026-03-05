@@ -52,7 +52,9 @@ class TestWaitForDaprReady:
         wait_for_dapr_ready(retries=1, delay=0.1)
 
         # Assert that requests.get was called with the correct URL
-        mock_get.assert_called_once_with("http://localhost:3500/v1.0/healthz", timeout=5)
+        mock_get.assert_called_once_with(
+            "http://localhost:3500/v1.0/healthz", timeout=5
+        )
 
     def test_wait_for_dapr_ready_success_after_retries(self, mocker):
         """Test that wait_for_dapr_ready retries and eventually succeeds."""
@@ -87,7 +89,9 @@ class TestWaitForDaprReady:
 
         wait_for_dapr_ready(dapr_port=3600, retries=1, delay=0.1)
 
-        mock_get.assert_called_once_with("http://localhost:3600/v1.0/healthz", timeout=5)
+        mock_get.assert_called_once_with(
+            "http://localhost:3600/v1.0/healthz", timeout=5
+        )
 
     def test_wait_for_dapr_ready_raises_error_after_retries(self, mocker):
         """Test that wait_for_dapr_ready raises RuntimeError after exhausting retries."""
@@ -228,7 +232,9 @@ class TestAnthropicProviderConfig:
             "ANTHROPIC_BASE_URL": "https://test.example.com",
         },
     )
-    def test_completion_uses_anthropic_proxy_helper(self, mock_dapr_client, mock_call_proxy):
+    def test_completion_uses_anthropic_proxy_helper(
+        self, mock_dapr_client, mock_call_proxy
+    ):
         """Test that _call_anthropic_proxy is used for Anthropic proxy calls."""
         from openai_service_worldofgeese.__main__ import _build_app
 
