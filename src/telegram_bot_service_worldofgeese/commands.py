@@ -489,7 +489,9 @@ async def cmd_meditate(bot, chat_id: int, message: dict) -> None:
 
                 # Format meditation type for display
                 type_display = (
-                    "breathing" if meditation_type == "breathing_meditation" else "metta"
+                    "breathing"
+                    if meditation_type == "breathing_meditation"
+                    else "metta"
                 )
 
                 reply = (
@@ -498,7 +500,9 @@ async def cmd_meditate(bot, chat_id: int, message: dict) -> None:
                     f"Session ID: {instance_id}"
                 )
             else:
-                reply = "I couldn't start the meditation right now. Try again in a moment."
+                reply = (
+                    "I couldn't start the meditation right now. Try again in a moment."
+                )
 
     except Exception:
         reply = "I couldn't start the meditation right now. Try again in a moment."

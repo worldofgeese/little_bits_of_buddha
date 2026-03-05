@@ -37,12 +37,14 @@ class TestLogSit:
         actor._state_manager = state_manager
 
         await actor._on_activate()
-        result = await actor.log_sit({
-            "duration_minutes": 20,
-            "practice_type": "breathing",
-            "notes": "Focused session",
-            "from_workflow": False,
-        })
+        result = await actor.log_sit(
+            {
+                "duration_minutes": 20,
+                "practice_type": "breathing",
+                "notes": "Focused session",
+                "from_workflow": False,
+            }
+        )
 
         assert result["status"] == "logged"
         assert result["total_sits"] == 1
@@ -80,11 +82,13 @@ class TestLogSit:
         actor._state_manager = state_manager
 
         await actor._on_activate()
-        await actor.log_sit({
-            "duration_minutes": 15,
-            "practice_type": "metta",
-            "from_workflow": True,
-        })
+        await actor.log_sit(
+            {
+                "duration_minutes": 15,
+                "practice_type": "metta",
+                "from_workflow": True,
+            }
+        )
 
         save_calls = [call for call in state_manager.set_state.call_args_list]
         final_state = save_calls[-1][0][1]
@@ -152,10 +156,12 @@ class TestLogSit:
         actor._state_manager = state_manager
 
         await actor._on_activate()
-        await actor.log_sit({
-            "duration_minutes": 15,
-            "practice_type": "walking",
-        })
+        await actor.log_sit(
+            {
+                "duration_minutes": 15,
+                "practice_type": "walking",
+            }
+        )
 
         save_calls = [call for call in state_manager.set_state.call_args_list]
         final_state = save_calls[-1][0][1]
@@ -397,7 +403,9 @@ class TestSitCommandParsing:
         """Parse /sit 10 metta "Focused on family" -> correct parsing."""
         from src.telegram_bot_service_worldofgeese.commands import parse_sit_command
 
-        duration, practice_type, notes = parse_sit_command('/sit 10 metta "Focused on family"')
+        duration, practice_type, notes = parse_sit_command(
+            '/sit 10 metta "Focused on family"'
+        )
 
         assert duration == 10
         assert practice_type == "metta"

@@ -79,7 +79,9 @@ class TestDetectTopics:
 
     def test_detect_topics_from_themes(self):
         """Should detect topics from detected_themes list."""
-        topics = detect_topics("Question about practice", detected_themes=["suffering", "craving"])
+        topics = detect_topics(
+            "Question about practice", detected_themes=["suffering", "craving"]
+        )
         assert "1.1" in topics  # Dukkha
         assert "1.2" in topics  # Samudaya (craving)
 
@@ -261,7 +263,7 @@ class TestSuggestNext:
         progress = {
             f"{section}.{topic}": {"status": INTRODUCED, "touch_count": 1}
             for section in ["1", "2", "3", "4"]
-            for topic in ["1", "2", "3", "4"][:len(CURRICULUM[section]["topics"])]
+            for topic in ["1", "2", "3", "4"][: len(CURRICULUM[section]["topics"])]
         }
         # Need to build proper topic IDs
         progress = {}

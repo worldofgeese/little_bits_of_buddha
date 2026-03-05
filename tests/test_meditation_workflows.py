@@ -40,13 +40,11 @@ class TestBreathingMeditationWorkflow:
 
         # Mock workflow context
         mock_ctx = Mock()
-        mock_ctx.get_input.return_value = {
-            "chat_id": 12345,
-            "duration_minutes": 5
-        }
+        mock_ctx.get_input.return_value = {"chat_id": 12345, "duration_minutes": 5}
 
         # Track activity calls
         activity_calls = []
+
         def mock_call_activity(activity_name, input_data):
             activity_calls.append((activity_name, input_data))
             if activity_name == "get_seeker_state":
@@ -57,9 +55,11 @@ class TestBreathingMeditationWorkflow:
 
         # Mock timers
         timer_calls = []
+
         def mock_create_timer(duration):
             timer_calls.append(duration)
             return Mock()
+
         mock_ctx.create_timer = mock_create_timer
 
         # Mock external event
@@ -76,9 +76,15 @@ class TestBreathingMeditationWorkflow:
 
         # Verify workflow executed all steps
         assert len(activity_calls) >= 4, "Should call multiple activities"
-        assert any("send_instruction" in call[0] for call in activity_calls), "Should send instructions"
-        assert any("close_meditation" in call[0] for call in activity_calls), "Should close meditation"
-        assert any("get_seeker_state" in call[0] for call in activity_calls), "Should get seeker state"
+        assert any("send_instruction" in call[0] for call in activity_calls), (
+            "Should send instructions"
+        )
+        assert any("close_meditation" in call[0] for call in activity_calls), (
+            "Should close meditation"
+        )
+        assert any("get_seeker_state" in call[0] for call in activity_calls), (
+            "Should get seeker state"
+        )
 
         # Verify timers were created (settle + main)
         assert len(timer_calls) >= 2, "Should create at least 2 timers (settle + main)"
@@ -91,12 +97,10 @@ class TestBreathingMeditationWorkflow:
         from meditation_workflow_service.workflows.breathing import breathing_meditation
 
         mock_ctx = Mock()
-        mock_ctx.get_input.return_value = {
-            "chat_id": 12345,
-            "duration_minutes": 5
-        }
+        mock_ctx.get_input.return_value = {"chat_id": 12345, "duration_minutes": 5}
 
         activity_calls = []
+
         def mock_call_activity(activity_name, input_data):
             activity_calls.append((activity_name, input_data))
             if activity_name == "get_seeker_state":
@@ -118,7 +122,9 @@ class TestBreathingMeditationWorkflow:
             pass
 
         # Should still close meditation gracefully
-        assert any("close_meditation" in call[0] for call in activity_calls), "Should close meditation even on timeout"
+        assert any("close_meditation" in call[0] for call in activity_calls), (
+            "Should close meditation even on timeout"
+        )
 
 
 class TestMettaMeditationWorkflow:
@@ -134,6 +140,7 @@ class TestMettaMeditationWorkflow:
         mock_ctx.get_input.return_value = {"chat_id": 12345}
 
         activity_calls = []
+
         def mock_call_activity(activity_name, input_data):
             activity_calls.append((activity_name, input_data))
             if activity_name == "get_seeker_state":
@@ -152,11 +159,17 @@ class TestMettaMeditationWorkflow:
             pass
 
         # Verify all phases were sent
-        instruction_calls = [call for call in activity_calls if "send_instruction" in call[0]]
-        assert len(instruction_calls) >= 5, "Should send instructions for all 5 metta phases"
+        instruction_calls = [
+            call for call in activity_calls if "send_instruction" in call[0]
+        ]
+        assert len(instruction_calls) >= 5, (
+            "Should send instructions for all 5 metta phases"
+        )
 
         # Verify closing
-        assert any("close_meditation" in call[0] for call in activity_calls), "Should close meditation"
+        assert any("close_meditation" in call[0] for call in activity_calls), (
+            "Should close meditation"
+        )
 
 
 class TestMeditationActivities:
@@ -168,14 +181,13 @@ class TestMeditationActivities:
 
         mock_ctx = Mock()
 
-        with patch('meditation_workflow_service.activities.DaprClient') as mock_dapr:
+        with patch("meditation_workflow_service.activities.DaprClient") as mock_dapr:
             mock_client = Mock()
             mock_dapr.return_value.__enter__.return_value = mock_client
 
-            send_instruction(mock_ctx, {
-                "chat_id": 12345,
-                "text": "Focus on the breath..."
-            })
+            send_instruction(
+                mock_ctx, {"chat_id": 12345, "text": "Focus on the breath..."}
+            )
 
             # Verify Dapr publish was called
             mock_client.publish_event.assert_called_once()
@@ -194,13 +206,15 @@ class TestMeditationActivities:
 
         mock_ctx = Mock()
 
-        with patch('meditation_workflow_service.activities.DaprClient') as mock_dapr:
+        with patch("meditation_workflow_service.activities.DaprClient") as mock_dapr:
             mock_client = Mock()
-            mock_client.invoke_method.return_value.text.return_value = json.dumps({
-                "practice_level": "intermediate",
-                "meditation_count": 42,
-                "last_meditation": "2026-03-01"
-            })
+            mock_client.invoke_method.return_value.text.return_value = json.dumps(
+                {
+                    "practice_level": "intermediate",
+                    "meditation_count": 42,
+                    "last_meditation": "2026-03-01",
+                }
+            )
             mock_dapr.return_value.__enter__.return_value = mock_client
 
             result = get_seeker_state(mock_ctx, {"chat_id": 12345})
@@ -222,19 +236,20 @@ class TestMeditationActivities:
 
         mock_ctx = Mock()
 
-        with patch('meditation_workflow_service.activities.DaprClient') as mock_dapr:
+        with patch("meditation_workflow_service.activities.DaprClient") as mock_dapr:
             mock_client = Mock()
-            mock_client.invoke_method.return_value.text.return_value = json.dumps({
-                "sutta": "Anapanasati Sutta (MN 118)",
-                "excerpt": "Mindful, they breathe in; mindful, they breathe out..."
-            })
+            mock_client.invoke_method.return_value.text.return_value = json.dumps(
+                {
+                    "sutta": "Anapanasati Sutta (MN 118)",
+                    "excerpt": "Mindful, they breathe in; mindful, they breathe out...",
+                }
+            )
             mock_dapr.return_value.__enter__.return_value = mock_client
 
-            close_meditation(mock_ctx, {
-                "chat_id": 12345,
-                "type": "breathing",
-                "duration_minutes": 10
-            })
+            close_meditation(
+                mock_ctx,
+                {"chat_id": 12345, "type": "breathing", "duration_minutes": 10},
+            )
 
             # Should call both seeker actor (log_sit) and wisdom service (sutta suggestion)
             assert mock_client.invoke_method.call_count >= 2
@@ -250,7 +265,9 @@ class TestMeditationTemplates:
 
         # Should have templates for different levels
         beginner = get_breathing_instruction("welcome", practice_level="beginner")
-        intermediate = get_breathing_instruction("welcome", practice_level="intermediate")
+        intermediate = get_breathing_instruction(
+            "welcome", practice_level="intermediate"
+        )
         advanced = get_breathing_instruction("welcome", practice_level="advanced")
 
         assert beginner is not None
@@ -273,7 +290,9 @@ class TestMeditationTemplates:
 
             # Verify Pali phrases are included
             if phase == "self":
-                assert "may I" in instruction.lower() or "happiness" in instruction.lower()
+                assert (
+                    "may I" in instruction.lower() or "happiness" in instruction.lower()
+                )
 
 
 class TestWorkflowAPIEndpoints:
@@ -284,16 +303,21 @@ class TestWorkflowAPIEndpoints:
         from meditation_workflow_service.__main__ import app
         from fastapi.testclient import TestClient
 
-        with patch('meditation_workflow_service.__main__.DaprWorkflowClient') as mock_client:
+        with patch(
+            "meditation_workflow_service.__main__.DaprWorkflowClient"
+        ) as mock_client:
             mock_workflow_client = Mock()
             mock_client.return_value = mock_workflow_client
 
             client = TestClient(app)
-            response = client.post("/meditate/start", json={
-                "chat_id": 12345,
-                "type": "breathing_meditation",
-                "duration_minutes": 10
-            })
+            response = client.post(
+                "/meditate/start",
+                json={
+                    "chat_id": 12345,
+                    "type": "breathing_meditation",
+                    "duration_minutes": 10,
+                },
+            )
 
             assert response.status_code == 200
             data = response.json()
@@ -308,16 +332,21 @@ class TestWorkflowAPIEndpoints:
         from meditation_workflow_service.__main__ import app
         from fastapi.testclient import TestClient
 
-        with patch('meditation_workflow_service.__main__.DaprWorkflowClient') as mock_client:
+        with patch(
+            "meditation_workflow_service.__main__.DaprWorkflowClient"
+        ) as mock_client:
             mock_workflow_client = Mock()
             mock_client.return_value = mock_workflow_client
 
             client = TestClient(app)
-            response = client.post("/meditate/event", json={
-                "instance_id": "meditation-12345-1234567890",
-                "event_name": "user_response",
-                "data": "I feel peaceful"
-            })
+            response = client.post(
+                "/meditate/event",
+                json={
+                    "instance_id": "meditation-12345-1234567890",
+                    "event_name": "user_response",
+                    "data": "I feel peaceful",
+                },
+            )
 
             assert response.status_code == 200
 
@@ -329,7 +358,9 @@ class TestWorkflowAPIEndpoints:
         from meditation_workflow_service.__main__ import app
         from fastapi.testclient import TestClient
 
-        with patch('meditation_workflow_service.__main__.DaprWorkflowClient') as mock_client:
+        with patch(
+            "meditation_workflow_service.__main__.DaprWorkflowClient"
+        ) as mock_client:
             mock_workflow_client = Mock()
             mock_state = Mock()
             mock_state.runtime_status.name = "COMPLETED"

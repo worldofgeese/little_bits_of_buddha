@@ -132,9 +132,7 @@ class TestToolExecution:
         mock_dapr.invoke_method = Mock(return_value=Mock(text=lambda: "{}"))
 
         result = execute_save_practice_note(
-            mock_dapr,
-            chat_id="12345",
-            note="Feeling more peaceful today"
+            mock_dapr, chat_id="12345", note="Feeling more peaceful today"
         )
 
         # Check that actor was called with correct parameters
@@ -171,7 +169,9 @@ class TestToolExecution:
                 {"role": "user", "content": "Thank you"},
             ]
         }
-        mock_dapr.invoke_method = Mock(return_value=Mock(text=lambda: json.dumps(mock_state)))
+        mock_dapr.invoke_method = Mock(
+            return_value=Mock(text=lambda: json.dumps(mock_state))
+        )
 
         result = execute_get_seeker_history(mock_dapr, chat_id="12345", last_n=3)
 
@@ -195,7 +195,9 @@ class TestToolExecution:
         from wisdom_service.tools import execute_get_seeker_history
 
         mock_dapr = Mock()
-        mock_dapr.invoke_method = Mock(return_value=Mock(text=lambda: json.dumps({"history": []})))
+        mock_dapr.invoke_method = Mock(
+            return_value=Mock(text=lambda: json.dumps({"history": []}))
+        )
 
         result = execute_get_seeker_history(mock_dapr, chat_id="12345")
 
@@ -217,17 +219,15 @@ class TestToolCallDetection:
                     "type": "tool_use",
                     "id": "toolu_123",
                     "name": "search_suttas",
-                    "input": {"query": "suffering", "limit": 3}
-                }
+                    "input": {"query": "suffering", "limit": 3},
+                },
             ]
         }
         assert has_tool_use(response_with_tools) is True
 
         # Response without tool use
         response_no_tools = {
-            "content": [
-                {"type": "text", "text": "Here is my response."}
-            ]
+            "content": [{"type": "text", "text": "Here is my response."}]
         }
         assert has_tool_use(response_no_tools) is False
 
@@ -341,13 +341,15 @@ class TestCallAnthropicWithTools:
 
         # Mock httpx response
         mock_response = Mock()
-        mock_response.json = Mock(return_value={
-            "id": "msg_123",
-            "type": "message",
-            "role": "assistant",
-            "content": [{"type": "text", "text": "Hello"}],
-            "stop_reason": "end_turn"
-        })
+        mock_response.json = Mock(
+            return_value={
+                "id": "msg_123",
+                "type": "message",
+                "role": "assistant",
+                "content": [{"type": "text", "text": "Hello"}],
+                "stop_reason": "end_turn",
+            }
+        )
         mock_httpx.post = Mock(return_value=mock_response)
 
         messages = [{"role": "user", "content": "What is suffering?"}]
@@ -359,7 +361,7 @@ class TestCallAnthropicWithTools:
             TOOLS,
             api_base="https://api.example.com",
             api_key="test_key",
-            model="anthropic.claude-sonnet-4-5-20250929-v1:0"
+            model="anthropic.claude-sonnet-4-5-20250929-v1:0",
         )
 
         # Check that httpx.post was called with correct parameters
@@ -390,8 +392,13 @@ class TestCallAnthropicWithTools:
             "id": "msg_123",
             "content": [
                 {"type": "text", "text": "Let me search"},
-                {"type": "tool_use", "id": "toolu_1", "name": "search_suttas", "input": {"query": "test"}}
-            ]
+                {
+                    "type": "tool_use",
+                    "id": "toolu_1",
+                    "name": "search_suttas",
+                    "input": {"query": "test"},
+                },
+            ],
         }
         mock_response = Mock()
         mock_response.json = Mock(return_value=mock_response_data)
@@ -403,7 +410,7 @@ class TestCallAnthropicWithTools:
             TOOLS,
             api_base="https://api.example.com",
             api_key="key",
-            model="test"
+            model="test",
         )
 
         assert result == mock_response_data
@@ -463,7 +470,9 @@ class TestToolCallLoopIntegration:
             mock_langcache.store.call_count += 1
 
         # Verify that store was NOT called (tool_use_count > 0)
-        assert mock_langcache.store.call_count == 0, "Should not cache when tools were used"
+        assert mock_langcache.store.call_count == 0, (
+            "Should not cache when tools were used"
+        )
 
     @patch("wisdom_service.__main__.get_langcache")
     def test_caching_when_no_tools_used(self, mock_get_langcache):
@@ -482,4 +491,6 @@ class TestToolCallLoopIntegration:
             mock_langcache.store(message, response_text, practice_level)
 
         # Verify that store WAS called
-        mock_langcache.store.assert_called_once_with(message, response_text, practice_level)
+        mock_langcache.store.assert_called_once_with(
+            message, response_text, practice_level
+        )

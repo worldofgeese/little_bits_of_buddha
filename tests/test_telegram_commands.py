@@ -329,7 +329,10 @@ class TestMeditateCommand:
             assert result is True
             mock_http.post.assert_called_once()
             call_args = mock_http.post.call_args
-            assert "http://localhost:3500/v1.0/invoke/meditation-workflow-service/method/meditate/start" in call_args[0][0]
+            assert (
+                "http://localhost:3500/v1.0/invoke/meditation-workflow-service/method/meditate/start"
+                in call_args[0][0]
+            )
 
             # Check payload
             payload = call_args[1]["json"]

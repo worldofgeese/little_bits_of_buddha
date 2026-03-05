@@ -32,7 +32,10 @@ class TestSchedulerFunctions:
             assert job_name == "daily-sutta-12345"
             mock_post.assert_called_once()
             call_args = mock_post.call_args
-            assert call_args[0][0] == "http://localhost:3500/v1.0-alpha1/jobs/daily-sutta-12345"
+            assert (
+                call_args[0][0]
+                == "http://localhost:3500/v1.0-alpha1/jobs/daily-sutta-12345"
+            )
 
             payload = call_args[1]["json"]
             assert payload["data"]["chat_id"] == "12345"
@@ -107,18 +110,23 @@ class TestJobHandlers:
 
             # Mock seeker state response
             mock_state_response = MagicMock()
-            mock_state_response.text.return_value = json.dumps({
-                "practice_level": "beginner",
-                "topics_explored": ["mindfulness", "metta"]
-            })
+            mock_state_response.text.return_value = json.dumps(
+                {
+                    "practice_level": "beginner",
+                    "topics_explored": ["mindfulness", "metta"],
+                }
+            )
 
             # Mock wisdom service response
             mock_wisdom_response = MagicMock()
-            mock_wisdom_response.text.return_value = json.dumps({
-                "response": "Here is a sutta about mindfulness..."
-            })
+            mock_wisdom_response.text.return_value = json.dumps(
+                {"response": "Here is a sutta about mindfulness..."}
+            )
 
-            mock_client.invoke_method.side_effect = [mock_state_response, mock_wisdom_response]
+            mock_client.invoke_method.side_effect = [
+                mock_state_response,
+                mock_wisdom_response,
+            ]
             mock_client.publish_event = MagicMock()
 
             handle_daily_sutta({"chat_id": "12345"})
@@ -156,19 +164,20 @@ class TestJobHandlers:
 
             # Mock weekly summary response
             mock_summary_response = MagicMock()
-            mock_summary_response.text.return_value = json.dumps({
-                "total_sits": 5,
-                "total_minutes": 100,
-                "practice_level": "beginner"
-            })
+            mock_summary_response.text.return_value = json.dumps(
+                {"total_sits": 5, "total_minutes": 100, "practice_level": "beginner"}
+            )
 
             # Mock wisdom service response
             mock_wisdom_response = MagicMock()
-            mock_wisdom_response.text.return_value = json.dumps({
-                "response": "Wonderful practice this week..."
-            })
+            mock_wisdom_response.text.return_value = json.dumps(
+                {"response": "Wonderful practice this week..."}
+            )
 
-            mock_client.invoke_method.side_effect = [mock_summary_response, mock_wisdom_response]
+            mock_client.invoke_method.side_effect = [
+                mock_summary_response,
+                mock_wisdom_response,
+            ]
             mock_client.publish_event = MagicMock()
 
             handle_weekly_checkin({"chat_id": "12345"})
@@ -258,8 +267,8 @@ class TestActorScheduleUpdate:
                     "daily_sutta": False,
                     "daily_sutta_time": "07:00",
                     "weekly_checkin": False,
-                    "timezone": "UTC"
-                }
+                    "timezone": "UTC",
+                },
             }
         )
 
@@ -275,10 +284,9 @@ class TestActorScheduleUpdate:
             mock_response.raise_for_status = MagicMock()
             mock_post.return_value = mock_response
 
-            result = await actor.update_schedule({
-                "daily_sutta": True,
-                "daily_sutta_time": "08:00"
-            })
+            result = await actor.update_schedule(
+                {"daily_sutta": True, "daily_sutta_time": "08:00"}
+            )
 
         # Verify state was updated
         save_calls = [call for call in state_manager.set_state.call_args_list]
@@ -309,8 +317,8 @@ class TestActorScheduleUpdate:
                     "daily_sutta": False,
                     "daily_sutta_time": "07:00",
                     "weekly_checkin": False,
-                    "timezone": "UTC"
-                }
+                    "timezone": "UTC",
+                },
             }
         )
 
@@ -355,8 +363,8 @@ class TestActorScheduleUpdate:
                     "daily_sutta": True,
                     "daily_sutta_time": "07:00",
                     "weekly_checkin": False,
-                    "timezone": "UTC"
-                }
+                    "timezone": "UTC",
+                },
             }
         )
 

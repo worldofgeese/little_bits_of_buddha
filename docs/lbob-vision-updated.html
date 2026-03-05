@@ -24,6 +24,7 @@
     --blue: #6a9fd4;
     --green: #6ad47a;
     --done: #4a9;
+    --warm: #e8c49a;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -92,6 +93,26 @@
   .badge.active { background: rgba(212,168,83,0.2); color: var(--gold); }
   .badge.next { background: rgba(106,159,212,0.2); color: var(--blue); }
 
+  .hero-quote {
+    font-family: 'Crimson Pro', serif;
+    font-size: 1.3rem;
+    font-style: italic;
+    color: var(--warm);
+    text-align: center;
+    padding: 2rem 1.5rem;
+    margin: 1.5rem 0 2.5rem;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    line-height: 1.7;
+  }
+  .hero-quote .attr {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-style: normal;
+    margin-top: 0.5rem;
+  }
+
   .compare {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -144,7 +165,7 @@
     padding: 2rem;
     margin: 1.5rem 0;
     font-family: 'Inter', monospace;
-    font-size: 0.78rem;
+    font-size: 0.72rem;
     line-height: 1.8;
     overflow-x: auto;
     white-space: pre;
@@ -200,7 +221,7 @@
     top: 0.8rem;
     bottom: 0.8rem;
     width: 2px;
-    background: linear-gradient(to bottom, var(--done), var(--gold), var(--lotus), var(--teal));
+    background: linear-gradient(to bottom, var(--done), var(--done), var(--done), var(--teal));
   }
 
   .phase {
@@ -219,8 +240,8 @@
   }
 
   .phase:nth-child(1)::before { background: var(--done); border: 2px solid var(--done); }
-  .phase:nth-child(2)::before { background: var(--gold); border: 2px solid var(--gold); }
-  .phase:nth-child(3)::before { border: 2px solid var(--lotus); background: var(--bg); }
+  .phase:nth-child(2)::before { background: var(--done); border: 2px solid var(--done); }
+  .phase:nth-child(3)::before { background: var(--done); border: 2px solid var(--done); }
   .phase:nth-child(4)::before { border: 2px solid var(--teal); background: var(--bg); }
 
   .phase .label {
@@ -232,8 +253,8 @@
   }
 
   .phase:nth-child(1) .label { color: var(--done); }
-  .phase:nth-child(2) .label { color: var(--gold); }
-  .phase:nth-child(3) .label { color: var(--lotus); }
+  .phase:nth-child(2) .label { color: var(--done); }
+  .phase:nth-child(3) .label { color: var(--done); }
   .phase:nth-child(4) .label { color: var(--teal); }
 
   .phase .title { font-weight: 600; font-size: 0.95rem; margin-bottom: 0.3rem; }
@@ -329,191 +350,234 @@
   .convo .msg.system .who { color: var(--muted); font-style: italic; }
   .convo .msg .text { color: var(--text); line-height: 1.5; }
   .convo .msg .text em { color: var(--muted); font-style: italic; font-size: 0.82rem; }
+
+  .cmd-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.85rem;
+  }
+  .cmd-table th {
+    text-align: left;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .cmd-table td {
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .cmd-table code {
+    font-family: 'Inter', monospace;
+    color: var(--teal);
+    font-weight: 600;
+    font-size: 0.82rem;
+  }
+  .cmd-table .phase-tag {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--muted);
+  }
+
+  .journey {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+  @media (max-width: 600px) { .journey { grid-template-columns: 1fr; } }
+
+  .journey-step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.2rem;
+    text-align: center;
+    position: relative;
+  }
+  .journey-step .step-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+  .journey-step .step-title { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.3rem; }
+  .journey-step .step-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
+  .journey-step::after {
+    content: '→';
+    position: absolute;
+    right: -0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--border);
+    font-size: 1.2rem;
+  }
+  .journey-step:last-child::after { content: ''; }
+  @media (max-width: 600px) {
+    .journey-step::after { content: '↓'; right: auto; left: 50%; top: auto; bottom: -0.75rem; transform: translateX(-50%); }
+    .journey-step:last-child::after { content: ''; }
+  }
 </style>
 </head>
 <body>
 
 <h1>🪷 Little Bits of Buddha</h1>
-<p class="subtitle">A living teacher in your pocket — microservices that earn their architecture</p>
+<p class="subtitle">A living teacher in your pocket — Early Buddhist teachings, one conversation at a time</p>
+
+<div class="hero-quote">
+  "Hatred does not cease by hatred, but only by love; this is the eternal rule."
+  <span class="attr">— Dhammapada 1.5</span>
+</div>
 
 <div class="stat-grid">
   <div class="stat"><div class="num">286</div><div class="label">Suttas Indexed</div></div>
-  <div class="stat"><div class="num">5</div><div class="label">Services</div></div>
-  <div class="stat"><div class="num">384d</div><div class="label">Vector Embeddings</div></div>
+  <div class="stat"><div class="num">9</div><div class="label">Commands</div></div>
+  <div class="stat"><div class="num">4</div><div class="label">Services</div></div>
   <div class="stat"><div class="num">∞</div><div class="label">Patience</div></div>
 </div>
 
-<div class="callout">
-  <div class="q">"Could have been one lightweight process in a single container."</div>
-  <div class="a">True. So we asked: what would make the microservices architecture not just justified, but <em>essential</em>? The answer: a teacher that remembers you, searches 286 suttas by meaning, adapts its voice to your experience, and survives restarts mid-meditation. That needs Dapr Actors, Redis vector search, durable workflows, and independent scaling. Every service is load-bearing.</div>
-</div>
+<h2>What Is This?</h2>
 
-<h2>What It Does Today</h2>
+<p>You message <strong>@LittleBitsOfBuddhaBot</strong> on Telegram. A teacher responds — drawing from 286 suttas in the Pali Canon (Bhikkhu Sujato's translations, CC0), remembering your past conversations, adapting its tone to your practice level. It's grounded in the Early Buddhist Texts — the oldest stratum of the Buddha's teaching as preserved in the Theravāda tradition.</p>
 
-<p>You message <strong>@LittleBitsOfBuddhaBot</strong> on Telegram. The Buddha responds — drawing from the actual Pali Canon, remembering your past conversations, adapting its tone to your practice level. It's not a generic chatbot with a Buddhist prompt. It's a teacher.</p>
+<p>It's not a generic chatbot with a Buddhist prompt. It searches by meaning, cites its sources, remembers where you left off, guides meditation, tracks your practice, and grows with you.</p>
+
+<h2>A Conversation</h2>
 
 <div class="convo">
   <div class="msg seeker"><div class="who">You</div><div class="text">I keep getting angry at work. Nothing helps.</div></div>
-  <div class="msg buddha"><div class="who">The Buddha</div><div class="text">Anger is like picking up a hot coal to throw at someone else — you are the one who gets burned. <em>(SN7.2, the Akkosa Sutta)</em><br><br>Consider: when anger arises, what feeling precedes it? Often there is a wound — an expectation unmet, a boundary crossed. The anger is the second arrow. The first arrow was the event. The second arrow is your response to it.<br><br>The Sallatha Sutta (SN36.6) teaches this directly: the uninstructed person, when touched by pain, feels two pains — the physical and the mental. The instructed person feels only one.</div></div>
+  <div class="msg buddha"><div class="who">The Buddha</div><div class="text">Anger is like picking up a hot coal to throw at someone else — you are the one who gets burned. <em>(SN7.2, Akkosa Sutta)</em><br><br>When anger arises, what feeling precedes it? Often there is a wound — an expectation unmet, a boundary crossed. The anger is the second arrow. The first was the event. The second is your response to it.<br><br>The Sallatha Sutta <em>(SN36.6)</em> teaches this directly: the uninstructed person, when touched by pain, feels two pains — the physical and the mental. The instructed person feels only one.</div></div>
   <div class="msg seeker"><div class="who">You</div><div class="text">I've been sitting with that. I notice the tightness before the anger now.</div></div>
-  <div class="msg buddha"><div class="who">The Buddha</div><div class="text">That noticing <em>is</em> the practice. You're already doing it. The awareness precedes the choice — and in that gap, freedom lives. This is sati — mindfulness — in its most direct form. Not as a technique, but as a way of being present to what arises without adding to it.</div></div>
+  <div class="msg buddha"><div class="who">The Buddha</div><div class="text">That noticing <em>is</em> the practice. The awareness precedes the choice — and in that gap, freedom lives. This is sati in its most direct form. Not as a technique, but as a way of being present to what arises without adding to it.</div></div>
   <div class="msg system"><div class="who">System</div><div class="text"><em>Practice level updated: newcomer → beginner (detected: mindfulness vocabulary, report of sustained practice)</em></div></div>
 </div>
 
-<h2>Before & After</h2>
+<h2>A Day With the Bot</h2>
+
+<div class="journey">
+  <div class="journey-step">
+    <div class="step-icon">🌅</div>
+    <div class="step-title">Morning</div>
+    <div class="step-desc">Daily sutta arrives at 7 AM. Today: the Mettā Sutta on loving-kindness. A gentle nudge to start the day with intention.</div>
+  </div>
+  <div class="journey-step">
+    <div class="step-icon">🧘</div>
+    <div class="step-title">Practice</div>
+    <div class="step-desc">You type <code>/meditate breathing 10</code>. A guided 10-minute breathing meditation unfolds — instruction, silence, check-in, closing. It survives if your phone restarts.</div>
+  </div>
+  <div class="journey-step">
+    <div class="step-icon">📝</div>
+    <div class="step-title">Evening</div>
+    <div class="step-desc">Log your sit: <code>/sit 10 breathing "mind was busy"</code>. Check your journal: <code>/journal</code>. See the week's pattern emerge. The path becomes visible through practice.</div>
+  </div>
+</div>
+
+<h2>What You Can Do</h2>
+
+<table class="cmd-table">
+  <thead>
+    <tr><th>Command</th><th>What it does</th><th>Phase</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>/start</code></td><td>Begin your conversation with the teacher</td><td class="phase-tag">Phase 2</td></tr>
+    <tr><td><code>/level</code></td><td>Check or adjust your practice level</td><td class="phase-tag">Phase 2</td></tr>
+    <tr><td><code>/forget</code></td><td>Delete all your data (GDPR-compliant)</td><td class="phase-tag">Phase 2</td></tr>
+    <tr><td><code>/help</code></td><td>Show available commands</td><td class="phase-tag">Phase 2</td></tr>
+    <tr><td><code>/meditate [type] [min]</code></td><td>Start a guided meditation (breathing or mettā)</td><td class="phase-tag">Phase 3</td></tr>
+    <tr><td><code>/daily on/off</code></td><td>Toggle daily sutta delivery</td><td class="phase-tag">Phase 3</td></tr>
+    <tr><td><code>/sit [min] [type] [notes]</code></td><td>Log a meditation session</td><td class="phase-tag">Phase 3</td></tr>
+    <tr><td><code>/path</code></td><td>View your learning path progress</td><td class="phase-tag">Phase 3</td></tr>
+    <tr><td><code>/journal [week]</code></td><td>View your practice journal</td><td class="phase-tag">Phase 3</td></tr>
+  </tbody>
+</table>
+
+<h2>How It's Different</h2>
 
 <div class="compare">
   <div class="compare-card before">
-    <div class="tag">Phase 1 — Pipes & Filters</div>
+    <div class="tag">ChatGPT with a Buddhist prompt</div>
     <ul>
-      <li>Telegram → pub/sub → LLM → pub/sub → reply</li>
-      <li>25 hand-written sutta summaries</li>
-      <li>Single system prompt for everyone</li>
-      <li>No awareness of who's asking</li>
-      <li>Redis = message bus only</li>
-      <li>Dapr = pub/sub glue only</li>
+      <li>Forgets you when you close the tab</li>
+      <li>Hallucinated sutta references</li>
+      <li>Same tone for everyone</li>
+      <li>No practice tracking</li>
+      <li>No guided meditations</li>
+      <li>Your data trains their model</li>
     </ul>
   </div>
   <div class="compare-card after">
-    <div class="tag">Phase 2 — Living Teacher ✦ Built</div>
+    <div class="tag">Little Bits of Buddha ✦</div>
     <ul>
-      <li>286 suttas from SuttaCentral (Bhikkhu Sujato, CC0)</li>
-      <li>Semantic vector search — "I feel stuck" finds the Arrow Sutta</li>
-      <li>Dapr Virtual Actors — one per seeker, with memory</li>
-      <li>Practice level detection — adapts tone automatically</li>
-      <li>Dapr Conversation API — caching, PII scrubbing, circuit breakers</li>
-      <li>Sutta citations + theme detection in every response</li>
+      <li>Remembers every conversation across sessions</li>
+      <li>286 real suttas, searched by meaning, properly cited</li>
+      <li>Adapts tone to your practice level automatically</li>
+      <li>Practice journal — log sits, track patterns over weeks</li>
+      <li>Guided meditations that survive phone restarts</li>
+      <li>Your data is yours — /forget deletes everything</li>
     </ul>
+  </div>
+</div>
+
+<h2>The Learning Path</h2>
+
+<p>The bot doesn't just answer questions — it gently guides you through the core teachings of Early Buddhism. The structured learning path adapts to what you're exploring naturally:</p>
+
+<div class="features">
+  <div class="feat">
+    <div class="icon">🌱</div>
+    <div class="name">Four Noble Truths</div>
+    <div class="desc">The foundation: suffering, its origin, its cessation, and the path. The bot detects when you're exploring these themes and weaves in relevant suttas.</div>
+  </div>
+  <div class="feat">
+    <div class="icon">🛤️</div>
+    <div class="name">Noble Eightfold Path</div>
+    <div class="desc">Right view, intention, speech, action, livelihood, effort, mindfulness, concentration. Each factor explored through your own questions and practice.</div>
+  </div>
+  <div class="feat">
+    <div class="icon">🧘</div>
+    <div class="name">Meditation Practice</div>
+    <div class="desc">Breathing meditation (ānāpānasati) and loving-kindness (mettā). Guided sessions you can do right in the chat. The bot tracks your consistency.</div>
+  </div>
+  <div class="feat">
+    <div class="icon">📖</div>
+    <div class="name">Sutta Study</div>
+    <div name="desc" class="desc">When you're ready, the teacher points you to specific suttas. Not assigned reading — discoveries that arise naturally from your questions.</div>
   </div>
 </div>
 
 <h2>Architecture</h2>
 
-<div class="arch"><span class="user">  Telegram User</span>
+<p class="muted">Every service is load-bearing. This isn't a microservices showcase — it's the minimum architecture for a teacher that remembers, searches by meaning, guides meditation across sessions, and scales to thousands of seekers.</p>
+
+<div class="arch"><span class="user">  Telegram Seeker</span>
        <span class="arrow">│</span>
        <span class="arrow">▼</span>
-  <span class="svc">┌──────────────────────┐</span>    <span class="dapr">┌───────────────┐</span>
-  <span class="svc">│  telegram-bot-service │</span><span class="arrow">───▶</span><span class="dapr">│  dapr sidecar  │</span>
-  <span class="svc">│  /start /level /help  │</span>    <span class="dapr">│  pub/sub       │</span>
-  <span class="svc">│  /forget (GDPR)       │</span>    <span class="dapr">└──────┬────────┘</span>
-  <span class="svc">└──────────────────────┘</span>             <span class="arrow">│</span> topic: messages
-                                        <span class="arrow">▼</span>
-  <span class="new">┌──────────────────────┐</span>    <span class="dapr">┌───────────────┐</span>     <span class="redis">┌──────────────────┐</span>
-  <span class="new">│  seeker-actor-service │</span><span class="arrow">◄──▶</span><span class="dapr">│  dapr sidecar  │</span><span class="arrow">────▶</span><span class="redis">│  Redis            │</span>
-  <span class="new">│  • 1 actor per user   │</span>    <span class="dapr">│  actors        │</span>     <span class="redis">│  • state store    │</span>
-  <span class="new">│  • practice level     │</span>    <span class="dapr">│  state         │</span>     <span class="redis">│  • vector search  │</span>
-  <span class="new">│  • conversation hx    │</span>    <span class="dapr">│  placement     │</span>     <span class="redis">│  • rate limiting  │</span>
-  <span class="new">│  • level detection    │</span>    <span class="dapr">└───────────────┘</span>     <span class="redis">│  • pub/sub        │</span>
-  <span class="new">└──────────┬───────────┘</span>                            <span class="redis">└──────────────────┘</span>
-             <span class="arrow">│</span> enriched query
-             <span class="arrow">│</span> (context + relevant suttas + practice level)
+  <span class="svc">┌──────────────────────────┐</span>    <span class="dapr">┌────────────────┐</span>
+  <span class="svc">│  telegram-bot-service     │</span><span class="arrow">───▶</span><span class="dapr">│  dapr sidecar   │</span>
+  <span class="svc">│  9 commands + messaging   │</span>    <span class="dapr">│  pub/sub        │</span>
+  <span class="svc">└──────────────────────────┘</span>    <span class="dapr">└───────┬────────┘</span>
+                                          <span class="arrow">│</span>
+              <span class="arrow">┌─────────────────────────────┤</span>
+              <span class="arrow">▼</span>                             <span class="arrow">▼</span>
+  <span class="new">┌──────────────────────────┐</span>  <span class="new">┌──────────────────────────┐</span>
+  <span class="new">│  seeker-actor-service     │</span>  <span class="new">│  meditation-workflow-svc  │</span>
+  <span class="new">│  • 1 actor per seeker     │</span>  <span class="new">│  • breathing meditation   │</span>
+  <span class="new">│  • practice level         │</span>  <span class="new">│  • mettā meditation       │</span>
+  <span class="new">│  • conversation memory    │</span>  <span class="new">│  • durable (survives      │</span>
+  <span class="new">│  • learning paths         │</span>  <span class="new">│    restarts mid-session)  │</span>
+  <span class="new">│  • practice journal       │</span>  <span class="new">│  • scheduled jobs         │</span>
+  <span class="new">│  • schedule preferences   │</span>  <span class="new">│    (daily sutta, check-in)│</span>
+  <span class="new">└──────────┬───────────────┘</span>  <span class="new">└──────────────────────────┘</span>
+             <span class="arrow">│</span>
              <span class="arrow">▼</span>
-  <span class="svc">┌──────────────────────┐</span>    <span class="dapr">┌───────────────┐</span>
-  <span class="svc">│  wisdom-service       │</span><span class="arrow">◄──▶</span><span class="dapr">│  dapr sidecar  │</span>
-  <span class="svc">│  • RAG pipeline       │</span>    <span class="dapr">│  conversation  │</span>
-  <span class="svc">│  • sutta search       │</span>    <span class="dapr">│  API (caching, │</span>
-  <span class="svc">│  • LLM (Anthropic)    │</span>    <span class="dapr">│  PII scrubbing)│</span>
-  <span class="svc">│  • theme detection    │</span>    <span class="dapr">└───────────────┘</span>
-  <span class="svc">└──────────────────────┘</span></div>
+  <span class="svc">┌──────────────────────────┐</span>    <span class="dapr">┌────────────────┐</span>     <span class="redis">┌───────────────────┐</span>
+  <span class="svc">│  wisdom-service           │</span><span class="arrow">◄──▶</span><span class="dapr">│  dapr sidecar   │</span><span class="arrow">────▶</span><span class="redis">│  Redis             │</span>
+  <span class="svc">│  • RAG pipeline           │</span>    <span class="dapr">│  conversation   │</span>     <span class="redis">│  • state store     │</span>
+  <span class="svc">│  • sutta vector search    │</span>    <span class="dapr">│  API + caching  │</span>     <span class="redis">│  • vector search   │</span>
+  <span class="svc">│  • tool calling (search)  │</span>    <span class="dapr">│  PII scrubbing  │</span>     <span class="redis">│  • LangCache       │</span>
+  <span class="svc">│  • LangCache integration  │</span>    <span class="dapr">└────────────────┘</span>     <span class="redis">│  • pub/sub         │</span>
+  <span class="svc">│  • LLM (Anthropic Claude) │</span>                          <span class="redis">│  • rate limiting   │</span>
+  <span class="svc">└──────────────────────────┘</span>                          <span class="redis">└───────────────────┘</span></div>
 
-<h2>What's Possible — Maximum Redis</h2>
-
-<p>We use Redis for state, pub/sub, and vector search. Here's everything Redis can do that we're not yet using:</p>
-
-<div class="features">
-  <div class="feat">
-    <div class="icon">🧊</div>
-    <div class="name">LangCache — Semantic Response Caching</div>
-    <div class="desc">Redis's new managed service. "What is dukkha?" and "Can you explain suffering?" get the same cached LLM response — matched by <em>meaning</em>, not keywords. REST API, fine-tuned similarity models, per-user access control. Could cut LLM costs 40-60% for a dharma bot where the same questions recur constantly.</div>
-    <div class="tech redis">REDIS LANGCACHE (NEW 2025)</div>
-  </div>
-  <div class="feat">
-    <div class="icon">📦</div>
-    <div class="name">Vector Sets — Native Vector Data Type</div>
-    <div class="desc">New in Redis 8: vector sets are first-class data types (like sorted sets, but for vectors). Simpler than RediSearch for pure vector similarity. Created by Salvatore Sanfilippo himself. Could replace our FT.SEARCH vectors with a lighter, more composable approach.</div>
-    <div class="tech redis">REDIS VECTOR SETS (NEW 2025)</div>
-  </div>
-  <div class="feat">
-    <div class="icon">🔀</div>
-    <div class="name">Hybrid Search</div>
-    <div class="desc">Combine full-text search with vector similarity in a single query. "Find suttas about meditation" uses keyword match AND semantic meaning simultaneously. More relevant results than either alone. Available in RedisVL 0.5+.</div>
-    <div class="tech redis">REDIS SEARCH HYBRID</div>
-  </div>
-  <div class="feat">
-    <div class="icon">🧠</div>
-    <div class="name">Agent Memory Server</div>
-    <div class="desc">Redis's open-source memory management service. Automatic topic extraction, entity recognition, context summarization. Could give the Buddha long-term memory: "You mentioned your mother's health last month — how is she?" Short-term via checkpointers, long-term via Store.</div>
-    <div class="tech redis">REDIS AGENT MEMORY SERVER</div>
-  </div>
-  <div class="feat">
-    <div class="icon">📊</div>
-    <div class="name">TimeSeries Analytics</div>
-    <div class="desc">Track engagement patterns: when do seekers ask questions? What topics recur? Not surveillance — understanding the sangha. Aggregate, anonymous, respectful. "Most seekers ask about suffering on Mondays."</div>
-    <div class="tech redis">REDIS TIMESERIES</div>
-  </div>
-  <div class="feat">
-    <div class="icon">🔐</div>
-    <div class="name">int8 Quantization</div>
-    <div class="desc">Compress 384-dim float32 embeddings to int8: 75% memory reduction, 30% faster search, 99.99% accuracy preserved. For 286 suttas this is modest savings, but at 10,000+ suttas it matters.</div>
-    <div class="tech redis">REDIS QUANTIZATION</div>
-  </div>
-</div>
-
-<h2>What's Possible — Maximum Dapr</h2>
-
-<p>We use Dapr for pub/sub, actors, state, service invocation, and the Conversation API. Here's what's left:</p>
-
-<div class="features">
-  <div class="feat">
-    <div class="icon">🔄</div>
-    <div class="name">Durable Workflows</div>
-    <div class="desc">A guided meditation isn't one message — it's a 15-minute workflow: instruction → pause (timer) → "How are you feeling?" → next step → closing. Dapr Workflows survive container restarts. Pick up exactly where you left off. Built on actors, orchestrated as code.</div>
-    <div class="tech dapr">DAPR WORKFLOWS</div>
-  </div>
-  <div class="feat">
-    <div class="icon">⏰</div>
-    <div class="name">Jobs API — Scheduled Dharma</div>
-    <div class="desc">Dapr Jobs: schedule tasks with cron expressions or one-shot timers. Daily morning sutta delivery. Weekly practice check-ins. "Every Sunday at 7 AM, send this week's reflection." Durable — survives restarts. Per-user schedules stored alongside actor state.</div>
-    <div class="tech dapr">DAPR JOBS (NEW)</div>
-  </div>
-  <div class="feat">
-    <div class="icon">🔧</div>
-    <div class="name">Tool Calling via Conversation API</div>
-    <div class="desc">The Conversation API supports OpenAI-compatible tool calling. The LLM could invoke tools: "search for sutta about X", "save this as a practice note", "schedule a reminder". The LLM decides what to look up — not us hardcoding the RAG pipeline.</div>
-    <div class="tech dapr">DAPR CONVERSATION + TOOLS</div>
-  </div>
-  <div class="feat">
-    <div class="icon">🔒</div>
-    <div class="name">Distributed Locks</div>
-    <div class="desc">Mutually exclusive access to shared resources. If we add group chat support: lock ensures only one response per question. Prevents duplicate wisdom when multiple Dapr instances race.</div>
-    <div class="tech dapr">DAPR DISTRIBUTED LOCK</div>
-  </div>
-  <div class="feat">
-    <div class="icon">📡</div>
-    <div class="name">Bindings — External Events</div>
-    <div class="desc">Dapr input/output bindings connect to external systems. Cron binding for scheduled tasks. Could bind to a calendar API for meditation retreat reminders. Or bind to email for non-Telegram seekers.</div>
-    <div class="tech dapr">DAPR BINDINGS</div>
-  </div>
-  <div class="feat">
-    <div class="icon">🔑</div>
-    <div class="name">Secrets + Configuration</div>
-    <div class="desc">API keys, model endpoints, system prompts — all managed as Dapr secrets and configuration. Hot-reload system prompts without redeployment. A/B test different teaching styles via config.</div>
-    <div class="tech dapr">DAPR SECRETS + CONFIG</div>
-  </div>
-</div>
-
-<h3>The Combination — What Neither Can Do Alone</h3>
-
-<div class="features">
-  <div class="feat full-width">
-    <div class="icon">🪷</div>
-    <div class="name">RAG-Powered Buddhist Teacher with Agency</div>
-    <div class="desc">The full pipeline: User asks → <strong>Dapr Actor</strong> loads their history, practice level, explored topics → <strong>Redis Vector Search</strong> finds semantically relevant suttas → <strong>Dapr Conversation API</strong> calls the LLM with practice-adapted system prompt + sutta context + conversation history → <strong>Tool calling</strong> lets the LLM search for more suttas or schedule follow-ups → <strong>Dapr Workflow</strong> manages multi-step guided sessions → <strong>Redis LangCache</strong> caches responses for common questions → <strong>Dapr Jobs</strong> sends daily practice prompts → <strong>Redis Agent Memory Server</strong> maintains long-term seeker memory across months. <em>This is the architecture earning its keep. Every piece does what it's best at. The microservices boundary maps to distinct concerns: user lifecycle, wisdom retrieval, LLM inference, conversation flow, scheduling.</em></div>
-    <div class="tech both">REDIS + DAPR = LIVING TEACHER</div>
-  </div>
-</div>
-
-<h2>Roadmap</h2>
+<h2>What's Built</h2>
 
 <div class="phases">
   <div class="phase">
@@ -533,33 +597,32 @@
       <li class="done">Dapr Virtual Actors: one actor per seeker, stateful lifecycle</li>
       <li class="done">Practice level detection from conversation patterns</li>
       <li class="done">Adaptive system prompts: newcomer → beginner → intermediate → experienced</li>
-      <li class="done">Wisdom Service: LLM + RAG + Dapr Conversation API (caching, PII scrubbing)</li>
+      <li class="done">Wisdom Service: LLM + RAG + Dapr Conversation API</li>
       <li class="done">Telegram commands: /start, /level, /forget (GDPR), /help</li>
-      <li class="done">Integration tests (881 lines)</li>
     </ul>
   </div>
   <div class="phase">
-    <div class="label">Phase 3 — Guided Practice <span class="badge next">Next</span></div>
+    <div class="label">Phase 3 — Guided Practice <span class="badge done">Complete</span></div>
     <div class="title">The bot that teaches</div>
     <ul>
-      <li>Dapr Workflows for multi-step guided meditations</li>
-      <li>Dapr Jobs for daily sutta delivery + practice check-ins</li>
-      <li>Structured learning paths (Four Noble Truths → Eightfold Path → specific practices)</li>
-      <li>Tool calling: LLM decides when to search suttas, schedule reminders</li>
-      <li>Redis LangCache for semantic response caching</li>
-      <li>Practice journaling: user logs sits, bot tracks patterns</li>
+      <li class="done">Guided meditations: breathing + mettā via Dapr Workflows (durable, survives restarts)</li>
+      <li class="done">Daily sutta delivery + weekly practice check-ins via Dapr Jobs</li>
+      <li class="done">Structured learning paths: Four Noble Truths → Eightfold Path → specific practices</li>
+      <li class="done">Tool calling: LLM autonomously searches suttas when your question needs it</li>
+      <li class="done">Semantic response caching (LangCache): "What is dukkha?" and "explain suffering" hit the same cache</li>
+      <li class="done">Practice journaling: /sit to log, /journal to review, weekly summaries</li>
     </ul>
   </div>
   <div class="phase">
-    <div class="label">Phase 4 — Community & Wisdom <span class="badge next">Future</span></div>
+    <div class="label">Phase 4 — Community & Depth <span class="badge next">Future</span></div>
     <div class="title">The bot that grows</div>
     <ul>
-      <li>Redis Agent Memory Server for long-term seeker memory</li>
-      <li>Redis TimeSeries for anonymous practice analytics</li>
-      <li>Hybrid search (full-text + vector) for richer sutta retrieval</li>
-      <li>Multi-tradition routing: Theravada, Zen, secular mindfulness</li>
-      <li>Vector sets (Redis 8) for lighter, composable embeddings</li>
-      <li>Full Tipitaka: expand from 286 to 5,000+ suttas with int8 quantization</li>
+      <li>Long-term seeker memory across months (Redis Agent Memory Server)</li>
+      <li>Anonymous practice analytics — patterns across the sangha (Redis TimeSeries)</li>
+      <li>Hybrid search: full-text + vector for richer sutta retrieval</li>
+      <li>Full Tipiṭaka: expand from 286 to 5,000+ suttas with int8 quantization</li>
+      <li>Group practice sessions — sit together, asynchronously</li>
+      <li>Retreat mode — intensive multi-day guided programs</li>
     </ul>
   </div>
 </div>
@@ -570,13 +633,13 @@
 </div>
 
 <div class="callout">
-  <div class="q">"What makes this different from ChatGPT with a Buddhist prompt?"</div>
-  <div class="a">Memory. Every conversation builds on the last. It knows your practice level and adapts — a newcomer gets gentle explanations with English terms; an experienced practitioner gets direct Pali pointers. It cites specific suttas from a curated corpus of 286 essential texts (not hallucinated references). And it's yours — private, GDPR-compliant, deletable with /forget. ChatGPT forgets you the moment you close the tab.</div>
+  <div class="q">"Why Early Buddhist Texts specifically?"</div>
+  <div class="a">The EBTs — primarily the Pali Nikāyas and their Chinese parallels — represent the oldest recoverable stratum of the Buddha's teaching. They're the foundation that all Buddhist traditions build on. By grounding the bot in these texts (286 suttas from SuttaCentral, translated by Bhikkhu Sujato, released under CC0), every response traces back to a specific, verifiable source. No syncretism, no hallucinated references, no "the Buddha once said" without a citation. The teacher speaks from the texts, not about them.</div>
 </div>
 
 <p class="muted" style="margin-top: 3rem; text-align: center; font-size: 0.75rem;">
   Little Bits of Buddha · Vision Document · March 2026<br>
-  Phase 1 ✓ · Phase 2 ✓ · Phase 3 coming
+  Phase 1 ✓ · Phase 2 ✓ · Phase 3 ✓ · Phase 4 next
 </p>
 
 </body>

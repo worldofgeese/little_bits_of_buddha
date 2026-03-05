@@ -49,7 +49,7 @@ class TestLangCacheHit:
         cache.store(
             "What is dukkha?",
             "Dukkha is the Pali word for suffering or dissatisfaction.",
-            "beginner"
+            "beginner",
         )
 
         # Mock search result returning the stored item with high similarity
@@ -82,7 +82,7 @@ class TestPracticeLevelIsolation:
         cache.store(
             "What is meditation?",
             "Meditation is a practice of training the mind.",
-            "beginner"
+            "beginner",
         )
 
         # Mock empty search results (because practice_level filter doesn't match)
@@ -112,7 +112,7 @@ class TestSimilarityThreshold:
         cache.store(
             "What is meditation?",
             "Meditation is a practice of training the mind.",
-            "beginner"
+            "beginner",
         )
 
         # Mock search result with LOW similarity
@@ -145,7 +145,7 @@ class TestStoreAndRetrieve:
         cache.store(
             "What are the four noble truths?",
             "The four noble truths are: suffering, origin, cessation, path.",
-            "beginner"
+            "beginner",
         )
 
         # Verify json().set was called
@@ -175,7 +175,7 @@ class TestTTLBehavior:
         cache.store(
             "What is nibbana?",
             "Nibbana is the ultimate goal of Buddhist practice.",
-            "beginner"
+            "beginner",
         )
 
         # Mock that Redis returns empty (key expired)
@@ -197,10 +197,7 @@ class TestInvalidateAll:
         mock_redis_class.return_value = mock_redis
 
         # Mock keys scan
-        mock_redis.scan_iter.return_value = [
-            b"langcache:123",
-            b"langcache:456"
-        ]
+        mock_redis.scan_iter.return_value = [b"langcache:123", b"langcache:456"]
 
         mock_model = MagicMock()
         mock_model.encode.return_value = [0.1] * 384
