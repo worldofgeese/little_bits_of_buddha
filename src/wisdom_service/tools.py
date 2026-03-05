@@ -110,7 +110,7 @@ def execute_save_practice_note(dapr_client, chat_id: str, note: str) -> str:
     Returns:
         Success message
     """
-    result = dapr_client.invoke_method(
+    dapr_client.invoke_method(
         app_id="seeker-actor-service",
         method_name=f"actors/SeekerActor/{chat_id}/method/log_sit",
         data=json.dumps(

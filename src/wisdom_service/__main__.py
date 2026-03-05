@@ -103,6 +103,7 @@ async def ask(request: WisdomRequest) -> WisdomResponse:
 
     # Import tool calling functions
     from dapr.clients import DaprClient
+
     from wisdom_service.tools import (
         TOOLS,
         call_anthropic_with_tools,

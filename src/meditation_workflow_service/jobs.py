@@ -84,7 +84,9 @@ def handle_weekly_checkin(job_data: dict):
                     "chat_id": chat_id,
                     "message": f"Generate a warm weekly practice check-in based on this data: {json.dumps(summary_data)}",
                     "context": {
-                        "practice_level": summary_data.get("practice_level", "newcomer"),
+                        "practice_level": summary_data.get(
+                            "practice_level", "newcomer"
+                        ),
                         "is_weekly_checkin": True,
                     },
                 }
