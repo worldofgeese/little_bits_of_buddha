@@ -22,6 +22,8 @@ htmlcov
 !.dapr/components/local-secret-store.yaml
 
 !.dapr/components/redis-pubsub.yaml
+!.dapr/components/statestore.yaml
+!.dapr/components/conversation.yaml
 
 # Secrets directory (actual secrets, not the example)
 secrets/secrets.json

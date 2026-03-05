@@ -1,0 +1,31 @@
+# Dapr Conversation API Component (Alpha)
+#
+# Note: The Dapr Conversation API is in alpha as of early 2025.
+# This component configuration is based on the expected schema from
+# https://docs.dapr.io/reference/components-reference/supported-conversation/
+#
+# If the Anthropic provider is not yet available, the wisdom-service will
+# fall back to raw httpx calls to the Anthropic proxy (existing pattern).
+#
+# Expected benefits when available:
+# - Automatic caching (same question = cached LLM response)
+# - PII scrubbing
+# - Circuit breakers and retry logic
+# - Conversation history management
+
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: anthropic-conversation
+spec:
+  type: conversation.anthropic
+  version: v1
+  metadata:
+    - name: apiKey
+      value: "${ANTHROPIC_AUTH_TOKEN}"
+    - name: baseURL
+      value: "${ANTHROPIC_BASE_URL}"
+    - name: model
+      value: "anthropic.claude-sonnet-4-5-20250929-v1:0"
+    - name: cacheTTL
+      value: "1h"

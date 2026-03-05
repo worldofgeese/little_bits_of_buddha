@@ -1,1 +1,1 @@
-"""Seeker Actor Service - User-specific actor logic for LBOB."""
+"""Seeker Actor Service — Dapr Virtual Actors for LBOB seekers."""

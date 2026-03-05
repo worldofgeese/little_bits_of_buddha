@@ -113,7 +113,11 @@ PROMOTION_THRESHOLDS = {
     "newcomer": {"signals": 3, "conversations": 3, "next": "beginner"},
     "beginner": {"signals": 5, "conversations": 11, "next": "intermediate"},
     "intermediate": {"signals": 7, "conversations": 31, "next": "experienced"},
-    "experienced": {"signals": float("inf"), "conversations": float("inf"), "next": None},
+    "experienced": {
+        "signals": float("inf"),
+        "conversations": float("inf"),
+        "next": None,
+    },
 }
 
 
