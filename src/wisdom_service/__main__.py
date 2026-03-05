@@ -21,12 +21,31 @@ from hypercorn.trio import serve
 from pydantic import BaseModel
 
 from wisdom_service.anthropic_client import _call_anthropic_proxy, wait_for_dapr_ready
+from wisdom_service.langcache import LangCache
 from wisdom_service.prompts import get_system_prompt
 from wisdom_service.rag import build_rag_prompt
+from wisdom_service.sutta_search import get_embedding_model, get_redis_client
 
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
+
+# Global LangCache instance (initialized at startup)
+_langcache = None
+
+
+def get_langcache() -> LangCache:
+    """Get or create the LangCache instance."""
+    global _langcache
+    if _langcache is None:
+        redis_client = get_redis_client()
+        embedding_model = get_embedding_model()
+        _langcache = LangCache(redis_client, embedding_model, similarity_threshold=0.92)
+        try:
+            _langcache.setup_index()
+        except Exception as e:
+            logger.warning(f"Failed to setup LangCache index: {e}")
+    return _langcache
 
 
 class WisdomRequest(BaseModel):
@@ -39,6 +58,7 @@ class WisdomResponse(BaseModel):
     response: str
     suttas_cited: list[str]
     detected_themes: list[str]
+    from_cache: bool = False
 
 
 @app.get("/healthz")
@@ -51,6 +71,21 @@ async def ask(request: WisdomRequest) -> WisdomResponse:
     practice_level = request.context.get("practice_level", "newcomer")
     history = request.context.get("history", [])
 
+    # Check cache before calling LLM
+    langcache = get_langcache()
+    cached_response = await trio.to_thread.run_sync(
+        lambda: langcache.lookup(request.message, practice_level)
+    )
+
+    if cached_response:
+        logger.info(f"LangCache HIT for practice_level={practice_level}")
+        return WisdomResponse(
+            response=cached_response,
+            suttas_cited=[],
+            detected_themes=[],
+            from_cache=True,
+        )
+
     system_prompt = get_system_prompt(practice_level)
 
     messages = await build_rag_prompt(
@@ -60,6 +95,7 @@ async def ask(request: WisdomRequest) -> WisdomResponse:
     )
 
     # Try Dapr Conversation API first, fall back to raw httpx
+    used_tools = False  # Currently we don't detect tool usage
     try:
         from wisdom_service.conversation_client import call_via_conversation_api
 
@@ -84,10 +120,17 @@ async def ask(request: WisdomRequest) -> WisdomResponse:
     suttas_cited = _extract_sutta_citations(response_text)
     detected_themes = _extract_themes(request.message)
 
+    # Store in cache (only if no tools were used)
+    if not used_tools:
+        await trio.to_thread.run_sync(
+            lambda: langcache.store(request.message, response_text, practice_level)
+        )
+
     return WisdomResponse(
         response=response_text,
         suttas_cited=suttas_cited,
         detected_themes=detected_themes,
+        from_cache=False,
     )
 
 
