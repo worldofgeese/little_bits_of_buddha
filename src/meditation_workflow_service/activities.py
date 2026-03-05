@@ -5,6 +5,7 @@ They interact with other services via Dapr (pub/sub, service invocation).
 """
 
 import json
+
 from dapr.clients import DaprClient
 from dapr.ext.workflow import WorkflowActivityContext
 
@@ -76,9 +77,7 @@ def close_meditation(ctx: WorkflowActivityContext, input: dict):
             app_id="seeker-actor-service",
             method_name=f"actors/SeekerActor/{chat_id}/method/log_sit",
             http_verb="POST",
-            data=json.dumps(
-                {"type": meditation_type, "duration_minutes": duration}
-            ),
+            data=json.dumps({"type": meditation_type, "duration_minutes": duration}),
         )
 
         # 3. Get sutta suggestion from wisdom service
@@ -89,7 +88,9 @@ def close_meditation(ctx: WorkflowActivityContext, input: dict):
             app_id="wisdom-service",
             method_name="wisdom/ask",
             http_verb="POST",
-            data=json.dumps({"chat_id": chat_id, "question": question, "context": context}),
+            data=json.dumps(
+                {"chat_id": chat_id, "question": question, "context": context}
+            ),
         )
 
         # 4. Send sutta suggestion

@@ -1,6 +1,6 @@
 """SeekerActor — Dapr Virtual Actor for LBOB seekers (one per Telegram user)."""
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 
 import httpx
@@ -212,7 +212,8 @@ class SeekerActor(Actor, SeekerActorInterface):
         # Prune entries older than 90 days
         cutoff_date = datetime.now() - timedelta(days=90)
         state["practice_journal"] = [
-            e for e in state["practice_journal"]
+            e
+            for e in state["practice_journal"]
             if datetime.fromisoformat(e["timestamp"]) >= cutoff_date
         ]
 
@@ -246,7 +247,8 @@ class SeekerActor(Actor, SeekerActorInterface):
         # Filter entries within date range
         cutoff_date = datetime.now() - timedelta(days=days)
         filtered_entries = [
-            e for e in state["practice_journal"]
+            e
+            for e in state["practice_journal"]
             if datetime.fromisoformat(e["timestamp"]) >= cutoff_date
         ]
 
@@ -274,7 +276,8 @@ class SeekerActor(Actor, SeekerActorInterface):
         # Get last 7 days of entries
         cutoff_date = datetime.now() - timedelta(days=7)
         weekly_entries = [
-            e for e in state["practice_journal"]
+            e
+            for e in state["practice_journal"]
             if datetime.fromisoformat(e["timestamp"]) >= cutoff_date
         ]
 
