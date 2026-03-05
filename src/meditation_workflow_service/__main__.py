@@ -8,21 +8,25 @@ Endpoints:
 """
 
 import time
+
 import uvicorn
+from dapr.ext.workflow import DaprWorkflowClient, WorkflowRuntime
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from dapr.ext.workflow import WorkflowRuntime, DaprWorkflowClient
+
+# Import activities
+from meditation_workflow_service.activities import (
+    close_meditation,
+    get_seeker_state,
+    send_instruction,
+)
+
+# Import job handlers
+from meditation_workflow_service.jobs import handle_daily_sutta, handle_weekly_checkin
 
 # Import workflows
 from meditation_workflow_service.workflows.breathing import breathing_meditation
 from meditation_workflow_service.workflows.metta import metta_meditation
-
-# Import activities
-from meditation_workflow_service.activities import (
-    send_instruction,
-    close_meditation,
-    get_seeker_state,
-)
 
 # FastAPI app
 app = FastAPI(title="Meditation Workflow Service")
@@ -151,6 +155,16 @@ def get_status(instance_id: str):
             return {"instance_id": instance_id, "status": "not_found"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/job/{job_name}")
+def handle_job(job_name: str, request: dict):
+    """Dapr Jobs callback endpoint."""
+    if job_name.startswith("daily-sutta-"):
+        handle_daily_sutta(request)
+    elif job_name.startswith("weekly-checkin-"):
+        handle_weekly_checkin(request)
+    return {"status": "ok"}
 
 
 if __name__ == "__main__":

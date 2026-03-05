@@ -1,6 +1,6 @@
 """SeekerActor — Dapr Virtual Actor for LBOB seekers (one per Telegram user)."""
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 
 import httpx
@@ -58,6 +58,11 @@ class SeekerActorInterface(ActorInterface):
         """Get weekly summary statistics."""
         ...
 
+    @actormethod(name="update_schedule")
+    async def update_schedule(self, data: dict) -> dict:
+        """Update schedule preferences and trigger job registration/cancellation."""
+        ...
+
 
 class SeekerActor(Actor, SeekerActorInterface):
     """One actor per Telegram user (actor_id = chat_id)."""
@@ -78,6 +83,12 @@ class SeekerActor(Actor, SeekerActorInterface):
                 "last_active": datetime.now().isoformat(),
                 "preferences": {},
                 "practice_journal": [],  # List of SitEntry dicts, max 90 days
+                "schedule_preferences": {
+                    "daily_sutta": False,
+                    "daily_sutta_time": "07:00",
+                    "weekly_checkin": False,
+                    "timezone": "UTC",
+                },
             }
             await self._state_manager.set_state("seeker_state", default_state)
 
@@ -212,7 +223,8 @@ class SeekerActor(Actor, SeekerActorInterface):
         # Prune entries older than 90 days
         cutoff_date = datetime.now() - timedelta(days=90)
         state["practice_journal"] = [
-            e for e in state["practice_journal"]
+            e
+            for e in state["practice_journal"]
             if datetime.fromisoformat(e["timestamp"]) >= cutoff_date
         ]
 
@@ -246,7 +258,8 @@ class SeekerActor(Actor, SeekerActorInterface):
         # Filter entries within date range
         cutoff_date = datetime.now() - timedelta(days=days)
         filtered_entries = [
-            e for e in state["practice_journal"]
+            e
+            for e in state["practice_journal"]
             if datetime.fromisoformat(e["timestamp"]) >= cutoff_date
         ]
 
@@ -274,7 +287,8 @@ class SeekerActor(Actor, SeekerActorInterface):
         # Get last 7 days of entries
         cutoff_date = datetime.now() - timedelta(days=7)
         weekly_entries = [
-            e for e in state["practice_journal"]
+            e
+            for e in state["practice_journal"]
             if datetime.fromisoformat(e["timestamp"]) >= cutoff_date
         ]
 
@@ -319,6 +333,98 @@ class SeekerActor(Actor, SeekerActorInterface):
             "most_practiced_type": most_practiced_type,
             "longest_sit": longest_sit,
             "streak": streak,
+        }
+
+    async def update_schedule(self, data: dict) -> dict:
+        """
+        Update schedule preferences and trigger job registration/cancellation.
+
+        Args:
+            data: dict with schedule preferences (daily_sutta, daily_sutta_time, weekly_checkin, etc.)
+
+        Returns:
+            dict with status and updated preferences
+        """
+        state = await self._state_manager.get_state("seeker_state")
+
+        # Ensure schedule_preferences exists (for backward compatibility)
+        if "schedule_preferences" not in state:
+            state["schedule_preferences"] = {
+                "daily_sutta": False,
+                "daily_sutta_time": "07:00",
+                "weekly_checkin": False,
+                "timezone": "UTC",
+            }
+
+        # Store old values to detect changes
+        old_daily_sutta = state["schedule_preferences"].get("daily_sutta", False)
+        old_weekly_checkin = state["schedule_preferences"].get("weekly_checkin", False)
+
+        # Update preferences
+        for key, value in data.items():
+            if key in [
+                "daily_sutta",
+                "daily_sutta_time",
+                "weekly_checkin",
+                "timezone",
+            ]:
+                state["schedule_preferences"][key] = value
+
+        # Save state
+        await self._state_manager.set_state("seeker_state", state)
+
+        # Trigger job registration/cancellation via scheduler
+        chat_id = state["chat_id"]
+        dapr_port = 3500
+
+        # Handle daily sutta job
+        new_daily_sutta = state["schedule_preferences"]["daily_sutta"]
+        if new_daily_sutta != old_daily_sutta:
+            if new_daily_sutta:
+                # Register job
+                time_utc = state["schedule_preferences"]["daily_sutta_time"]
+                async with httpx.AsyncClient() as client:
+                    response = await client.post(
+                        f"http://localhost:{dapr_port}/v1.0-alpha1/jobs/daily-sutta-{chat_id}",
+                        json={
+                            "data": {"chat_id": chat_id},
+                            "schedule": f"0 0 {int(time_utc.split(':')[0])} * * *",
+                            "overwrite": True,
+                        },
+                    )
+                    response.raise_for_status()
+            else:
+                # Cancel job
+                async with httpx.AsyncClient() as client:
+                    await client.delete(
+                        f"http://localhost:{dapr_port}/v1.0-alpha1/jobs/daily-sutta-{chat_id}"
+                    )
+
+        # Handle weekly check-in job
+        new_weekly_checkin = state["schedule_preferences"]["weekly_checkin"]
+        if new_weekly_checkin != old_weekly_checkin:
+            if new_weekly_checkin:
+                # Register job (default: Sunday at 9am)
+                async with httpx.AsyncClient() as client:
+                    response = await client.post(
+                        f"http://localhost:{dapr_port}/v1.0-alpha1/jobs/weekly-checkin-{chat_id}",
+                        json={
+                            "data": {"chat_id": chat_id},
+                            "schedule": "0 0 9 * * 0",  # Sunday at 9am
+                            "overwrite": True,
+                        },
+                    )
+                    response.raise_for_status()
+            else:
+                # Cancel job
+                async with httpx.AsyncClient() as client:
+                    await client.delete(
+                        f"http://localhost:{dapr_port}/v1.0-alpha1/jobs/weekly-checkin-{chat_id}"
+                    )
+
+        return {
+            "status": "updated",
+            "preferences": state["schedule_preferences"],
         }
 
     async def _call_wisdom_service(self, message: str, state: dict) -> dict:
