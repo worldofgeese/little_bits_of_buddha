@@ -1,0 +1,66 @@
+name: Pipeline Acceptance
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * 0' # Weekly Sunday 3 AM
+
+jobs:
+  acceptance:
+    name: ACP Pipeline Acceptance Test
+    runs-on: ubuntu-latest
+    container:
+      image: docker.io/library/python:3.12-slim
+
+    steps:
+      - name: Install dependencies
+        run: apt-get update && apt-get install -y --no-install-recommends git jq
+
+      - name: Checkout code
+        run: |
+          git clone --depth 50 ${{ github.server_url }}/${{ github.repository }}.git repo
+          cd repo && git checkout ${{ github.sha }} || true
+
+      - name: Run worktree isolation tests (offline subset)
+        run: |
+          cd repo
+          set -e
+
+          echo "=== Test 1: Worktree creation ==="
+          # Can't run full acceptance (needs poller), but validate worktree isolation logic
+          BASELINE=$(git rev-parse HEAD)
+
+          # Create two worktrees
+          mkdir -p /tmp/wt-a /tmp/wt-b
+          git worktree add -b test/ci-accept-a /tmp/wt-a HEAD
+          git worktree add -b test/ci-accept-b /tmp/wt-b HEAD
+
+          # Verify isolation
+          echo "worker-a" > /tmp/wt-a/test-a.txt
+          echo "worker-b" > /tmp/wt-b/test-b.txt
+
+          [ ! -f /tmp/wt-b/test-a.txt ] && echo "✅ A not in B" || { echo "❌ Cross-contamination"; exit 1; }
+          [ ! -f /tmp/wt-a/test-b.txt ] && echo "✅ B not in A" || { echo "❌ Cross-contamination"; exit 1; }
+
+          echo "=== Test 2: Independent branches ==="
+          cd /tmp/wt-a && git add test-a.txt && git commit -m "ci: worker a" --no-verify -q
+          cd /tmp/wt-b && git add test-b.txt && git commit -m "ci: worker b" --no-verify -q
+
+          HEAD_A=$(cd /tmp/wt-a && git rev-parse HEAD)
+          HEAD_B=$(cd /tmp/wt-b && git rev-parse HEAD)
+
+          [ "$HEAD_A" != "$HEAD_B" ] && echo "✅ Independent commits" || { echo "❌ Same HEAD"; exit 1; }
+          [ "$HEAD_A" != "$BASELINE" ] && echo "✅ A diverged from baseline" || { echo "❌ A didn't commit"; exit 1; }
+          [ "$HEAD_B" != "$BASELINE" ] && echo "✅ B diverged from baseline" || { echo "❌ B didn't commit"; exit 1; }
+
+          echo "=== Test 3: Merge script syntax ==="
+          bash -n repo/scripts/acp-merge-pipeline.sh && echo "✅ merge-pipeline.sh syntax OK"
+          bash -n repo/scripts/acp-completion-poller.sh && echo "✅ completion-poller.sh syntax OK"
+          bash -n repo/scripts/acp-worktree-setup.sh && echo "✅ worktree-setup.sh syntax OK"
+
+          # Cleanup
+          cd repo
+          git worktree remove --force /tmp/wt-a 2>/dev/null || true
+          git worktree remove --force /tmp/wt-b 2>/dev/null || true
+
+          echo "=== All pipeline acceptance tests passed ==="
