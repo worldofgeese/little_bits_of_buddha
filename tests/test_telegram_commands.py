@@ -297,3 +297,157 @@ class TestHelpCommand:
         assert "/forget" in text
         assert "/help" in text
         assert "Available commands" in text
+
+
+class TestMeditateCommand:
+    """Test /meditate command."""
+
+    @pytest.mark.trio
+    async def test_meditate_default_params(self):
+        """Test that /meditate with no args uses defaults (breathing, 5 min)."""
+        bot = Mock()
+        bot.api = Mock()
+        bot.api.send_message = AsyncMock()
+
+        message = {"chat": {"id": 12345}, "text": "/meditate"}
+
+        with patch(
+            "telegram_bot_service_worldofgeese.commands.httpx.AsyncClient"
+        ) as mock_client:
+            mock_http = Mock()
+            mock_response = Mock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = {
+                "instance_id": "meditation-12345-1234567890",
+                "status": "started",
+            }
+            mock_http.post = AsyncMock(return_value=mock_response)
+            mock_client.return_value.__aenter__.return_value = mock_http
+
+            result = await handle_command(bot, message)
+
+            assert result is True
+            mock_http.post.assert_called_once()
+            call_args = mock_http.post.call_args
+            assert "http://localhost:3500/v1.0/invoke/meditation-workflow-service/method/meditate/start" in call_args[0][0]
+
+            # Check payload
+            payload = call_args[1]["json"]
+            assert payload["chat_id"] == 12345
+            assert payload["type"] == "breathing_meditation"
+            assert payload["duration_minutes"] == 5
+
+            bot.api.send_message.assert_called_once()
+            text = bot.api.send_message.call_args[1]["params"]["text"]
+            assert "meditation" in text.lower()
+            assert "meditation-12345-1234567890" in text
+
+    @pytest.mark.trio
+    async def test_meditate_with_type(self):
+        """Test that /meditate breathing works."""
+        bot = Mock()
+        bot.api = Mock()
+        bot.api.send_message = AsyncMock()
+
+        message = {"chat": {"id": 12345}, "text": "/meditate breathing"}
+
+        with patch(
+            "telegram_bot_service_worldofgeese.commands.httpx.AsyncClient"
+        ) as mock_client:
+            mock_http = Mock()
+            mock_response = Mock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = {
+                "instance_id": "meditation-12345-1234567890",
+                "status": "started",
+            }
+            mock_http.post = AsyncMock(return_value=mock_response)
+            mock_client.return_value.__aenter__.return_value = mock_http
+
+            result = await handle_command(bot, message)
+
+            assert result is True
+            payload = mock_http.post.call_args[1]["json"]
+            assert payload["type"] == "breathing_meditation"
+            assert payload["duration_minutes"] == 5
+
+    @pytest.mark.trio
+    async def test_meditate_with_type_and_duration(self):
+        """Test that /meditate metta 10 works."""
+        bot = Mock()
+        bot.api = Mock()
+        bot.api.send_message = AsyncMock()
+
+        message = {"chat": {"id": 12345}, "text": "/meditate metta 10"}
+
+        with patch(
+            "telegram_bot_service_worldofgeese.commands.httpx.AsyncClient"
+        ) as mock_client:
+            mock_http = Mock()
+            mock_response = Mock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = {
+                "instance_id": "meditation-12345-1234567890",
+                "status": "started",
+            }
+            mock_http.post = AsyncMock(return_value=mock_response)
+            mock_client.return_value.__aenter__.return_value = mock_http
+
+            result = await handle_command(bot, message)
+
+            assert result is True
+            payload = mock_http.post.call_args[1]["json"]
+            assert payload["type"] == "metta_meditation"
+            assert payload["duration_minutes"] == 10
+
+    @pytest.mark.trio
+    async def test_meditate_with_duration_only(self):
+        """Test that /meditate 15 works (numeric-only means duration)."""
+        bot = Mock()
+        bot.api = Mock()
+        bot.api.send_message = AsyncMock()
+
+        message = {"chat": {"id": 12345}, "text": "/meditate 15"}
+
+        with patch(
+            "telegram_bot_service_worldofgeese.commands.httpx.AsyncClient"
+        ) as mock_client:
+            mock_http = Mock()
+            mock_response = Mock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = {
+                "instance_id": "meditation-12345-1234567890",
+                "status": "started",
+            }
+            mock_http.post = AsyncMock(return_value=mock_response)
+            mock_client.return_value.__aenter__.return_value = mock_http
+
+            result = await handle_command(bot, message)
+
+            assert result is True
+            payload = mock_http.post.call_args[1]["json"]
+            assert payload["type"] == "breathing_meditation"
+            assert payload["duration_minutes"] == 15
+
+    @pytest.mark.trio
+    async def test_meditate_handles_service_error(self):
+        """Test that /meditate handles service errors gracefully."""
+        bot = Mock()
+        bot.api = Mock()
+        bot.api.send_message = AsyncMock()
+
+        message = {"chat": {"id": 12345}, "text": "/meditate"}
+
+        with patch(
+            "telegram_bot_service_worldofgeese.commands.httpx.AsyncClient"
+        ) as mock_client:
+            mock_http = Mock()
+            mock_http.post = AsyncMock(side_effect=Exception("Connection refused"))
+            mock_client.return_value.__aenter__.return_value = mock_http
+
+            result = await handle_command(bot, message)
+
+            assert result is True
+            bot.api.send_message.assert_called_once()
+            text = bot.api.send_message.call_args[1]["params"]["text"]
+            assert "couldn't start" in text.lower() or "try again" in text.lower()

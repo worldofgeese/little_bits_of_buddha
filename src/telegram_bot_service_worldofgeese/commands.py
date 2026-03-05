@@ -26,6 +26,7 @@ async def handle_command(bot, message: dict) -> bool:
         "/journal": cmd_journal,
         "/daily": cmd_daily,
         "/path": cmd_path,
+        "/meditate": cmd_meditate,
     }
 
     handler = handlers.get(command)
@@ -113,6 +114,7 @@ async def cmd_help(bot, chat_id: int, message: dict) -> None:
         "/start — Begin a conversation\n"
         "/level — Check your practice level\n"
         "/sit — Log a meditation session\n"
+        "/meditate — Start a guided meditation\n"
         "/journal — View your practice journal\n"
         "/daily — Manage daily sutta delivery\n"
         "/path — View your learning path progress\n"
@@ -416,3 +418,89 @@ async def cmd_path(bot, chat_id: int, message: dict) -> None:
     await bot.api.send_message(
         params={"chat_id": chat_id, "text": reply, "parse_mode": "Markdown"}
     )
+
+
+def parse_meditate_command(text: str) -> tuple[str, int]:
+    """
+    Parse /meditate command text.
+
+    Examples:
+        /meditate -> ("breathing_meditation", 5)
+        /meditate breathing -> ("breathing_meditation", 5)
+        /meditate metta -> ("metta_meditation", 5)
+        /meditate 15 -> ("breathing_meditation", 15)
+        /meditate metta 20 -> ("metta_meditation", 20)
+        /meditate 20 breathing -> ("breathing_meditation", 20)
+
+    Returns:
+        tuple of (meditation_type, duration_minutes)
+    """
+    parts = text.strip().split()
+
+    # Default values
+    meditation_type = "breathing_meditation"
+    duration = 5
+
+    # No arguments - use defaults
+    if len(parts) == 1:
+        return meditation_type, duration
+
+    # Parse remaining parts
+    remaining = parts[1:]
+
+    for part in remaining:
+        # Check if it's a number (duration)
+        if part.isdigit():
+            duration = int(part)
+        # Check if it's a meditation type
+        elif part.lower() in ["breathing", "metta"]:
+            if part.lower() == "breathing":
+                meditation_type = "breathing_meditation"
+            elif part.lower() == "metta":
+                meditation_type = "metta_meditation"
+
+    return meditation_type, duration
+
+
+async def cmd_meditate(bot, chat_id: int, message: dict) -> None:
+    """Start a guided meditation workflow."""
+    text = message.get("text", "").strip()
+
+    try:
+        meditation_type, duration = parse_meditate_command(text)
+
+        # Call meditation workflow service via Dapr service invocation
+        payload = {
+            "chat_id": chat_id,
+            "type": meditation_type,
+            "duration_minutes": duration,
+        }
+
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "http://localhost:3500/v1.0/invoke/meditation-workflow-service/method/meditate/start",
+                json=payload,
+                timeout=2.0,
+            )
+
+            if response.status_code == 200:
+                result = response.json()
+                instance_id = result.get("instance_id", "unknown")
+
+                # Format meditation type for display
+                type_display = (
+                    "breathing" if meditation_type == "breathing_meditation" else "metta"
+                )
+
+                reply = (
+                    f"🧘 Starting {duration}-minute {type_display} meditation.\n"
+                    f"Follow the prompts and I'll guide you through the practice.\n\n"
+                    f"Session ID: {instance_id}"
+                )
+            else:
+                reply = "I couldn't start the meditation right now. Try again in a moment."
+
+    except Exception:
+        reply = "I couldn't start the meditation right now. Try again in a moment."
+
+    await bot.api.send_message(params={"chat_id": chat_id, "text": reply})
