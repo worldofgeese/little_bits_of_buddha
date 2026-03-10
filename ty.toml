@@ -1,6 +1,7 @@
 [environment]
 python-version = "3.13"
-python = ".venv/bin/python"
+# python = ".venv/bin/python"  # Only works locally; CI uses system Python
+# ty auto-discovers the environment when this is omitted
 
 [rules]
 # Dapr actor stubs use empty bodies with return types for interface definition
