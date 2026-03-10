@@ -87,5 +87,3 @@ build-backend = "pdm.backend"
 markers = [
   "integration: tests that depend on local files (Dapr components, secrets)",
 ]
-pythonpath = ["."]
-addopts = "--import-mode=importlib"
