@@ -16,7 +16,7 @@ import pytest
 import trio
 from unittest.mock import AsyncMock, Mock, patch
 
-from src.telegram_bot_service_worldofgeese.commands import handle_command
+from telegram_bot_service_worldofgeese.commands import handle_command
 
 
 class TestCommandHandling:

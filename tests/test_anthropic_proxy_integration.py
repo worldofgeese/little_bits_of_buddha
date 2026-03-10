@@ -6,7 +6,10 @@ import sys
 
 import pytest
 
-from src.openai_service_worldofgeese.__main__ import _call_anthropic_proxy
+# Add src to path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+
+from openai_service_worldofgeese.__main__ import _call_anthropic_proxy
 
 
 @pytest.mark.integration

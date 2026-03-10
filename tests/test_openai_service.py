@@ -21,7 +21,7 @@ sys.modules["dapr.clients"] = MagicMock()
 sys.modules["dapr.ext"] = MagicMock()
 sys.modules["dapr.ext.fastapi"] = MagicMock()
 
-from src.openai_service_worldofgeese.__main__ import (
+from openai_service_worldofgeese.__main__ import (
     wait_for_dapr_ready,
 )
 
