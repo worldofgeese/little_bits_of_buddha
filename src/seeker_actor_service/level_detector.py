@@ -252,10 +252,7 @@ def detect_practice_level(
         assert isinstance(convos_needed, (int, float))
 
         # Check if we meet the requirements for promotion to the next level
-        if (
-            total_signals >= signals_needed
-            and conversation_count >= convos_needed
-        ):
+        if total_signals >= signals_needed and conversation_count >= convos_needed:
             assert isinstance(next_level, str)
             new_level = next_level
         else:
