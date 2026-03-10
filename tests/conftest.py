@@ -5,9 +5,9 @@ without shadowing installed packages like dapr.
 """
 
 import sys
-from pathlib import Path
+import os
 
-project_root = Path(__file__).parent.parent
-sys_path_str = str(project_root)
-if sys_path_str not in sys.path:
-    sys.path.append(sys_path_str)
+# Get project root (parent of tests dir)
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if project_root not in sys.path:
+    sys.path.append(project_root)
