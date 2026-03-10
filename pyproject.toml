@@ -81,12 +81,9 @@ requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
 
-# "The path entries are calculated relative to the rootdir, thus the src entry adds path/to/project/src directory to sys.path in this case."
-# https://stackoverflow.com/a/50156706
+# Note: pythonpath removed because it interfered with dapr namespace package resolution.
+# Tests use "from src." imports, which work when project root is in sys.path (handled by conftest.py).
 [tool.pytest.ini_options]
-pythonpath = [
-  "src"
-]
 markers = [
   "integration: tests that depend on local files (Dapr components, secrets)",
 ]
