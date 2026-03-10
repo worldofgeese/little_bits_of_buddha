@@ -12,43 +12,42 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: docker.io/library/python:3.12-slim
-
     steps:
       - name: Install git
         run: apt-get update && apt-get install -y --no-install-recommends git
+        shell: bash
 
-      - name: Checkout code
+      - name: Checkout
         run: |
-          git clone --depth 1 ${{ github.server_url }}/${{ github.repository }}.git repo
-          cd repo && git checkout ${{ github.sha }} || true
+          git clone --depth 1 --branch "${GITHUB_REF_NAME:-main}" \
+            "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git" .
+          git checkout "$GITHUB_SHA" 2>/dev/null || true
+        shell: bash
 
-      - name: Run tests
-        run: |
-          cd repo
-          pip install -q -e ".[test]"
-          pytest -m "not integration" -v
+      - name: Test
+        run: sh scripts/run-tests.sh
+        shell: bash
 
   lint:
     name: Lint
     runs-on: ubuntu-latest
     container:
       image: docker.io/library/python:3.12-slim
-
     steps:
       - name: Install git
         run: apt-get update && apt-get install -y --no-install-recommends git
+        shell: bash
 
-      - name: Checkout code
+      - name: Checkout
         run: |
-          git clone --depth 1 ${{ github.server_url }}/${{ github.repository }}.git repo
-          cd repo && git checkout ${{ github.sha }} || true
+          git clone --depth 1 --branch "${GITHUB_REF_NAME:-main}" \
+            "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git" .
+          git checkout "$GITHUB_SHA" 2>/dev/null || true
+        shell: bash
 
-      - name: Run ruff and ty
-        run: |
-          cd repo
-          pip install -q -e ".[dev]"
-          ruff check src/
-          ty check src/
+      - name: Lint
+        run: sh scripts/run-lint.sh
+        shell: bash
 
   build-container:
     name: Build Container Image
@@ -57,17 +56,15 @@ jobs:
     container:
       image: quay.io/podman/stable:latest
       options: --privileged
-
     steps:
-      - name: Install git
-        run: dnf install -y git
-
-      - name: Checkout code
+      - name: Checkout
         run: |
-          git clone --depth 1 ${{ github.server_url }}/${{ github.repository }}.git repo
-          cd repo && git checkout ${{ github.sha }} || true
+          dnf install -y git
+          git clone --depth 1 --branch "${GITHUB_REF_NAME:-main}" \
+            "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git" .
+          git checkout "$GITHUB_SHA" 2>/dev/null || true
+        shell: bash
 
-      - name: Build container image
-        run: |
-          cd repo
-          podman build --storage-driver=vfs -t little-bits-of-buddha:${{ github.sha }} -f Dockerfile .
+      - name: Build container
+        run: sh scripts/run-build.sh
+        shell: bash
