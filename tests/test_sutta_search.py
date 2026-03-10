@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from openai_service_worldofgeese.sutta_search import (
+from src.openai_service_worldofgeese.sutta_search import (
     embed_text,
     index_suttas,
     search_suttas,

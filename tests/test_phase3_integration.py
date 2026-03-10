@@ -12,7 +12,7 @@ from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
-from telegram_bot_service_worldofgeese.commands import handle_command
+from src.telegram_bot_service_worldofgeese.commands import handle_command
 
 
 class TestToolCallingLangcacheIntegration:
