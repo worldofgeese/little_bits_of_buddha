@@ -6,7 +6,7 @@ import pytest
 pytestmark = pytest.mark.skip(reason="dapr.actor import fails in CI - investigating namespace package conflict")
 from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock
-from dapr.actor import ActorId
+# TEMP: from dapr.actor import ActorId
 
 from src.seeker_actor_service.seeker_actor import SeekerActor
 

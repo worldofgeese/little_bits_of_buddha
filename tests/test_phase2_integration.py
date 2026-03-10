@@ -28,7 +28,7 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import httpx
 import trio
-from dapr.actor import ActorId
+# TEMP: from dapr.actor import ActorId
 from fastapi.testclient import TestClient
 
 

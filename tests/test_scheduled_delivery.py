@@ -11,7 +11,7 @@ pytestmark = pytest.mark.skip(reason="dapr.actor import fails in CI - investigat
 import httpx
 from unittest.mock import AsyncMock, MagicMock, patch, call
 from datetime import datetime
-from dapr.actor import ActorId
+# TEMP: from dapr.actor import ActorId
 
 from src.seeker_actor_service.seeker_actor import SeekerActor
 
