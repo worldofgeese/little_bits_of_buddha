@@ -1,0 +1,28 @@
+{
+  "projectName": "LBOB CI Fix",
+  "branchName": "main",
+  "description": "Fix all CI failures in the little_bits_of_buddha Forgejo CI pipeline so all 3 jobs pass: Run Tests, Lint, Build Container Image",
+  "stories": [
+    {
+      "id": "CI-1",
+      "title": "Fix dapr namespace package import failure in pytest",
+      "priority": 1,
+      "passes": true,
+      "description": "pytest fails with 'ModuleNotFoundError: No module named dapr.actor; dapr is not a package' when collecting 4 test files (test_seeker_actor.py, test_practice_journal.py, test_scheduled_delivery.py, test_phase2_integration.py). The diagnostic script proves dapr imports work fine OUTSIDE pytest. The issue is that pyproject.toml has pythonpath=['src'] which pytest adds to sys.path. This likely causes pdm-backend's package discovery to shadow the dapr namespace package. Root cause analysis needed. Possible fixes: (1) remove pythonpath from pytest config and fix imports, (2) use conftest.py with sys.path manipulation, (3) restructure src/ layout, (4) add pytest-dapr fixture that pre-imports dapr before collection, (5) use importlib to lazy-import dapr in tests. CI container is python:3.12 (full, not slim). Build system is pdm-backend."
+    },
+    {
+      "id": "CI-2",
+      "title": "Fix ty check failure in lint job",
+      "priority": 2,
+      "passes": false,
+      "description": "ty.toml had python='.venv/bin/python' which doesn't exist in CI. This was commented out. But ty may still fail if it can't resolve dapr/trio/etc imports without the venv pointer. Verify ty check passes in CI after installing deps. If ty can't find packages installed via pip in the system Python, add a conftest or wrapper that sets up the environment."
+    },
+    {
+      "id": "CI-3",
+      "title": "Verify all 3 CI jobs pass end-to-end",
+      "priority": 3,
+      "passes": false,
+      "description": "After fixing CI-1 and CI-2, push to main and verify via fj-ex that run shows: Run Tests=success, Lint=success, Build Container Image=success. The container build uses quay.io/podman/stable:latest with --privileged. If it fails, debug and fix."
+    }
+  ]
+}

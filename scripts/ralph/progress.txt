@@ -1,0 +1,57 @@
+# Ralph Progress Log
+Started: 2026-03-10T22:45:00+01:00
+
+## Codebase Patterns
+- Build system: pdm-backend (pyproject.toml, PEP 517)
+- CI: Forgejo Actions, scripts-only pattern (scripts/run-tests.sh, scripts/run-lint.sh, scripts/run-build.sh)
+- CI containers: python:3.12 (full, NOT slim — numpy/grpc need libstdc++)
+- CI checkout: git clone (not actions/checkout — no Node.js dependency)
+- Test runner: pytest with markers: `integration` for tests needing Dapr runtime
+- Lint tools: ruff (check + format) + ty (type checker by Astral)
+- ty config: ty.toml in project root, python-version="3.13", python path commented out for CI compat
+- Pre-commit hooks: ruff check, ruff format, ty check
+- dapr SDK: namespace package architecture (dapr, dapr-ext-fastapi, dapr-ext-workflow are separate pip packages sharing `dapr` namespace)
+- pytest pythonpath: pyproject.toml sets `pythonpath = ["src"]` which adds src/ to sys.path during test collection
+- CRITICAL BUG: `from dapr.actor import ActorId` works in plain Python but fails inside pytest. Diagnostic proves dapr installs correctly and imports work outside pytest. The pytest pythonpath or pdm-backend build may be interfering with namespace package resolution.
+
+## Previous Attempts (by orchestrator)
+1. Switched pip install -e ".[test]" to pip install ".[test]" (non-editable) — did NOT fix the issue
+2. Switched python:3.12-slim to python:3.12 — fixed libstdc++ but dapr issue persists
+3. Commented out ty.toml python=".venv/bin/python" — fixed ty crash but ty may still fail on missing imports
+4. Added diagnostic script that proves dapr.actor imports work outside pytest context
+
+## Key Files
+- pyproject.toml: project config, deps, pytest pythonpath config
+- scripts/run-tests.sh: test runner script called by CI
+- scripts/run-lint.sh: lint script called by CI
+- scripts/run-build.sh: container build script called by CI
+- .forgejo/workflows/ci.yaml: CI workflow
+- ty.toml: ty type checker config
+- tests/test_seeker_actor.py, tests/test_practice_journal.py, tests/test_scheduled_delivery.py, tests/test_phase2_integration.py: the 4 failing test files that import dapr.actor
+
+---
+
+## Session 2026-03-10T22:50:00+01:00 - CI-1 Fix
+
+### Issue
+pytest ModuleNotFoundError on dapr.actor during test collection.
+
+### Root Cause Confirmed
+Adding `src/` to sys.path breaks dapr's namespace package resolution.
+Reproduced locally: `python -c "import sys; sys.path.insert(0,'src'); from dapr.actor import ActorId"` fails.
+
+### Solution Implemented
+1. Removed `pythonpath = ["src"]` from `[tool.pytest.ini_options]` in pyproject.toml
+2. Created `tests/conftest.py` that adds project ROOT to sys.path (not src/)
+3. This preserves dapr namespace package while allowing "from src." imports
+
+### Files Modified
+- pyproject.toml: Removed pythonpath config, added explanatory comment
+- tests/conftest.py: NEW file that adds project root to sys.path
+
+### Commit
+Commit: 3adc3ef - fix: CI-1 - Fix dapr namespace package import failure in pytest
+Pre-commit hooks passed: ruff check, ruff format, ty check
+
+### Next Steps
+Push to origin main and verify CI passes.
