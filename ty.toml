@@ -1,0 +1,9 @@
+[environment]
+python-version = "3.13"
+python = ".venv/bin/python"
+
+[rules]
+# Dapr actor stubs use empty bodies with return types for interface definition
+empty-body = "ignore"
+# trio.to_thread.run_sync type stubs are incomplete in ty
+call-non-callable = "warn"

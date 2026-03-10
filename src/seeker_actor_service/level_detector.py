@@ -109,7 +109,7 @@ PRACTICE_ADVANCED = [
 ]
 
 # Promotion thresholds
-PROMOTION_THRESHOLDS = {
+PROMOTION_THRESHOLDS: dict[str, dict[str, int | float | str | None]] = {
     "newcomer": {"signals": 3, "conversations": 3, "next": "beginner"},
     "beginner": {"signals": 5, "conversations": 11, "next": "intermediate"},
     "intermediate": {"signals": 7, "conversations": 31, "next": "experienced"},
@@ -245,13 +245,19 @@ def detect_practice_level(
     for level_index in range(current_level_index, len(LEVELS) - 1):
         level = LEVELS[level_index]
         threshold = PROMOTION_THRESHOLDS[level]
+        signals_needed = threshold["signals"]
+        convos_needed = threshold["conversations"]
+        next_level = threshold["next"]
+        assert isinstance(signals_needed, (int, float))
+        assert isinstance(convos_needed, (int, float))
 
         # Check if we meet the requirements for promotion to the next level
         if (
-            total_signals >= threshold["signals"]
-            and conversation_count >= threshold["conversations"]
+            total_signals >= signals_needed
+            and conversation_count >= convos_needed
         ):
-            new_level = threshold["next"]
+            assert isinstance(next_level, str)
+            new_level = next_level
         else:
             # Stop trying to promote if we don't meet this threshold
             break

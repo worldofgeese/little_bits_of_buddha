@@ -1,6 +1,8 @@
 """Structured learning paths for Early Buddhist teachings."""
 
-CURRICULUM = {
+from typing import Any
+
+CURRICULUM: dict[str, dict[str, Any]] = {
     "1": {
         "title": "The Four Noble Truths",
         "topics": {

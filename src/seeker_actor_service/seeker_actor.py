@@ -109,6 +109,7 @@ class SeekerActor(Actor, SeekerActorInterface):
         """
         # Load current state
         state = await self._state_manager.get_state("seeker_state")
+        assert state is not None, "State not initialized"
 
         # Add user message to history
         user_message = {
@@ -189,17 +190,21 @@ class SeekerActor(Actor, SeekerActorInterface):
 
     async def get_state(self) -> dict:
         """Return current seeker state as dict."""
-        return await self._state_manager.get_state("seeker_state")
+        state = await self._state_manager.get_state("seeker_state")
+        assert state is not None, "State not initialized"
+        return state
 
     async def update_practice_level(self, level: str) -> None:
         """Manual override of practice level."""
         state = await self._state_manager.get_state("seeker_state")
+        assert state is not None, "State not initialized"
         state["practice_level"] = level
         await self._state_manager.set_state("seeker_state", state)
 
     async def get_summary(self) -> dict:
         """Return conversation stats."""
         state = await self._state_manager.get_state("seeker_state")
+        assert state is not None, "State not initialized"
         return {
             "chat_id": state["chat_id"],
             "practice_level": state["practice_level"],
@@ -219,6 +224,7 @@ class SeekerActor(Actor, SeekerActorInterface):
             dict with status and total_sits
         """
         state = await self._state_manager.get_state("seeker_state")
+        assert state is not None, "State not initialized"
 
         # Ensure practice_journal exists (for backward compatibility)
         if "practice_journal" not in state:
@@ -263,6 +269,7 @@ class SeekerActor(Actor, SeekerActorInterface):
             dict with entries and total_duration_minutes
         """
         state = await self._state_manager.get_state("seeker_state")
+        assert state is not None, "State not initialized"
 
         # Ensure practice_journal exists (for backward compatibility)
         if "practice_journal" not in state:
@@ -295,6 +302,7 @@ class SeekerActor(Actor, SeekerActorInterface):
             dict with total_sits, total_minutes, most_practiced_type, longest_sit, streak
         """
         state = await self._state_manager.get_state("seeker_state")
+        assert state is not None, "State not initialized"
 
         # Ensure practice_journal exists (for backward compatibility)
         if "practice_journal" not in state:
@@ -327,7 +335,7 @@ class SeekerActor(Actor, SeekerActorInterface):
         for entry in weekly_entries:
             practice_type = entry["practice_type"]
             type_counts[practice_type] = type_counts.get(practice_type, 0) + 1
-        most_practiced_type = max(type_counts, key=type_counts.get)
+        most_practiced_type = max(type_counts, key=lambda k: type_counts[k])
 
         # Calculate streak (consecutive days with at least one sit)
         # Get unique dates of sits
@@ -362,6 +370,7 @@ class SeekerActor(Actor, SeekerActorInterface):
             dict with status and updated preferences
         """
         state = await self._state_manager.get_state("seeker_state")
+        assert state is not None, "State not initialized"
 
         # Ensure schedule_preferences exists (for backward compatibility)
         if "schedule_preferences" not in state:
@@ -453,6 +462,7 @@ class SeekerActor(Actor, SeekerActorInterface):
         from .learning_paths import format_path_progress, suggest_next
 
         state = await self._state_manager.get_state("seeker_state")
+        assert state is not None, "State not initialized"
 
         # Ensure path_progress exists (for backward compatibility)
         if "path_progress" not in state:
