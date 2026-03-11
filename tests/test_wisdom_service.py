@@ -18,6 +18,7 @@ Test coverage:
 from unittest.mock import Mock, patch
 
 import pytest
+import respx
 from fastapi.testclient import TestClient
 
 
@@ -76,6 +77,14 @@ def mock_anthropic_response():
     }
 
 
+@pytest.fixture(autouse=True)
+def mock_env_vars(monkeypatch):
+    """Mock environment variables for API configuration."""
+    monkeypatch.setenv("ANTHROPIC_BASE_URL", "http://test-api")
+    monkeypatch.setenv("ANTHROPIC_AUTH_TOKEN", "test-key")
+    monkeypatch.setenv("LITELLM_MODEL", "anthropic/claude-sonnet")
+
+
 class TestHealthz:
     """Test the healthz endpoint."""
 
@@ -90,61 +99,73 @@ class TestWisdomAsk:
     """Test the /wisdom/ask endpoint."""
 
     @pytest.mark.trio
-    @patch("wisdom_service.__main__.get_langcache")
-    @patch("wisdom_service.tools.call_anthropic_with_tools")
     async def test_wisdom_ask_returns_valid_response_shape(
-        self, mock_tools_call, mock_langcache, mock_anthropic_response
+        self, mock_anthropic_response
     ):
         """Test that /wisdom/ask returns a valid WisdomResponse."""
+        from httpx import ASGITransport, AsyncClient
+
+        import wisdom_service.__main__
+        from wisdom_service.__main__ import app
+
         # Mock langcache to return None (cache miss)
         mock_cache = Mock()
         mock_cache.lookup.return_value = None
         mock_cache.store.return_value = None
-        mock_langcache.return_value = mock_cache
 
-        # Mock tool call to return response without tools
-        mock_tools_call.return_value = {
-            "content": [
-                {
-                    "type": "text",
-                    "text": "Suffering arises from craving, as taught in SN56.11.",
-                }
-            ]
-        }
+        with patch.object(
+            wisdom_service.__main__, "get_langcache", return_value=mock_cache
+        ):
+            # Mock outbound httpx calls to Anthropic API
+            async with respx.mock:
+                respx.post("http://test-api/v1/messages").mock(
+                    return_value=respx.MockResponse(
+                        200,
+                        json={
+                            "id": "msg_123",
+                            "type": "message",
+                            "role": "assistant",
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "text": "Suffering arises from craving, as taught in SN56.11.",
+                                }
+                            ],
+                            "model": "claude-sonnet",
+                            "stop_reason": "end_turn",
+                            "usage": {"input_tokens": 10, "output_tokens": 20},
+                        },
+                    )
+                )
 
-        from httpx import ASGITransport, AsyncClient
+                async with AsyncClient(
+                    transport=ASGITransport(app=app), base_url="http://test"
+                ) as client:
+                    response = await client.post(
+                        "/wisdom/ask",
+                        json={
+                            "chat_id": "test123",
+                            "message": "What is suffering?",
+                            "context": {
+                                "practice_level": "newcomer",
+                                "history": [],
+                                "topics_explored": [],
+                            },
+                        },
+                    )
 
-        from wisdom_service.__main__ import app
-
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
-            response = await client.post(
-                "/wisdom/ask",
-                json={
-                    "chat_id": "test123",
-                    "message": "What is suffering?",
-                    "context": {
-                        "practice_level": "newcomer",
-                        "history": [],
-                        "topics_explored": [],
-                    },
-                },
-            )
-
-        assert response.status_code == 200
-        data = response.json()
-        assert "response" in data
-        assert "suttas_cited" in data
-        assert "detected_themes" in data
-        assert isinstance(data["suttas_cited"], list)
-        assert isinstance(data["detected_themes"], list)
+                assert response.status_code == 200
+                data = response.json()
+                assert "response" in data
+                assert "suttas_cited" in data
+                assert "detected_themes" in data
+                assert isinstance(data["suttas_cited"], list)
+                assert isinstance(data["detected_themes"], list)
 
     @pytest.mark.trio
     @patch("wisdom_service.__main__.get_langcache")
-    @patch("wisdom_service.tools.call_anthropic_with_tools")
     async def test_system_prompt_changes_with_practice_level_newcomer(
-        self, mock_tools_call, mock_langcache
+        self, mock_langcache
     ):
         """Test that system prompt adapts for newcomer practice level."""
         # Mock langcache
@@ -153,32 +174,47 @@ class TestWisdomAsk:
         mock_cache.store.return_value = None
         mock_langcache.return_value = mock_cache
 
-        # Capture the system prompt passed to tools
+        # Capture the system prompt from the httpx request
         captured_system = None
 
-        def capture_call(*args, **kwargs):
+        def capture_request(request):
             nonlocal captured_system
-            if len(args) >= 2:
-                captured_system = args[1]
-            return {"content": [{"type": "text", "text": "Response"}]}
+            body = request.read()
+            import json
 
-        mock_tools_call.side_effect = capture_call
+            data = json.loads(body)
+            captured_system = data.get("system")
+            return respx.MockResponse(
+                200,
+                json={
+                    "id": "msg_123",
+                    "type": "message",
+                    "role": "assistant",
+                    "content": [{"type": "text", "text": "Response"}],
+                    "model": "claude-sonnet",
+                    "stop_reason": "end_turn",
+                    "usage": {"input_tokens": 10, "output_tokens": 20},
+                },
+            )
 
         from httpx import ASGITransport, AsyncClient
 
         from wisdom_service.__main__ import app
 
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
-            await client.post(
-                "/wisdom/ask",
-                json={
-                    "chat_id": "test123",
-                    "message": "What is meditation?",
-                    "context": {"practice_level": "newcomer", "history": []},
-                },
-            )
+        async with respx.mock:
+            respx.post("http://test-api/v1/messages").mock(side_effect=capture_request)
+
+            async with AsyncClient(
+                transport=ASGITransport(app=app), base_url="http://test"
+            ) as client:
+                await client.post(
+                    "/wisdom/ask",
+                    json={
+                        "chat_id": "test123",
+                        "message": "What is meditation?",
+                        "context": {"practice_level": "newcomer", "history": []},
+                    },
+                )
 
         # Check that the newcomer system prompt was used
         assert captured_system is not None
@@ -186,9 +222,8 @@ class TestWisdomAsk:
 
     @pytest.mark.trio
     @patch("wisdom_service.__main__.get_langcache")
-    @patch("wisdom_service.tools.call_anthropic_with_tools")
     async def test_system_prompt_changes_with_practice_level_experienced(
-        self, mock_tools_call, mock_langcache
+        self, mock_langcache
     ):
         """Test that system prompt adapts for experienced practice level."""
         # Mock langcache
@@ -197,32 +232,47 @@ class TestWisdomAsk:
         mock_cache.store.return_value = None
         mock_langcache.return_value = mock_cache
 
-        # Capture the system prompt passed to tools
+        # Capture the system prompt from the httpx request
         captured_system = None
 
-        def capture_call(*args, **kwargs):
+        def capture_request(request):
             nonlocal captured_system
-            if len(args) >= 2:
-                captured_system = args[1]
-            return {"content": [{"type": "text", "text": "Response"}]}
+            body = request.read()
+            import json
 
-        mock_tools_call.side_effect = capture_call
+            data = json.loads(body)
+            captured_system = data.get("system")
+            return respx.MockResponse(
+                200,
+                json={
+                    "id": "msg_123",
+                    "type": "message",
+                    "role": "assistant",
+                    "content": [{"type": "text", "text": "Response"}],
+                    "model": "claude-sonnet",
+                    "stop_reason": "end_turn",
+                    "usage": {"input_tokens": 10, "output_tokens": 20},
+                },
+            )
 
         from httpx import ASGITransport, AsyncClient
 
         from wisdom_service.__main__ import app
 
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
-            await client.post(
-                "/wisdom/ask",
-                json={
-                    "chat_id": "test123",
-                    "message": "Explain jhana factors.",
-                    "context": {"practice_level": "experienced", "history": []},
-                },
-            )
+        async with respx.mock:
+            respx.post("http://test-api/v1/messages").mock(side_effect=capture_request)
+
+            async with AsyncClient(
+                transport=ASGITransport(app=app), base_url="http://test"
+            ) as client:
+                await client.post(
+                    "/wisdom/ask",
+                    json={
+                        "chat_id": "test123",
+                        "message": "Explain jhana factors.",
+                        "context": {"practice_level": "experienced", "history": []},
+                    },
+                )
 
         assert captured_system is not None
         assert "experienced practitioner" in captured_system
@@ -230,10 +280,8 @@ class TestWisdomAsk:
     @pytest.mark.trio
     @patch("wisdom_service.__main__.get_langcache")
     @patch("wisdom_service.sutta_search.search_suttas")
-    @patch("wisdom_service.tools.call_anthropic_with_tools")
     async def test_sutta_context_injected_by_rag(
         self,
-        mock_tools_call,
         mock_search,
         mock_langcache,
         mock_sutta_results,
@@ -246,25 +294,38 @@ class TestWisdomAsk:
         mock_langcache.return_value = mock_cache
 
         mock_search.return_value = mock_sutta_results
-        mock_tools_call.return_value = {
-            "content": [{"type": "text", "text": "Response"}]
-        }
 
         from httpx import ASGITransport, AsyncClient
 
         from wisdom_service.__main__ import app
 
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
-            response = await client.post(
-                "/wisdom/ask",
-                json={
-                    "chat_id": "test123",
-                    "message": "What is the first noble truth?",
-                    "context": {"practice_level": "beginner", "history": []},
-                },
+        async with respx.mock:
+            respx.post("http://test-api/v1/messages").mock(
+                return_value=respx.MockResponse(
+                    200,
+                    json={
+                        "id": "msg_123",
+                        "type": "message",
+                        "role": "assistant",
+                        "content": [{"type": "text", "text": "Response"}],
+                        "model": "claude-sonnet",
+                        "stop_reason": "end_turn",
+                        "usage": {"input_tokens": 10, "output_tokens": 20},
+                    },
+                )
             )
+
+            async with AsyncClient(
+                transport=ASGITransport(app=app), base_url="http://test"
+            ) as client:
+                response = await client.post(
+                    "/wisdom/ask",
+                    json={
+                        "chat_id": "test123",
+                        "message": "What is the first noble truth?",
+                        "context": {"practice_level": "beginner", "history": []},
+                    },
+                )
 
         # Verify response is successful
         assert response.status_code == 200
@@ -315,14 +376,10 @@ class TestWisdomAsk:
 
     @pytest.mark.trio
     @patch("wisdom_service.__main__.get_langcache")
-    @patch("wisdom_service.__main__._call_anthropic_proxy")
     @patch("wisdom_service.rag.build_rag_prompt")
-    @patch("wisdom_service.tools.call_anthropic_with_tools")
     async def test_fallback_to_raw_httpx_when_no_tools(
         self,
-        mock_tools_call,
         mock_rag,
-        mock_proxy,
         mock_langcache,
         mock_anthropic_response,
     ):
@@ -334,36 +391,56 @@ class TestWisdomAsk:
         mock_langcache.return_value = mock_cache
 
         mock_rag.return_value = [{"role": "user", "content": "test"}]
-        # No tool use (empty content)
-        mock_tools_call.return_value = {"content": []}
-        mock_proxy.return_value = mock_anthropic_response
 
         from httpx import ASGITransport, AsyncClient
 
         from wisdom_service.__main__ import app
 
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
-            response = await client.post(
-                "/wisdom/ask",
-                json={
-                    "chat_id": "test123",
-                    "message": "Test message",
-                    "context": {"practice_level": "newcomer", "history": []},
-                },
-            )
+        call_count = {"first": 0, "second": 0}
 
-        # Verify fallback was used
-        mock_proxy.assert_called_once()
+        def handle_request(request):
+            # First call returns empty content (no tools used)
+            # Second call is the fallback to raw httpx
+            if call_count["first"] == 0:
+                call_count["first"] += 1
+                return respx.MockResponse(
+                    200,
+                    json={
+                        "id": "msg_123",
+                        "type": "message",
+                        "role": "assistant",
+                        "content": [],  # No tool use
+                        "model": "claude-sonnet",
+                        "stop_reason": "end_turn",
+                        "usage": {"input_tokens": 10, "output_tokens": 20},
+                    },
+                )
+            else:
+                call_count["second"] += 1
+                return respx.MockResponse(200, json=mock_anthropic_response)
+
+        async with respx.mock:
+            respx.post("http://test-api/v1/messages").mock(side_effect=handle_request)
+
+            async with AsyncClient(
+                transport=ASGITransport(app=app), base_url="http://test"
+            ) as client:
+                response = await client.post(
+                    "/wisdom/ask",
+                    json={
+                        "chat_id": "test123",
+                        "message": "Test message",
+                        "context": {"practice_level": "newcomer", "history": []},
+                    },
+                )
+
+        # Verify fallback was used (second call happened)
+        assert call_count["second"] == 1
         assert response.status_code == 200
 
     @pytest.mark.trio
     @patch("wisdom_service.__main__.get_langcache")
-    @patch("wisdom_service.tools.call_anthropic_with_tools")
-    async def test_empty_history_handled_gracefully(
-        self, mock_tools_call, mock_langcache
-    ):
+    async def test_empty_history_handled_gracefully(self, mock_langcache):
         """Test that empty history is handled without errors."""
         # Mock langcache
         mock_cache = Mock()
@@ -371,34 +448,43 @@ class TestWisdomAsk:
         mock_cache.store.return_value = None
         mock_langcache.return_value = mock_cache
 
-        mock_tools_call.return_value = {
-            "content": [{"type": "text", "text": "Response"}]
-        }
-
         from httpx import ASGITransport, AsyncClient
 
         from wisdom_service.__main__ import app
 
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
-            response = await client.post(
-                "/wisdom/ask",
-                json={
-                    "chat_id": "test123",
-                    "message": "First message",
-                    "context": {"practice_level": "newcomer", "history": []},
-                },
+        async with respx.mock:
+            respx.post("http://test-api/v1/messages").mock(
+                return_value=respx.MockResponse(
+                    200,
+                    json={
+                        "id": "msg_123",
+                        "type": "message",
+                        "role": "assistant",
+                        "content": [{"type": "text", "text": "Response"}],
+                        "model": "claude-sonnet",
+                        "stop_reason": "end_turn",
+                        "usage": {"input_tokens": 10, "output_tokens": 20},
+                    },
+                )
             )
+
+            async with AsyncClient(
+                transport=ASGITransport(app=app), base_url="http://test"
+            ) as client:
+                response = await client.post(
+                    "/wisdom/ask",
+                    json={
+                        "chat_id": "test123",
+                        "message": "First message",
+                        "context": {"practice_level": "newcomer", "history": []},
+                    },
+                )
 
         assert response.status_code == 200
 
     @pytest.mark.trio
     @patch("wisdom_service.__main__.get_langcache")
-    @patch("wisdom_service.tools.call_anthropic_with_tools")
-    async def test_missing_practice_level_defaults_to_newcomer(
-        self, mock_tools_call, mock_langcache
-    ):
+    async def test_missing_practice_level_defaults_to_newcomer(self, mock_langcache):
         """Test that missing practice_level defaults to newcomer."""
         # Mock langcache
         mock_cache = Mock()
@@ -406,32 +492,47 @@ class TestWisdomAsk:
         mock_cache.store.return_value = None
         mock_langcache.return_value = mock_cache
 
-        # Capture the system prompt
+        # Capture the system prompt from the httpx request
         captured_system = None
 
-        def capture_call(*args, **kwargs):
+        def capture_request(request):
             nonlocal captured_system
-            if len(args) >= 2:
-                captured_system = args[1]
-            return {"content": [{"type": "text", "text": "Response"}]}
+            body = request.read()
+            import json
 
-        mock_tools_call.side_effect = capture_call
+            data = json.loads(body)
+            captured_system = data.get("system")
+            return respx.MockResponse(
+                200,
+                json={
+                    "id": "msg_123",
+                    "type": "message",
+                    "role": "assistant",
+                    "content": [{"type": "text", "text": "Response"}],
+                    "model": "claude-sonnet",
+                    "stop_reason": "end_turn",
+                    "usage": {"input_tokens": 10, "output_tokens": 20},
+                },
+            )
 
         from httpx import ASGITransport, AsyncClient
 
         from wisdom_service.__main__ import app
 
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
-            response = await client.post(
-                "/wisdom/ask",
-                json={
-                    "chat_id": "test123",
-                    "message": "Test message",
-                    "context": {"history": []},  # No practice_level
-                },
-            )
+        async with respx.mock:
+            respx.post("http://test-api/v1/messages").mock(side_effect=capture_request)
+
+            async with AsyncClient(
+                transport=ASGITransport(app=app), base_url="http://test"
+            ) as client:
+                response = await client.post(
+                    "/wisdom/ask",
+                    json={
+                        "chat_id": "test123",
+                        "message": "Test message",
+                        "context": {"history": []},  # No practice_level
+                    },
+                )
 
         assert response.status_code == 200
         assert captured_system is not None
@@ -439,9 +540,8 @@ class TestWisdomAsk:
 
     @pytest.mark.trio
     @patch("wisdom_service.__main__.get_langcache")
-    @patch("wisdom_service.tools.call_anthropic_with_tools")
     async def test_long_messages_handled_without_truncation_errors(
-        self, mock_tools_call, mock_langcache
+        self, mock_langcache
     ):
         """Test that long messages are handled without errors."""
         # Mock langcache
@@ -450,35 +550,44 @@ class TestWisdomAsk:
         mock_cache.store.return_value = None
         mock_langcache.return_value = mock_cache
 
-        mock_tools_call.return_value = {
-            "content": [{"type": "text", "text": "Response"}]
-        }
-
         from httpx import ASGITransport, AsyncClient
 
         from wisdom_service.__main__ import app
 
-        long_message = "What is suffering? " * 500  # Very long message
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
-            response = await client.post(
-                "/wisdom/ask",
-                json={
-                    "chat_id": "test123",
-                    "message": long_message,
-                    "context": {"practice_level": "newcomer", "history": []},
-                },
+        async with respx.mock:
+            respx.post("http://test-api/v1/messages").mock(
+                return_value=respx.MockResponse(
+                    200,
+                    json={
+                        "id": "msg_123",
+                        "type": "message",
+                        "role": "assistant",
+                        "content": [{"type": "text", "text": "Response"}],
+                        "model": "claude-sonnet",
+                        "stop_reason": "end_turn",
+                        "usage": {"input_tokens": 10, "output_tokens": 20},
+                    },
+                )
             )
+
+            long_message = "What is suffering? " * 500  # Very long message
+            async with AsyncClient(
+                transport=ASGITransport(app=app), base_url="http://test"
+            ) as client:
+                response = await client.post(
+                    "/wisdom/ask",
+                    json={
+                        "chat_id": "test123",
+                        "message": long_message,
+                        "context": {"practice_level": "newcomer", "history": []},
+                    },
+                )
 
         assert response.status_code == 200
 
     @pytest.mark.trio
     @patch("wisdom_service.__main__.get_langcache")
-    @patch("wisdom_service.tools.call_anthropic_with_tools")
-    async def test_concurrent_requests_dont_interfere(
-        self, mock_tools_call, mock_langcache
-    ):
+    async def test_concurrent_requests_dont_interfere(self, mock_langcache):
         """Test that concurrent requests are handled independently (stateless)."""
         # Mock langcache
         mock_cache = Mock()
@@ -486,29 +595,41 @@ class TestWisdomAsk:
         mock_cache.store.return_value = None
         mock_langcache.return_value = mock_cache
 
-        mock_tools_call.return_value = {
-            "content": [{"type": "text", "text": "Response"}]
-        }
-
         from httpx import ASGITransport, AsyncClient
 
         from wisdom_service.__main__ import app
 
-        # Make multiple requests with different chat_ids
-        responses = []
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
-            for i in range(5):
-                response = await client.post(
-                    "/wisdom/ask",
+        async with respx.mock:
+            respx.post("http://test-api/v1/messages").mock(
+                return_value=respx.MockResponse(
+                    200,
                     json={
-                        "chat_id": f"test{i}",
-                        "message": f"Message {i}",
-                        "context": {"practice_level": "newcomer", "history": []},
+                        "id": "msg_123",
+                        "type": "message",
+                        "role": "assistant",
+                        "content": [{"type": "text", "text": "Response"}],
+                        "model": "claude-sonnet",
+                        "stop_reason": "end_turn",
+                        "usage": {"input_tokens": 10, "output_tokens": 20},
                     },
                 )
-                responses.append(response)
+            )
+
+            # Make multiple requests with different chat_ids
+            responses = []
+            async with AsyncClient(
+                transport=ASGITransport(app=app), base_url="http://test"
+            ) as client:
+                for i in range(5):
+                    response = await client.post(
+                        "/wisdom/ask",
+                        json={
+                            "chat_id": f"test{i}",
+                            "message": f"Message {i}",
+                            "context": {"practice_level": "newcomer", "history": []},
+                        },
+                    )
+                    responses.append(response)
 
         # All should succeed
         for response in responses:
