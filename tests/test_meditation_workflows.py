@@ -14,16 +14,16 @@ These tests verify:
 - External event handling for user responses
 """
 
-import pytest
 import json
-import time
-from unittest.mock import Mock, patch, MagicMock
-from datetime import timedelta
+from unittest.mock import Mock, patch
+
+import pytest
 
 
 class TestBreathingMeditationWorkflow:
     """Test the breathing meditation (ānāpānasati) workflow."""
 
+    @pytest.mark.integration
     def test_breathing_workflow_complete_path(self):
         """Test complete breathing meditation from start to finish."""
         # This test will verify:
@@ -67,12 +67,11 @@ class TestBreathingMeditationWorkflow:
 
         # Execute workflow (generator-based)
         workflow_gen = breathing_meditation(mock_ctx)
-        result = None
         try:
             while True:
-                result = next(workflow_gen)
-        except StopIteration as e:
-            result = e.value
+                next(workflow_gen)
+        except StopIteration:
+            pass
 
         # Verify workflow executed all steps
         assert len(activity_calls) >= 4, "Should call multiple activities"
@@ -92,6 +91,7 @@ class TestBreathingMeditationWorkflow:
         # Verify external event wait was called
         mock_ctx.wait_for_external_event.assert_called()
 
+    @pytest.mark.integration
     def test_breathing_workflow_timeout_path(self):
         """Test breathing meditation when user doesn't respond (timeout)."""
         from meditation_workflow_service.workflows.breathing import breathing_meditation
@@ -130,6 +130,7 @@ class TestBreathingMeditationWorkflow:
 class TestMettaMeditationWorkflow:
     """Test the loving-kindness (metta) meditation workflow."""
 
+    @pytest.mark.integration
     def test_metta_workflow_complete_path(self):
         """Test complete metta meditation through all phases."""
         # Metta phases: self → loved one → neutral person → difficult person → all beings
@@ -175,6 +176,7 @@ class TestMettaMeditationWorkflow:
 class TestMeditationActivities:
     """Test meditation activity functions."""
 
+    @pytest.mark.integration
     def test_send_instruction_publishes_to_telegram(self):
         """Test send_instruction activity publishes via Dapr pub/sub."""
         from meditation_workflow_service.activities import send_instruction
@@ -200,6 +202,7 @@ class TestMeditationActivities:
             assert data["chat_id"] == 12345
             assert "breath" in data["text"].lower()
 
+    @pytest.mark.integration
     def test_get_seeker_state_calls_actor(self):
         """Test get_seeker_state activity invokes seeker actor."""
         from meditation_workflow_service.activities import get_seeker_state
@@ -230,6 +233,7 @@ class TestMeditationActivities:
             assert result["practice_level"] == "intermediate"
             assert result["meditation_count"] == 42
 
+    @pytest.mark.integration
     def test_close_meditation_logs_sit_and_suggests_sutta(self):
         """Test close_meditation activity logs sit and gets sutta suggestion."""
         from meditation_workflow_service.activities import close_meditation
@@ -259,6 +263,7 @@ class TestMeditationActivities:
 class TestMeditationTemplates:
     """Test meditation instruction templates."""
 
+    @pytest.mark.integration
     def test_breathing_templates_exist_for_all_levels(self):
         """Test breathing meditation templates exist for all practice levels."""
         from meditation_workflow_service.templates import get_breathing_instruction
@@ -291,17 +296,19 @@ class TestMeditationTemplates:
             # Verify Pali phrases are included
             if phase == "self":
                 assert (
-                    "may I" in instruction.lower() or "happiness" in instruction.lower()
+                    "may i" in instruction.lower() or "happiness" in instruction.lower()
                 )
 
 
 class TestWorkflowAPIEndpoints:
     """Test FastAPI endpoints for meditation workflow service."""
 
+    @pytest.mark.integration
     def test_start_meditation_endpoint(self):
         """Test POST /meditate/start endpoint."""
-        from meditation_workflow_service.__main__ import app
         from fastapi.testclient import TestClient
+
+        from meditation_workflow_service.__main__ import app
 
         with patch(
             "meditation_workflow_service.__main__.DaprWorkflowClient"
@@ -327,10 +334,12 @@ class TestWorkflowAPIEndpoints:
             # Verify workflow was scheduled
             mock_workflow_client.schedule_new_workflow.assert_called_once()
 
+    @pytest.mark.integration
     def test_raise_event_endpoint(self):
         """Test POST /meditate/event endpoint."""
-        from meditation_workflow_service.__main__ import app
         from fastapi.testclient import TestClient
+
+        from meditation_workflow_service.__main__ import app
 
         with patch(
             "meditation_workflow_service.__main__.DaprWorkflowClient"
@@ -353,10 +362,12 @@ class TestWorkflowAPIEndpoints:
             # Verify event was raised
             mock_workflow_client.raise_workflow_event.assert_called_once()
 
+    @pytest.mark.integration
     def test_get_status_endpoint(self):
         """Test GET /meditate/status/{instance_id} endpoint."""
-        from meditation_workflow_service.__main__ import app
         from fastapi.testclient import TestClient
+
+        from meditation_workflow_service.__main__ import app
 
         with patch(
             "meditation_workflow_service.__main__.DaprWorkflowClient"

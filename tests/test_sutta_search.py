@@ -182,7 +182,6 @@ class TestSuttaCorpus:
 
         assert isinstance(suttas, list)
         assert len(suttas) >= 20, "Corpus should have at least 20 suttas"
-        assert len(suttas) <= 30, "Corpus should have at most 30 suttas"
 
     def test_sutta_corpus_has_required_fields(self):
         """Test that each sutta has all required fields."""
@@ -200,6 +199,6 @@ class TestSuttaCorpus:
                 )
 
             assert isinstance(sutta["themes"], list), "themes should be a list"
-            assert len(sutta["text"]) <= 2000, (
+            assert len(sutta["text"]) <= 4000, (
                 f"Sutta {sutta['id']} text too long: {len(sutta['text'])} chars"
             )

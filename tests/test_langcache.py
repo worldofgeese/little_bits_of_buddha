@@ -1,10 +1,8 @@
 """Tests for LangCache semantic response caching."""
 
-import time
-import uuid
 from unittest.mock import MagicMock, patch
 
-import pytest
+import numpy as np
 
 from wisdom_service.langcache import LangCache
 
@@ -22,7 +20,7 @@ class TestLangCacheMiss:
         mock_redis.ft().search.return_value = MagicMock(docs=[])
 
         mock_model = MagicMock()
-        mock_model.encode.return_value = [0.1] * 384
+        mock_model.encode.return_value = np.array([0.1] * 384)
 
         cache = LangCache(mock_redis, mock_model, similarity_threshold=0.92)
 
@@ -41,7 +39,7 @@ class TestLangCacheHit:
         mock_redis_class.return_value = mock_redis
 
         mock_model = MagicMock()
-        mock_model.encode.return_value = [0.1] * 384
+        mock_model.encode.return_value = np.array([0.1] * 384)
 
         cache = LangCache(mock_redis, mock_model, similarity_threshold=0.92)
 
@@ -74,7 +72,7 @@ class TestPracticeLevelIsolation:
         mock_redis_class.return_value = mock_redis
 
         mock_model = MagicMock()
-        mock_model.encode.return_value = [0.1] * 384
+        mock_model.encode.return_value = np.array([0.1] * 384)
 
         cache = LangCache(mock_redis, mock_model, similarity_threshold=0.92)
 
@@ -104,7 +102,7 @@ class TestSimilarityThreshold:
         mock_redis_class.return_value = mock_redis
 
         mock_model = MagicMock()
-        mock_model.encode.return_value = [0.1] * 384
+        mock_model.encode.return_value = np.array([0.1] * 384)
 
         cache = LangCache(mock_redis, mock_model, similarity_threshold=0.92)
 
@@ -137,7 +135,7 @@ class TestStoreAndRetrieve:
         mock_redis_class.return_value = mock_redis
 
         mock_model = MagicMock()
-        mock_model.encode.return_value = [0.1] * 384
+        mock_model.encode.return_value = np.array([0.1] * 384)
 
         cache = LangCache(mock_redis, mock_model, similarity_threshold=0.92)
 
@@ -165,7 +163,7 @@ class TestTTLBehavior:
         mock_redis_class.return_value = mock_redis
 
         mock_model = MagicMock()
-        mock_model.encode.return_value = [0.1] * 384
+        mock_model.encode.return_value = np.array([0.1] * 384)
 
         # Use very short TTL for testing
         cache = LangCache(mock_redis, mock_model, similarity_threshold=0.92)
@@ -200,7 +198,7 @@ class TestInvalidateAll:
         mock_redis.scan_iter.return_value = [b"langcache:123", b"langcache:456"]
 
         mock_model = MagicMock()
-        mock_model.encode.return_value = [0.1] * 384
+        mock_model.encode.return_value = np.array([0.1] * 384)
 
         cache = LangCache(mock_redis, mock_model, similarity_threshold=0.92)
 
@@ -224,7 +222,7 @@ class TestIndexSetup:
         mock_redis_class.return_value = mock_redis
 
         mock_model = MagicMock()
-        mock_model.encode.return_value = [0.1] * 384
+        mock_model.encode.return_value = np.array([0.1] * 384)
 
         cache = LangCache(mock_redis, mock_model, similarity_threshold=0.92)
 

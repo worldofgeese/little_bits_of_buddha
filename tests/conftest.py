@@ -4,8 +4,8 @@ Adds project root to END of sys.path so 'from src.' imports work
 without shadowing installed packages like dapr.
 """
 
-import sys
 import os
+import sys
 
 # Get project root (parent of tests dir)
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

@@ -9,7 +9,6 @@ This module follows the How to Design Functions (HtDF) recipe:
 6. Test and debug
 """
 
-import json
 import sys
 from unittest.mock import MagicMock, Mock, patch
 

@@ -7,12 +7,9 @@ Tests verify end-to-end integration of:
 4. /meditate command parsing
 """
 
-import json
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
-
-from telegram_bot_service_worldofgeese.commands import handle_command
 
 
 class TestToolCallingLangcacheIntegration:

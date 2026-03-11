@@ -12,9 +12,9 @@ Tests verify that:
 9. Error handling for unreachable actor
 """
 
-import pytest
-import trio
 from unittest.mock import AsyncMock, Mock, patch
+
+import pytest
 
 from telegram_bot_service_worldofgeese.commands import handle_command
 

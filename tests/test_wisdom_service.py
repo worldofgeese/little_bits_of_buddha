@@ -15,12 +15,9 @@ Test coverage:
 12. Concurrent requests don't interfere (stateless service)
 """
 
-import json
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
-import httpx
 import pytest
-import trio
 from fastapi.testclient import TestClient
 
 
@@ -394,6 +391,7 @@ class TestWisdomAsk:
 class TestRAGModule:
     """Test the RAG module."""
 
+    @pytest.mark.trio
     @patch("wisdom_service.sutta_search.search_suttas")
     async def test_build_rag_prompt_with_suttas(self, mock_search, mock_sutta_results):
         """Test that build_rag_prompt assembles messages with sutta context."""
@@ -421,6 +419,7 @@ class TestRAGModule:
         assert messages[3]["role"] == "user"
         assert messages[3]["content"] == "What is suffering?"
 
+    @pytest.mark.trio
     @patch("wisdom_service.sutta_search.search_suttas")
     async def test_build_rag_prompt_graceful_fallback_no_suttas(self, mock_search):
         """Test graceful fallback when sutta search fails."""
@@ -525,7 +524,7 @@ class TestSuttaSearch:
 
     def test_embed_text_returns_vector(self):
         """Test that embed_text returns a vector of correct dimension."""
-        from wisdom_service.sutta_search import embed_text, EMBEDDING_DIM
+        from wisdom_service.sutta_search import EMBEDDING_DIM, embed_text
 
         text = "What is suffering?"
         embedding = embed_text(text)

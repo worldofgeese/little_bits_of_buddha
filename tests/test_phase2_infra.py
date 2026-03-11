@@ -8,12 +8,9 @@ These tests verify that:
 5. Migration script exists and can handle edge cases
 """
 
-import os
 from pathlib import Path
 
-import pytest
 import yaml
-
 
 PROJECT_ROOT = Path(__file__).parent.parent
 

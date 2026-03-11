@@ -12,8 +12,8 @@ import os
 import sys
 from unittest.mock import MagicMock, Mock, patch
 
-import pytest
 import httpx
+import pytest
 
 # Mock dapr modules before any imports
 sys.modules["dapr"] = MagicMock()

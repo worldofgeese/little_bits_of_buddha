@@ -14,9 +14,7 @@ Test coverage:
 """
 
 import json
-from unittest.mock import MagicMock, Mock, patch
-
-import pytest
+from unittest.mock import Mock, patch
 
 
 class TestToolDefinitions:
