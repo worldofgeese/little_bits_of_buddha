@@ -417,7 +417,23 @@ class TestWisdomAsk:
                 )
             else:
                 call_count["second"] += 1
-                return respx.MockResponse(200, json=mock_anthropic_response)
+                return respx.MockResponse(
+                    200,
+                    json={
+                        "id": "msg_fallback",
+                        "type": "message",
+                        "role": "assistant",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Suffering arises from craving. Practice mindfulness.",
+                            }
+                        ],
+                        "model": "claude-sonnet",
+                        "stop_reason": "end_turn",
+                        "usage": {"input_tokens": 10, "output_tokens": 20},
+                    },
+                )
 
         async with respx.mock:
             respx.post("http://test-api/v1/messages").mock(side_effect=handle_request)
