@@ -1,8 +1,10 @@
 #!/bin/sh
 set -eu
 echo "=== Running lint ==="
-# Install all deps (not just dev) so ty can resolve imports
 pip install -q ".[dev]"
+
+# Preflight: verify core deps
+sh scripts/check-ci-preflight.sh || true  # lint doesn't need test deps, warn only
+
 ruff check src/
-# ty needs to find all packages; point it at the install location
 ty check src/
