@@ -8,3 +8,7 @@ python-version = "3.13"
 empty-body = "ignore"
 # trio.to_thread.run_sync type stubs are incomplete in ty
 call-non-callable = "warn"
+# dapr.ext.workflow not always installable in CI (namespace package issues)
+unresolved-import = "warn"
+# redis-py type stubs incomplete for RediSearch create_index
+invalid-argument-type = "warn"
