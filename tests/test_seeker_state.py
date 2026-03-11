@@ -315,7 +315,7 @@ class TestMessageHandlerWithHistory:
             patch(
                 "openai_service_worldofgeese.rag.build_rag_prompt",
                 return_value=mock_rag_messages,
-            ) as mock_build_rag,
+            ),
         ):
             mock_proxy.side_effect = capture_messages
 

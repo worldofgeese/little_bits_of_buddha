@@ -19,22 +19,26 @@ from unittest.mock import Mock, patch
 
 import pytest
 
+# Use pytest.importorskip to gracefully skip if dapr.ext.workflow is not available
+dapr_workflow = pytest.importorskip(
+    "dapr.ext.workflow", reason="dapr.ext.workflow not available"
+)
+
 
 class TestBreathingMeditationWorkflow:
     """Test the breathing meditation (ānāpānasati) workflow."""
 
     @pytest.mark.integration
-    def test_breathing_workflow_complete_path(self):
+    @patch("meditation_workflow_service.activities.DaprClient")
+    def test_breathing_workflow_complete_path(self, mock_dapr_client_class):
         """Test complete breathing meditation from start to finish."""
-        # This test will verify:
-        # 1. Workflow can be scheduled
-        # 2. Welcome message is sent
-        # 3. Settle timer (30s) executes
-        # 4. Breathing focus instruction sent
-        # 5. Main timer (5min default) executes
-        # 6. Bell + check-in sent
-        # 7. Wait for external event (user response)
-        # 8. Closing + sutta suggestion sent
+        # Mock DaprClient for activities
+        mock_dapr = Mock()
+        mock_dapr_client_class.return_value.__enter__.return_value = mock_dapr
+        mock_dapr.publish_event.return_value = None
+        mock_dapr.invoke_method.return_value.text.return_value = json.dumps(
+            {"practice_level": "beginner", "meditation_count": 3}
+        )
 
         from meditation_workflow_service.workflows.breathing import breathing_meditation
 
@@ -92,8 +96,17 @@ class TestBreathingMeditationWorkflow:
         mock_ctx.wait_for_external_event.assert_called()
 
     @pytest.mark.integration
-    def test_breathing_workflow_timeout_path(self):
+    @patch("meditation_workflow_service.activities.DaprClient")
+    def test_breathing_workflow_timeout_path(self, mock_dapr_client_class):
         """Test breathing meditation when user doesn't respond (timeout)."""
+        # Mock DaprClient for activities
+        mock_dapr = Mock()
+        mock_dapr_client_class.return_value.__enter__.return_value = mock_dapr
+        mock_dapr.publish_event.return_value = None
+        mock_dapr.invoke_method.return_value.text.return_value = json.dumps(
+            {"practice_level": "intermediate", "meditation_count": 15}
+        )
+
         from meditation_workflow_service.workflows.breathing import breathing_meditation
 
         mock_ctx = Mock()
@@ -131,10 +144,18 @@ class TestMettaMeditationWorkflow:
     """Test the loving-kindness (metta) meditation workflow."""
 
     @pytest.mark.integration
-    def test_metta_workflow_complete_path(self):
+    @patch("meditation_workflow_service.activities.DaprClient")
+    def test_metta_workflow_complete_path(self, mock_dapr_client_class):
         """Test complete metta meditation through all phases."""
-        # Metta phases: self → loved one → neutral person → difficult person → all beings
+        # Mock DaprClient for activities
+        mock_dapr = Mock()
+        mock_dapr_client_class.return_value.__enter__.return_value = mock_dapr
+        mock_dapr.publish_event.return_value = None
+        mock_dapr.invoke_method.return_value.text.return_value = json.dumps(
+            {"practice_level": "beginner", "meditation_count": 1}
+        )
 
+        # Metta phases: self → loved one → neutral person → difficult person → all beings
         from meditation_workflow_service.workflows.metta import metta_meditation
 
         mock_ctx = Mock()
@@ -261,19 +282,31 @@ class TestMeditationActivities:
 
 
 class TestMeditationTemplates:
-    """Test meditation instruction templates."""
+    """Test meditation instruction templates (no dapr dependencies)."""
 
-    @pytest.mark.integration
     def test_breathing_templates_exist_for_all_levels(self):
         """Test breathing meditation templates exist for all practice levels."""
-        from meditation_workflow_service.templates import get_breathing_instruction
+        # Import templates directly - no dapr imports needed
+        import importlib.util
+
+        # Load templates module directly without importing workflow modules
+        spec = importlib.util.spec_from_file_location(
+            "templates",
+            "/home/node/.openclaw/workspace/projects/little_bits_of_buddha/src/meditation_workflow_service/templates.py",
+        )
+        templates = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(templates)
 
         # Should have templates for different levels
-        beginner = get_breathing_instruction("welcome", practice_level="beginner")
-        intermediate = get_breathing_instruction(
+        beginner = templates.get_breathing_instruction(
+            "welcome", practice_level="beginner"
+        )
+        intermediate = templates.get_breathing_instruction(
             "welcome", practice_level="intermediate"
         )
-        advanced = get_breathing_instruction("welcome", practice_level="advanced")
+        advanced = templates.get_breathing_instruction(
+            "welcome", practice_level="advanced"
+        )
 
         assert beginner is not None
         assert intermediate is not None
@@ -284,12 +317,21 @@ class TestMeditationTemplates:
 
     def test_metta_templates_exist_for_all_phases(self):
         """Test metta meditation templates exist for all phases."""
-        from meditation_workflow_service.templates import get_metta_instruction
+        # Import templates directly - no dapr imports needed
+        import importlib.util
+
+        # Load templates module directly without importing workflow modules
+        spec = importlib.util.spec_from_file_location(
+            "templates",
+            "/home/node/.openclaw/workspace/projects/little_bits_of_buddha/src/meditation_workflow_service/templates.py",
+        )
+        templates = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(templates)
 
         phases = ["self", "loved_one", "neutral", "difficult", "all_beings"]
 
         for phase in phases:
-            instruction = get_metta_instruction(phase)
+            instruction = templates.get_metta_instruction(phase)
             assert instruction is not None
             assert len(instruction) > 0
 
@@ -304,83 +346,82 @@ class TestWorkflowAPIEndpoints:
     """Test FastAPI endpoints for meditation workflow service."""
 
     @pytest.mark.integration
-    def test_start_meditation_endpoint(self):
+    @patch("meditation_workflow_service.__main__.DaprWorkflowClient")
+    def test_start_meditation_endpoint(self, mock_workflow_client_class):
         """Test POST /meditate/start endpoint."""
         from fastapi.testclient import TestClient
 
         from meditation_workflow_service.__main__ import app
 
-        with patch(
-            "meditation_workflow_service.__main__.DaprWorkflowClient"
-        ) as mock_client:
-            mock_workflow_client = Mock()
-            mock_client.return_value = mock_workflow_client
+        # Mock the workflow client
+        mock_client = Mock()
+        mock_client.schedule_new_workflow.return_value = None
+        mock_workflow_client_class.return_value = mock_client
 
-            client = TestClient(app)
-            response = client.post(
-                "/meditate/start",
-                json={
-                    "chat_id": 12345,
-                    "type": "breathing_meditation",
-                    "duration_minutes": 10,
-                },
-            )
+        client = TestClient(app)
+        response = client.post(
+            "/meditate/start",
+            json={
+                "chat_id": 12345,
+                "type": "breathing_meditation",
+                "duration_minutes": 10,
+            },
+        )
 
-            assert response.status_code == 200
-            data = response.json()
-            assert "instance_id" in data
-            assert data["status"] == "started"
+        assert response.status_code == 200
+        data = response.json()
+        assert "instance_id" in data
+        assert data["status"] == "started"
 
-            # Verify workflow was scheduled
-            mock_workflow_client.schedule_new_workflow.assert_called_once()
+        # Verify workflow was scheduled
+        mock_client.schedule_new_workflow.assert_called_once()
 
     @pytest.mark.integration
-    def test_raise_event_endpoint(self):
+    @patch("meditation_workflow_service.__main__.DaprWorkflowClient")
+    def test_raise_event_endpoint(self, mock_workflow_client_class):
         """Test POST /meditate/event endpoint."""
         from fastapi.testclient import TestClient
 
         from meditation_workflow_service.__main__ import app
 
-        with patch(
-            "meditation_workflow_service.__main__.DaprWorkflowClient"
-        ) as mock_client:
-            mock_workflow_client = Mock()
-            mock_client.return_value = mock_workflow_client
+        # Mock the workflow client
+        mock_client = Mock()
+        mock_client.raise_workflow_event.return_value = None
+        mock_workflow_client_class.return_value = mock_client
 
-            client = TestClient(app)
-            response = client.post(
-                "/meditate/event",
-                json={
-                    "instance_id": "meditation-12345-1234567890",
-                    "event_name": "user_response",
-                    "data": "I feel peaceful",
-                },
-            )
+        client = TestClient(app)
+        response = client.post(
+            "/meditate/event",
+            json={
+                "instance_id": "meditation-12345-1234567890",
+                "event_name": "user_response",
+                "data": "I feel peaceful",
+            },
+        )
 
-            assert response.status_code == 200
+        assert response.status_code == 200
 
-            # Verify event was raised
-            mock_workflow_client.raise_workflow_event.assert_called_once()
+        # Verify event was raised
+        mock_client.raise_workflow_event.assert_called_once()
 
     @pytest.mark.integration
-    def test_get_status_endpoint(self):
+    @patch("meditation_workflow_service.__main__.DaprWorkflowClient")
+    def test_get_status_endpoint(self, mock_workflow_client_class):
         """Test GET /meditate/status/{instance_id} endpoint."""
         from fastapi.testclient import TestClient
 
         from meditation_workflow_service.__main__ import app
 
-        with patch(
-            "meditation_workflow_service.__main__.DaprWorkflowClient"
-        ) as mock_client:
-            mock_workflow_client = Mock()
-            mock_state = Mock()
-            mock_state.runtime_status.name = "COMPLETED"
-            mock_workflow_client.get_workflow_state.return_value = mock_state
-            mock_client.return_value = mock_workflow_client
+        # Mock the workflow client and state
+        mock_client = Mock()
+        mock_state = Mock()
+        mock_state.runtime_status.name = "COMPLETED"
+        mock_client.get_workflow_state.return_value = mock_state
+        mock_workflow_client_class.return_value = mock_client
 
-            client = TestClient(app)
-            response = client.get("/meditate/status/meditation-12345-1234567890")
+        client = TestClient(app)
+        response = client.get("/meditate/status/meditation-12345-1234567890")
 
-            assert response.status_code == 200
-            data = response.json()
-            assert data["status"] == "COMPLETED"
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "COMPLETED"

@@ -353,7 +353,7 @@ class TestCallAnthropicWithTools:
         messages = [{"role": "user", "content": "What is suffering?"}]
         system_prompt = "You are a Buddhist teacher."
 
-        result = call_anthropic_with_tools(
+        _ = call_anthropic_with_tools(
             messages,
             system_prompt,
             TOOLS,
