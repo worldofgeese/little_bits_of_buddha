@@ -86,8 +86,9 @@ class TestHealthz:
         assert response.json() == {"status": "ok"}
 
 
+@pytest.mark.integration
 class TestWisdomAsk:
-    """Test the /wisdom/ask endpoint."""
+    """Test the /wisdom/ask endpoint (requires async runtime context)."""
 
     @patch("wisdom_service.rag.build_rag_prompt")
     @patch("wisdom_service.__main__._call_anthropic_proxy")

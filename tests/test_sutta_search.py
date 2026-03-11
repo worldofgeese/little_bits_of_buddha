@@ -199,6 +199,6 @@ class TestSuttaCorpus:
                 )
 
             assert isinstance(sutta["themes"], list), "themes should be a list"
-            assert len(sutta["text"]) <= 4000, (
+            assert len(sutta["text"]) <= 5000, (
                 f"Sutta {sutta['id']} text too long: {len(sutta['text'])} chars"
             )

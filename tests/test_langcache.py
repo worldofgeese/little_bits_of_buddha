@@ -53,7 +53,7 @@ class TestLangCacheHit:
         # Mock search result returning the stored item with high similarity
         mock_doc = MagicMock()
         mock_doc.response = "Dukkha is the Pali word for suffering or dissatisfaction."
-        mock_doc.score = "0.95"  # High similarity (cosine distance)
+        mock_doc.score = "0.05"  # Low cosine distance = high similarity
         mock_redis.ft().search.return_value = MagicMock(docs=[mock_doc])
 
         # Lookup with similar query
